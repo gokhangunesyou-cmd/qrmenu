@@ -1,0 +1,46 @@
+nelmio_api_doc:
+    html_config:
+        assets_mode: cdn
+        swagger_ui_config: null
+
+    documentation:
+        info:
+            title: QR Menu API
+            description: Multi-tenant SaaS QR Menu Platform API
+            version: 1.0.0
+
+        components:
+            securitySchemes:
+                bearerAuth:
+                    type: http
+                    scheme: bearer
+                    bearerFormat: JWT
+                    description: 'JWT token obtained from /api/admin/auth/login'
+
+        security:
+            - bearerAuth: []
+
+    areas:
+        default:
+            path_patterns:
+                - ^/api(?!/doc$)  # All /api routes except /api/doc itself
+
+    models:
+        names:
+            - { alias: CreateCategoryRequest, type: App\DTO\Request\Admin\CreateCategoryRequest }
+            - { alias: UpdateCategoryRequest, type: App\DTO\Request\Admin\UpdateCategoryRequest }
+            - { alias: CreateProductRequest, type: App\DTO\Request\Admin\CreateProductRequest }
+            - { alias: UpdateProductRequest, type: App\DTO\Request\Admin\UpdateProductRequest }
+            - { alias: ReorderRequest, type: App\DTO\Request\Admin\ReorderRequest }
+            - { alias: CreateQrCodeRequest, type: App\DTO\Request\Admin\CreateQrCodeRequest }
+            - { alias: PresignUploadRequest, type: App\DTO\Request\Admin\PresignUploadRequest }
+            - { alias: UpdateRestaurantRequest, type: App\DTO\Request\Admin\UpdateRestaurantRequest }
+            - { alias: UpsertPageRequest, type: App\DTO\Request\Admin\UpsertPageRequest }
+            - { alias: ReplaceSocialLinksRequest, type: App\DTO\Request\Admin\ReplaceSocialLinksRequest }
+            - { alias: GeneratePdfRequest, type: App\DTO\Request\Admin\GeneratePdfRequest }
+            - { alias: RestaurantResponse, type: App\DTO\Response\Admin\RestaurantResponse }
+            - { alias: PageResponse, type: App\DTO\Response\Admin\PageResponse }
+            - { alias: SocialLinkResponse, type: App\DTO\Response\Admin\SocialLinkResponse }
+            - { alias: PdfTemplateResponse, type: App\DTO\Response\Admin\PdfTemplateResponse }
+            - { alias: ProductResponse, type: App\DTO\Response\Admin\ProductResponse }
+            - { alias: RestaurantListItemResponse, type: App\DTO\Response\SuperAdmin\RestaurantListItemResponse }

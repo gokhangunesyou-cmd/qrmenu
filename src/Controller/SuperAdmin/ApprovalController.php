@@ -8,11 +8,13 @@ use App\DTO\Response\SuperAdmin\PendingApprovalResponse;
 use App\Entity\Product;
 use App\Infrastructure\Storage\StorageInterface;
 use App\Service\CatalogApprovalService;
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 
+#[OA\Tag(name: 'SuperAdmin - Approvals')]
 class ApprovalController extends AbstractController
 {
     public function __construct(
@@ -22,6 +24,21 @@ class ApprovalController extends AbstractController
     }
 
     #[Route('/approvals/pending', name: 'super_admin_approval_list_pending', methods: ['GET'])]
+    #[OA\Get(
+        path: '/api/super-admin/approvals/pending',
+        summary: 'List pending catalog product approvals',
+        tags: ['SuperAdmin - Approvals']
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Returns list of pending approvals',
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(type: 'object')
+        )
+    )]
+    #[OA\Response(response: 401, description: 'Unauthorized')]
+    #[OA\Response(response: 403, description: 'Forbidden - SuperAdmin access required')]
     public function listPending(): JsonResponse
     {
         $products = $this->catalogApprovalService->listPending();
@@ -46,6 +63,25 @@ class ApprovalController extends AbstractController
     }
 
     #[Route('/approvals/{uuid}', name: 'super_admin_approval_detail', methods: ['GET'])]
+    #[OA\Get(
+        path: '/api/super-admin/approvals/{uuid}',
+        summary: 'Get approval details',
+        tags: ['SuperAdmin - Approvals']
+    )]
+    #[OA\Parameter(
+        name: 'uuid',
+        in: 'path',
+        required: true,
+        description: 'Product UUID',
+        schema: new OA\Schema(type: 'string', format: 'uuid')
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Returns approval details'
+    )]
+    #[OA\Response(response: 401, description: 'Unauthorized')]
+    #[OA\Response(response: 403, description: 'Forbidden - SuperAdmin access required')]
+    #[OA\Response(response: 404, description: 'Product not found')]
     public function detail(string $uuid): JsonResponse
     {
         $product = $this->catalogApprovalService->getDetail($uuid);
@@ -54,6 +90,25 @@ class ApprovalController extends AbstractController
     }
 
     #[Route('/approvals/{uuid}/approve', name: 'super_admin_approval_approve', methods: ['POST'])]
+    #[OA\Post(
+        path: '/api/super-admin/approvals/{uuid}/approve',
+        summary: 'Approve a catalog product submission',
+        tags: ['SuperAdmin - Approvals']
+    )]
+    #[OA\Parameter(
+        name: 'uuid',
+        in: 'path',
+        required: true,
+        description: 'Product UUID',
+        schema: new OA\Schema(type: 'string', format: 'uuid')
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Product approved successfully'
+    )]
+    #[OA\Response(response: 401, description: 'Unauthorized')]
+    #[OA\Response(response: 403, description: 'Forbidden - SuperAdmin access required')]
+    #[OA\Response(response: 404, description: 'Product not found')]
     public function approve(string $uuid): JsonResponse
     {
         $product = $this->catalogApprovalService->approve($uuid, $this->getUser());
@@ -62,6 +117,29 @@ class ApprovalController extends AbstractController
     }
 
     #[Route('/approvals/{uuid}/reject', name: 'super_admin_approval_reject', methods: ['POST'])]
+    #[OA\Post(
+        path: '/api/super-admin/approvals/{uuid}/reject',
+        summary: 'Reject a catalog product submission',
+        tags: ['SuperAdmin - Approvals']
+    )]
+    #[OA\Parameter(
+        name: 'uuid',
+        in: 'path',
+        required: true,
+        description: 'Product UUID',
+        schema: new OA\Schema(type: 'string', format: 'uuid')
+    )]
+    #[OA\RequestBody(
+        required: true
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Product rejected successfully'
+    )]
+    #[OA\Response(response: 401, description: 'Unauthorized')]
+    #[OA\Response(response: 403, description: 'Forbidden - SuperAdmin access required')]
+    #[OA\Response(response: 404, description: 'Product not found')]
+    #[OA\Response(response: 422, description: 'Validation error')]
     public function reject(string $uuid, #[MapRequestPayload] RejectProductRequest $request): JsonResponse
     {
         $product = $this->catalogApprovalService->reject($uuid, $request->note, $this->getUser());

@@ -9,7 +9,7 @@ framework:
     serializer:
         enabled: true
 
-    validator:
+    validation:
         enabled: true
         email_validation_mode: html5
 
