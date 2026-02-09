@@ -14,6 +14,11 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
 
+        api_doc:
+            pattern: ^/api/doc
+            stateless: true
+            security: false
+
         public_api:
             pattern: ^/api/public
             stateless: true
@@ -32,6 +37,7 @@ security:
                 - App\Security\JwtAuthenticator
 
     access_control:
+        - { path: ^/api/doc, roles: PUBLIC_ACCESS }
         - { path: ^/api/public, roles: PUBLIC_ACCESS }
         - { path: ^/api/admin/auth, roles: PUBLIC_ACCESS }
         - { path: ^/api/admin, roles: ROLE_RESTAURANT_OWNER }

@@ -9,11 +9,13 @@ use App\Entity\Category;
 use App\Exception\EntityNotFoundException;
 use App\Repository\CategoryRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 
+#[OA\Tag(name: 'SuperAdmin - Default Categories')]
 class DefaultCategoryController extends AbstractController
 {
     public function __construct(
@@ -23,6 +25,21 @@ class DefaultCategoryController extends AbstractController
     }
 
     #[Route('/default-categories', name: 'super_admin_default_category_list', methods: ['GET'])]
+    #[OA\Get(
+        path: '/api/super-admin/default-categories',
+        summary: 'List all global default categories',
+        tags: ['SuperAdmin - Default Categories']
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Returns list of default categories',
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(type: 'object')
+        )
+    )]
+    #[OA\Response(response: 401, description: 'Unauthorized')]
+    #[OA\Response(response: 403, description: 'Forbidden - SuperAdmin access required')]
     public function list(): JsonResponse
     {
         $categories = $this->categoryRepository->findGlobalDefaults();
@@ -31,6 +48,21 @@ class DefaultCategoryController extends AbstractController
     }
 
     #[Route('/default-categories', name: 'super_admin_default_category_create', methods: ['POST'])]
+    #[OA\Post(
+        path: '/api/super-admin/default-categories',
+        summary: 'Create a new default category',
+        tags: ['SuperAdmin - Default Categories']
+    )]
+    #[OA\RequestBody(
+        required: true
+    )]
+    #[OA\Response(
+        response: 201,
+        description: 'Default category created successfully'
+    )]
+    #[OA\Response(response: 401, description: 'Unauthorized')]
+    #[OA\Response(response: 403, description: 'Forbidden - SuperAdmin access required')]
+    #[OA\Response(response: 422, description: 'Validation error')]
     public function create(#[MapRequestPayload] CreateDefaultCategoryRequest $request): JsonResponse
     {
         $category = new Category($request->name);
@@ -47,6 +79,29 @@ class DefaultCategoryController extends AbstractController
     }
 
     #[Route('/default-categories/{uuid}', name: 'super_admin_default_category_update', methods: ['PUT'])]
+    #[OA\Put(
+        path: '/api/super-admin/default-categories/{uuid}',
+        summary: 'Update a default category',
+        tags: ['SuperAdmin - Default Categories']
+    )]
+    #[OA\Parameter(
+        name: 'uuid',
+        in: 'path',
+        required: true,
+        description: 'Category UUID',
+        schema: new OA\Schema(type: 'string', format: 'uuid')
+    )]
+    #[OA\RequestBody(
+        required: true
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Default category updated successfully'
+    )]
+    #[OA\Response(response: 401, description: 'Unauthorized')]
+    #[OA\Response(response: 403, description: 'Forbidden - SuperAdmin access required')]
+    #[OA\Response(response: 404, description: 'Category not found')]
+    #[OA\Response(response: 422, description: 'Validation error')]
     public function update(string $uuid, #[MapRequestPayload] UpdateDefaultCategoryRequest $request): JsonResponse
     {
         $category = $this->categoryRepository->createQueryBuilder('c')
