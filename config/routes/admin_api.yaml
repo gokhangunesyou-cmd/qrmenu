@@ -1,3 +1,6 @@
 admin_controllers:
     resource: ../../src/Controller/Admin/
     type: attribute
+    exclude:
+        - ../../src/Controller/Admin/SecurityController.php
+        - ../../src/Controller/Admin/RestaurantWebController.php
