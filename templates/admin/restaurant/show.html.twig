@@ -1,0 +1,111 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Restoran Profili{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Restoran Profili</h2>
+        <a href="{{ path('admin_restaurant_edit') }}" class="btn btn-primary">
+            <i class="bi bi-pencil"></i> Düzenle
+        </a>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Genel Bilgiler</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th style="width: 200px;">Restoran Adı</th>
+                            <td>{{ restaurant.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Slug</th>
+                            <td><code>{{ restaurant.slug }}</code></td>
+                        </tr>
+                        <tr>
+                            <th>Açıklama</th>
+                            <td>{{ restaurant.description|default('-') }}</td>
+                        </tr>
+                        <tr>
+                            <th>Telefon</th>
+                            <td>{{ restaurant.phone|default('-') }}</td>
+                        </tr>
+                        <tr>
+                            <th>E-posta</th>
+                            <td>{{ restaurant.email|default('-') }}</td>
+                        </tr>
+                        <tr>
+                            <th>Adres</th>
+                            <td>{{ restaurant.address|default('-') }}</td>
+                        </tr>
+                        <tr>
+                            <th>Şehir</th>
+                            <td>{{ restaurant.city|default('-') }}</td>
+                        </tr>
+                        <tr>
+                            <th>Durum</th>
+                            <td>
+                                {% if restaurant.isActive %}
+                                    <span class="badge bg-success">Aktif</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Pasif</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Oluşturulma Tarihi</th>
+                            <td>{{ restaurant.createdAt|date('d.m.Y H:i') }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Logo</h5>
+                </div>
+                <div class="card-body text-center">
+                    {% if restaurant.logoMedia %}
+                        <img src="{{ restaurant.logoMedia.storagePath }}" alt="Logo" class="img-fluid rounded" style="max-height: 150px;">
+                    {% else %}
+                        <div class="text-muted py-4">
+                            <i class="bi bi-image" style="font-size: 3rem;"></i>
+                            <p class="mt-2 mb-0">Logo yüklenmemiş</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Kapak Fotoğrafı</h5>
+                </div>
+                <div class="card-body text-center">
+                    {% if restaurant.coverMedia %}
+                        <img src="{{ restaurant.coverMedia.storagePath }}" alt="Kapak" class="img-fluid rounded">
+                    {% else %}
+                        <div class="text-muted py-4">
+                            <i class="bi bi-image" style="font-size: 3rem;"></i>
+                            <p class="mt-2 mb-0">Kapak fotoğrafı yüklenmemiş</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
