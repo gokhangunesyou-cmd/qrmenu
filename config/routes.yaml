@@ -20,6 +20,10 @@ super_admin_api:
     resource: routes/super_admin_api.yaml
     prefix: /api/super-admin
 
-admin_web:
+admin_security:
     resource: ../src/Controller/Admin/SecurityController.php
+    type: attribute
+
+admin_restaurant_web:
+    resource: ../src/Controller/Admin/RestaurantWebController.php
     type: attribute
