@@ -9,11 +9,13 @@ use App\Entity\Product;
 use App\Infrastructure\Storage\StorageInterface;
 use App\Repository\ProductRepository;
 use App\Service\ProductService;
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 
+#[OA\Tag(name: 'Admin - Catalog')]
 class CatalogController extends AbstractController
 {
     public function __construct(
@@ -23,6 +25,18 @@ class CatalogController extends AbstractController
     ) {
     }
 
+    #[OA\Get(
+        path: '/api/admin/catalog',
+        summary: 'Browse approved catalog products',
+        tags: ['Admin - Catalog'],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Returns list of approved catalog products'
+            ),
+            new OA\Response(response: 401, description: 'Unauthorized')
+        ]
+    )]
     #[Route('/catalog', name: 'admin_catalog_browse', methods: ['GET'])]
     public function browse(): JsonResponse
     {
@@ -49,6 +63,36 @@ class CatalogController extends AbstractController
         return $this->json($response);
     }
 
+    #[OA\Post(
+        path: '/api/admin/catalog/{uuid}/clone',
+        summary: 'Clone a catalog product to restaurant menu',
+        tags: ['Admin - Catalog'],
+        parameters: [
+            new OA\Parameter(
+                name: 'uuid',
+                in: 'path',
+                required: true,
+                description: 'UUID of the catalog product to clone',
+                schema: new OA\Schema(type: 'string', format: 'uuid')
+            )
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['categoryUuid', 'price'],
+                properties: [
+                    new OA\Property(property: 'categoryUuid', type: 'string', format: 'uuid'),
+                    new OA\Property(property: 'price', type: 'string', example: '12.99')
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 201, description: 'Product successfully cloned'),
+            new OA\Response(response: 401, description: 'Unauthorized'),
+            new OA\Response(response: 404, description: 'Catalog product not found'),
+            new OA\Response(response: 422, description: 'Validation error')
+        ]
+    )]
     #[Route('/catalog/{uuid}/clone', name: 'admin_catalog_clone', methods: ['POST'])]
     public function clone(string $uuid, #[MapRequestPayload] CloneCatalogProductRequest $request): JsonResponse
     {

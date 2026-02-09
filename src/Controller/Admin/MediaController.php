@@ -8,11 +8,13 @@ use App\DTO\Response\Admin\PresignResponse;
 use App\Entity\Media;
 use App\Infrastructure\Storage\StorageInterface;
 use App\Service\MediaService;
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 
+#[OA\Tag(name: 'Admin - Media')]
 class MediaController extends AbstractController
 {
     public function __construct(
@@ -21,6 +23,19 @@ class MediaController extends AbstractController
     ) {
     }
 
+    #[OA\Post(
+        path: '/api/admin/media/presign',
+        summary: 'Get presigned URL for media upload',
+        requestBody: new OA\RequestBody(
+            required: true
+        ),
+        tags: ['Admin - Media'],
+        responses: [
+            new OA\Response(response: 200, description: 'Presigned URL generated successfully'),
+            new OA\Response(response: 401, description: 'Unauthorized'),
+            new OA\Response(response: 422, description: 'Validation error'),
+        ]
+    )]
     #[Route('/media/presign', name: 'admin_media_presign', methods: ['POST'])]
     public function presign(#[MapRequestPayload] PresignUploadRequest $request): JsonResponse
     {
@@ -34,6 +49,24 @@ class MediaController extends AbstractController
         ));
     }
 
+    #[OA\Post(
+        path: '/api/admin/media/{uuid}/confirm',
+        summary: 'Confirm media upload',
+        tags: ['Admin - Media'],
+        parameters: [
+            new OA\Parameter(
+                name: 'uuid',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(type: 'string', format: 'uuid')
+            ),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Media upload confirmed'),
+            new OA\Response(response: 401, description: 'Unauthorized'),
+            new OA\Response(response: 404, description: 'Media not found'),
+        ]
+    )]
     #[Route('/media/{uuid}/confirm', name: 'admin_media_confirm', methods: ['POST'])]
     public function confirm(string $uuid): JsonResponse
     {
@@ -43,6 +76,24 @@ class MediaController extends AbstractController
         return $this->json($this->toResponse($media));
     }
 
+    #[OA\Delete(
+        path: '/api/admin/media/{uuid}',
+        summary: 'Delete a media file',
+        tags: ['Admin - Media'],
+        parameters: [
+            new OA\Parameter(
+                name: 'uuid',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(type: 'string', format: 'uuid')
+            ),
+        ],
+        responses: [
+            new OA\Response(response: 204, description: 'Media deleted successfully'),
+            new OA\Response(response: 401, description: 'Unauthorized'),
+            new OA\Response(response: 404, description: 'Media not found'),
+        ]
+    )]
     #[Route('/media/{uuid}', name: 'admin_media_delete', methods: ['DELETE'])]
     public function delete(string $uuid): JsonResponse
     {
