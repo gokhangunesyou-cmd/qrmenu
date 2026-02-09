@@ -52,6 +52,10 @@ security:
             custom_authenticators:
                 - App\Security\JwtAuthenticator
 
+    role_hierarchy:
+        ROLE_SUPER_ADMIN: [ROLE_RESTAURANT_OWNER, ROLE_USER]
+        ROLE_RESTAURANT_OWNER: [ROLE_USER]
+        
     access_control:
         - { path: ^/api/doc, roles: PUBLIC_ACCESS }
         - { path: ^/api/public, roles: PUBLIC_ACCESS }
