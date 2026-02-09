@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Helvetica, Arial, sans-serif; margin: 0; padding: 20px; }
+        .grid { display: flex; flex-wrap: wrap; gap: 20px; }
+        .label {
+            width: 45%;
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            page-break-inside: avoid;
+        }
+        .restaurant-name { font-size: 14px; font-weight: bold; margin-bottom: 10px; color: #333; }
+        .qr-image { width: 120px; height: 120px; margin: 10px auto; }
+        .table-number { font-size: 24px; font-weight: bold; margin-top: 10px; }
+        .scan-text { font-size: 10px; color: #666; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <div class="grid">
+        {% for qr in qrCodes %}
+        <div class="label">
+            <div class="restaurant-name">{{ restaurant.name }}</div>
+            <div class="qr-image">
+                <img src="{{ qr.encodedUrl }}" alt="QR" style="width:120px;height:120px;">
+            </div>
+            {% if qr.tableNumber %}
+                <div class="table-number">Table {{ qr.tableNumber }}</div>
+            {% endif %}
+            {% if qr.tableLabel %}
+                <div class="scan-text">{{ qr.tableLabel }}</div>
+            {% endif %}
+            <div class="scan-text">Scan to view menu</div>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

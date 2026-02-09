@@ -1,0 +1,84 @@
+parameters:
+    app.jwt_secret: '%env(JWT_SECRET_KEY)%'
+    app.jwt_access_ttl: '%env(int:JWT_ACCESS_TTL)%'
+    app.jwt_refresh_ttl: '%env(int:JWT_REFRESH_TTL)%'
+    app.public_menu_url: '%env(PUBLIC_MENU_URL)%'
+    app.revalidation_secret: '%env(REVALIDATION_SECRET)%'
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+
+    App\Doctrine\Filter\TenantFilter:
+        tags: []
+
+    App\Doctrine\Listener\TenantFilterListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.request, priority: 8 }
+
+    App\Doctrine\Listener\TimestampListener:
+        tags:
+            - { name: doctrine.event_listener, event: prePersist }
+            - { name: doctrine.event_listener, event: preUpdate }
+
+    App\Doctrine\Listener\SoftDeleteListener:
+        tags:
+            - { name: doctrine.event_listener, event: preRemove }
+
+    App\EventListener\ExceptionListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.exception, priority: -10 }
+
+    # Infrastructure bindings
+    App\Infrastructure\Storage\StorageInterface:
+        alias: App\Infrastructure\Storage\S3Storage
+
+    App\Infrastructure\Storage\S3Storage:
+        arguments:
+            $s3Client: '@s3_client'
+            $bucket: '%env(S3_BUCKET)%'
+            $endpoint: '%env(S3_ENDPOINT)%'
+
+    App\Security\JwtTokenManager:
+        arguments:
+            $secretKey: '%app.jwt_secret%'
+            $accessTtl: '%app.jwt_access_ttl%'
+            $refreshTtl: '%app.jwt_refresh_ttl%'
+
+    App\Service\AuthService:
+        arguments:
+            $accessTtl: '%app.jwt_access_ttl%'
+
+    App\Service\QrCodeService:
+        arguments:
+            $publicMenuUrl: '%app.public_menu_url%'
+
+    App\Controller\Public\RevalidateController:
+        arguments:
+            $revalidationSecret: '%app.revalidation_secret%'
+
+    # S3 Client
+    s3_client:
+        class: Aws\S3\S3Client
+        arguments:
+            -
+                version: 'latest'
+                region: '%env(S3_REGION)%'
+                endpoint: '%env(S3_ENDPOINT)%'
+                use_path_style_endpoint: '%env(bool:S3_USE_PATH_STYLE)%'
+                credentials:
+                    key: '%env(S3_ACCESS_KEY)%'
+                    secret: '%env(S3_SECRET_KEY)%'
+
+    # Fixtures (autoload from fixtures/ directory)
+    App\Fixtures\:
+        resource: '../fixtures/'
+        tags: ['doctrine.fixture.orm']

@@ -1,0 +1,16 @@
+framework:
+    messenger:
+        transports:
+            async:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                options:
+                    auto_setup: true
+                retry_strategy:
+                    max_retries: 3
+                    delay: 1000
+
+        routing:
+            'App\Message\GeneratePdfMessage': async
+            'App\Message\CleanOrphanedMediaMessage': async
+
+        failure_transport: null

@@ -1,0 +1,7 @@
+flysystem:
+    storages:
+        default.storage:
+            adapter: 'aws'
+            options:
+                client: 's3_client'
+                bucket: '%env(S3_BUCKET)%'
