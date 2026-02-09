@@ -24,6 +24,22 @@ security:
             stateless: true
             security: false
 
+        admin:
+            pattern: ^/admin
+            lazy: true
+            provider: app_user_provider
+            form_login:
+                login_path: admin_login
+                check_path: admin_login_check
+                default_target_path: admin_dashboard
+                enable_csrf: true
+            logout:
+                path: admin_logout
+                target: admin_login
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 604800
+
         admin_api:
             pattern: ^/api/admin
             stateless: true
@@ -42,3 +58,5 @@ security:
         - { path: ^/api/admin/auth, roles: PUBLIC_ACCESS }
         - { path: ^/api/admin, roles: ROLE_RESTAURANT_OWNER }
         - { path: ^/api/super-admin, roles: ROLE_SUPER_ADMIN }
+        - { path: ^/admin/login, roles: PUBLIC_ACCESS }
+        - { path: ^/admin, roles: ROLE_RESTAURANT_OWNER }
