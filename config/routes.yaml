@@ -1,0 +1,11 @@
+public_api:
+    resource: routes/public_api.yaml
+    prefix: /api/public
+
+admin_api:
+    resource: routes/admin_api.yaml
+    prefix: /api/admin
+
+super_admin_api:
+    resource: routes/super_admin_api.yaml
+    prefix: /api/super-admin

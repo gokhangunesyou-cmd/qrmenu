@@ -1,0 +1,13 @@
+/vendor/
+/var/
+/.env.local
+/.env.*.local
+/public/bundles/
+/config/secrets/prod/prod.decrypt.private.php
+
+###> phpunit/phpunit ###
+/phpunit.xml
+.phpunit.result.cache
+###< phpunit/phpunit ###
+
+/.php-cs-fixer.cache
