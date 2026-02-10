@@ -27,3 +27,7 @@ admin_security:
 admin_restaurant_web:
     resource: ../src/Controller/Admin/RestaurantWebController.php
     type: attribute
+
+admin_media_web:
+    resource: ../src/Controller/Admin/MediaWebController.php
+    type: attribute
