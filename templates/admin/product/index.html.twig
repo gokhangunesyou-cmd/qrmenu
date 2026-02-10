@@ -1,0 +1,368 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Ürünler{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .product-thumb {
+        width: 48px;
+        height: 48px;
+        object-fit: cover;
+        border-radius: 6px;
+        background: #f0f0f0;
+    }
+    .product-thumb-placeholder {
+        width: 48px;
+        height: 48px;
+        border-radius: 6px;
+        background: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #adb5bd;
+        font-size: 1.2rem;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #6c757d;
+    }
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+    .status-badge {
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    {# Flash messages #}
+    {% for type in ['success', 'error'] %}
+        {% for message in app.flashes(type) %}
+            <div class="alert alert-{{ type == 'error' ? 'danger' : type }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    {# Header #}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Ürünler</h2>
+            <small class="text-muted">{{ totalItems }} ürün</small>
+        </div>
+        <a href="{{ path('admin_product_web_create') }}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> Yeni Ürün Ekle
+        </a>
+    </div>
+
+    {# Filters #}
+    <div class="row mb-4 g-2">
+        <div class="col-md-3">
+            <form method="get" action="{{ path('admin_product_web_index') }}" id="filterForm">
+                <select name="category" class="form-select" onchange="document.getElementById('filterForm').submit()">
+                    <option value="">Tüm Kategoriler</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat.uuid }}" {{ categoryUuid == cat.uuid|string ? 'selected' : '' }}>
+                            {{ cat.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+                {% if search %}
+                    <input type="hidden" name="search" value="{{ search }}">
+                {% endif %}
+            </form>
+        </div>
+        <div class="col-md-4">
+            <form method="get" action="{{ path('admin_product_web_index') }}" id="searchForm">
+                <div class="input-group">
+                    <input type="text" name="search" class="form-control" placeholder="Ürün adı ara..."
+                           value="{{ search }}" autocomplete="off">
+                    <button class="btn btn-outline-secondary" type="submit">
+                        <i class="bi bi-search"></i>
+                    </button>
+                    {% if search %}
+                        <a href="{{ path('admin_product_web_index', {category: categoryUuid}) }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-lg"></i>
+                        </a>
+                    {% endif %}
+                </div>
+                {% if categoryUuid %}
+                    <input type="hidden" name="category" value="{{ categoryUuid }}">
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    {# Products Table #}
+    {% if products|length > 0 %}
+        <form method="post" action="{{ path('admin_product_web_bulk_delete') }}" id="bulkForm">
+            <input type="hidden" name="_token" value="{{ csrf_token('product_bulk_delete') }}">
+
+            <div class="mb-3" id="bulkActions" style="display: none;">
+                <button type="button" class="btn btn-danger btn-sm" id="bulkDeleteBtn">
+                    <i class="bi bi-trash"></i> Seçilenleri Sil (<span id="selectedCount">0</span>)
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle bg-white rounded shadow-sm">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 40px;">
+                                <input type="checkbox" class="form-check-input" id="selectAll">
+                            </th>
+                            <th style="width: 60px;">Görsel</th>
+                            <th>Ad</th>
+                            <th>Kategori</th>
+                            <th>Fiyat</th>
+                            <th>Durum</th>
+                            <th style="width: 140px;">Aksiyonlar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in products %}
+                            <tr>
+                                <td>
+                                    <input type="checkbox" class="form-check-input product-checkbox"
+                                           name="uuids[]" value="{{ product.uuid }}">
+                                </td>
+                                <td>
+                                    {% if product.images|length > 0 %}
+                                        {% set firstImage = product.images|first %}
+                                        <img src="{{ media_thumb_url(firstImage.media.storagePath) }}"
+                                             alt="{{ product.name }}"
+                                             class="product-thumb"
+                                             onerror="this.src='{{ media_url(firstImage.media.storagePath) }}'">
+                                    {% else %}
+                                        <div class="product-thumb-placeholder">
+                                            <i class="bi bi-image"></i>
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>{{ product.name }}</strong>
+                                    {% if product.isFeatured %}
+                                        <span class="badge bg-warning text-dark ms-1" title="Öne Çıkan">
+                                            <i class="bi bi-star-fill"></i>
+                                        </span>
+                                    {% endif %}
+                                    {% if product.description %}
+                                        <br><small class="text-muted">{{ product.description|length > 60 ? product.description|slice(0, 60) ~ '...' : product.description }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark">{{ product.category.name }}</span>
+                                </td>
+                                <td>
+                                    <strong>{{ product.price|number_format(2, ',', '.') }} ₺</strong>
+                                </td>
+                                <td>
+                                    <span class="badge status-badge {{ product.isActive ? 'bg-success' : 'bg-secondary' }}"
+                                          data-uuid="{{ product.uuid }}"
+                                          data-token="{{ csrf_token('product_toggle_' ~ product.uuid) }}"
+                                          title="Durumu değiştirmek için tıklayın"
+                                          onclick="toggleActive(this)">
+                                        {{ product.isActive ? 'Aktif' : 'Pasif' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ path('admin_product_web_edit', {uuid: product.uuid}) }}"
+                                       class="btn btn-sm btn-outline-primary" title="Düzenle">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger delete-btn"
+                                            data-uuid="{{ product.uuid }}"
+                                            data-name="{{ product.name }}"
+                                            data-token="{{ csrf_token('product_delete_' ~ product.uuid) }}"
+                                            title="Sil">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </form>
+
+        {# Pagination #}
+        {% if totalPages > 1 %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item {{ currentPage == 1 ? 'disabled' : '' }}">
+                        <a class="page-link" href="{{ path('admin_product_web_index', {page: currentPage - 1, search: search, category: categoryUuid}) }}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% for p in 1..totalPages %}
+                        {% if p == currentPage or (p >= currentPage - 2 and p <= currentPage + 2) or p == 1 or p == totalPages %}
+                            <li class="page-item {{ p == currentPage ? 'active' : '' }}">
+                                <a class="page-link" href="{{ path('admin_product_web_index', {page: p, search: search, category: categoryUuid}) }}">{{ p }}</a>
+                            </li>
+                        {% elseif p == currentPage - 3 or p == currentPage + 3 %}
+                            <li class="page-item disabled"><span class="page-link">…</span></li>
+                        {% endif %}
+                    {% endfor %}
+                    <li class="page-item {{ currentPage == totalPages ? 'disabled' : '' }}">
+                        <a class="page-link" href="{{ path('admin_product_web_index', {page: currentPage + 1, search: search, category: categoryUuid}) }}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="empty-state">
+            <i class="bi bi-box-seam"></i>
+            {% if search or categoryUuid %}
+                <h5>Aramanızla eşleşen ürün bulunamadı</h5>
+                <p>Farklı bir arama terimi veya kategori deneyin.</p>
+                <a href="{{ path('admin_product_web_index') }}" class="btn btn-outline-primary mt-2">
+                    Filtreleri Temizle
+                </a>
+            {% else %}
+                <h5>Henüz ürün eklenmemiş</h5>
+                <p>İlk ürününüzü ekleyerek başlayın.</p>
+                <a href="{{ path('admin_product_web_create') }}" class="btn btn-primary mt-2">
+                    <i class="bi bi-plus-lg"></i> Yeni Ürün Ekle
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+
+{# Delete Confirmation Modal #}
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ürünü Sil</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong id="deleteProductName"></strong> ürününü silmek istediğinize emin misiniz?</p>
+                <p class="text-muted mb-0">Bu işlem geri alınamaz.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <form method="post" id="deleteForm" class="d-inline">
+                    <input type="hidden" name="_token" id="deleteToken">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Sil
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Bulk Delete Confirmation Modal #}
+<div class="modal fade" id="bulkDeleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Toplu Silme</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong id="bulkDeleteCount"></strong> ürünü silmek istediğinize emin misiniz?</p>
+                <p class="text-muted mb-0">Bu işlem geri alınamaz.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-danger" id="confirmBulkDelete">
+                    <i class="bi bi-trash"></i> Sil
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Select all
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.product-checkbox');
+    const bulkActions = document.getElementById('bulkActions');
+    const selectedCount = document.getElementById('selectedCount');
+
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            checkboxes.forEach(cb => cb.checked = this.checked);
+            updateBulkActions();
+        });
+
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', updateBulkActions);
+        });
+    }
+
+    function updateBulkActions() {
+        const checked = document.querySelectorAll('.product-checkbox:checked').length;
+        selectedCount.textContent = checked;
+        bulkActions.style.display = checked > 0 ? 'block' : 'none';
+    }
+
+    // Delete modal
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const uuid = this.dataset.uuid;
+            const name = this.dataset.name;
+            const token = this.dataset.token;
+
+            document.getElementById('deleteProductName').textContent = name;
+            document.getElementById('deleteForm').action = '/admin/products/' + uuid + '/delete';
+            document.getElementById('deleteToken').value = token;
+
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        });
+    });
+
+    // Bulk delete
+    const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+    if (bulkDeleteBtn) {
+        bulkDeleteBtn.addEventListener('click', function() {
+            const checked = document.querySelectorAll('.product-checkbox:checked').length;
+            document.getElementById('bulkDeleteCount').textContent = checked;
+            new bootstrap.Modal(document.getElementById('bulkDeleteModal')).show();
+        });
+    }
+
+    const confirmBulkDelete = document.getElementById('confirmBulkDelete');
+    if (confirmBulkDelete) {
+        confirmBulkDelete.addEventListener('click', function() {
+            document.getElementById('bulkForm').submit();
+        });
+    }
+});
+
+function toggleActive(el) {
+    const uuid = el.dataset.uuid;
+    const token = el.dataset.token;
+
+    fetch('/admin/products/' + uuid + '/toggle-active', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: '_token=' + encodeURIComponent(token)
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            el.textContent = data.isActive ? 'Aktif' : 'Pasif';
+            el.className = 'badge status-badge ' + (data.isActive ? 'bg-success' : 'bg-secondary');
+        }
+    })
+    .catch(() => {
+        alert('Bir hata oluştu.');
+    });
+}
+</script>
+{% endblock %}

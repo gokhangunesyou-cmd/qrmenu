@@ -108,6 +108,58 @@ class ProductRepository extends ServiceEntityRepository
     }
 
     /**
+     * Find products by restaurant with optional category/search filters and pagination.
+     *
+     * @return array{items: Product[], total: int}
+     */
+    public function findByRestaurantPaginated(
+        Restaurant $restaurant,
+        ?Category $category = null,
+        ?string $search = null,
+        int $page = 1,
+        int $limit = 20,
+    ): array {
+        $qb = $this->createQueryBuilder('p')
+            ->leftJoin('p.images', 'pi')
+            ->addSelect('pi')
+            ->leftJoin('pi.media', 'pm')
+            ->addSelect('pm')
+            ->leftJoin('p.category', 'c')
+            ->addSelect('c')
+            ->where('p.restaurant = :restaurant')
+            ->setParameter('restaurant', $restaurant);
+
+        if ($category !== null) {
+            $qb->andWhere('p.category = :category')
+                ->setParameter('category', $category);
+        }
+
+        if ($search !== null && $search !== '') {
+            $qb->andWhere('LOWER(p.name) LIKE LOWER(:search)')
+                ->setParameter('search', '%' . $search . '%');
+        }
+
+        // Count total
+        $countQb = clone $qb;
+        $total = (int) $countQb->select('COUNT(DISTINCT p.id)')->getQuery()->getSingleScalarResult();
+
+        // Paginate
+        $items = $qb
+            ->orderBy('c.sortOrder', 'ASC')
+            ->addOrderBy('p.sortOrder', 'ASC')
+            ->addOrderBy('p.name', 'ASC')
+            ->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+
+        return [
+            'items' => $items,
+            'total' => $total,
+        ];
+    }
+
+    /**
      * Find one product by UUID and restaurant.
      */
     public function findOneByUuidAndRestaurant(string $uuid, Restaurant $restaurant): ?Product

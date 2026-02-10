@@ -61,6 +61,9 @@ class Product
     #[ORM\Column(type: 'smallint')]
     private int $sortOrder = 0;
 
+    #[ORM\Column(type: 'smallint', nullable: true)]
+    private ?int $calories = null;
+
     #[ORM\Column]
     private bool $isActive = true;
 
@@ -203,6 +206,16 @@ class Product
     public function setSortOrder(int $sortOrder): void
     {
         $this->sortOrder = $sortOrder;
+    }
+
+    public function getCalories(): ?int
+    {
+        return $this->calories;
+    }
+
+    public function setCalories(?int $calories): void
+    {
+        $this->calories = $calories;
     }
 
     public function isActive(): bool
