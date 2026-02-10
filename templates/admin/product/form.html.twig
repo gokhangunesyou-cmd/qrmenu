@@ -1,0 +1,274 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ product ? 'Ürün Düzenle' : 'Yeni Ürün' }}{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .image-preview {
+        display: inline-block;
+        position: relative;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .image-preview img {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 2px solid #dee2e6;
+    }
+    .image-preview .remove-image {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: #dc3545;
+        color: #fff;
+        border: none;
+        font-size: 0.7rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+    .allergen-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    {# Flash messages #}
+    {% for type in ['success', 'error'] %}
+        {% for message in app.flashes(type) %}
+            <div class="alert alert-{{ type == 'error' ? 'danger' : type }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>{{ product ? 'Ürün Düzenle' : 'Yeni Ürün Ekle' }}</h2>
+        <a href="{{ path('admin_product_web_index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Geri
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form method="post"
+                  action="{{ product ? path('admin_product_web_edit', {uuid: product.uuid}) : path('admin_product_web_create') }}">
+                <input type="hidden" name="_token"
+                       value="{{ product ? csrf_token('product_edit_' ~ product.uuid) : csrf_token('product_create') }}">
+
+                <div class="row">
+                    <div class="col-md-8">
+                        {# Name #}
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Ad <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="name" name="name" required maxlength="200"
+                                   value="{{ formData.name is defined ? formData.name : (product ? product.name : '') }}">
+                        </div>
+
+                        {# Description #}
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Açıklama</label>
+                            <textarea class="form-control" id="description" name="description" rows="3">{{ formData.description is defined ? formData.description : (product ? product.description : '') }}</textarea>
+                        </div>
+
+                        <div class="row">
+                            {# Price #}
+                            <div class="col-md-4 mb-3">
+                                <label for="price" class="form-label">Fiyat (₺) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="price" name="price" required
+                                       step="0.01" min="0"
+                                       value="{{ formData.price is defined ? formData.price : (product ? product.price : '') }}">
+                            </div>
+
+                            {# Category #}
+                            <div class="col-md-4 mb-3">
+                                <label for="category_uuid" class="form-label">Kategori <span class="text-danger">*</span></label>
+                                <select class="form-select" id="category_uuid" name="category_uuid" required>
+                                    <option value="">Kategori Seçin</option>
+                                    {% for cat in categories %}
+                                        {% set selectedCat = formData.category_uuid is defined ? formData.category_uuid : (product ? product.category.uuid|string : '') %}
+                                        <option value="{{ cat.uuid }}" {{ selectedCat == cat.uuid|string ? 'selected' : '' }}>
+                                            {{ cat.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            {# Calories #}
+                            <div class="col-md-4 mb-3">
+                                <label for="calories" class="form-label">Kalori</label>
+                                <input type="number" class="form-control" id="calories" name="calories" min="0"
+                                       placeholder="Opsiyonel"
+                                       value="{{ formData.calories is defined ? formData.calories : (product ? product.calories : '') }}">
+                            </div>
+                        </div>
+
+                        {# Allergens #}
+                        <div class="mb-3">
+                            <label class="form-label">Alerjenler</label>
+                            {% set allergenList = {
+                                'gluten': 'Gluten',
+                                'sut': 'Süt',
+                                'yumurta': 'Yumurta',
+                                'fistik': 'Fıstık',
+                                'soya': 'Soya',
+                                'balik': 'Balık',
+                                'kabuklu_deniz_urunleri': 'Kabuklu Deniz Ürünleri',
+                                'kereviz': 'Kereviz'
+                            } %}
+                            {% set currentAllergens = formData.allergens is defined ? formData.allergens : (product ? product.allergens : []) %}
+                            <div class="allergen-grid">
+                                {% for key, label in allergenList %}
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="allergens[]"
+                                               value="{{ key }}" id="allergen_{{ key }}"
+                                               {{ key in (currentAllergens ?? []) ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="allergen_{{ key }}">{{ label }}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        {# Active toggle #}
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                {% set isActive = formData.is_active is defined ? formData.is_active : (product ? product.isActive : true) %}
+                                <input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1"
+                                       {{ isActive ? 'checked' : '' }}>
+                                <label class="form-check-label" for="is_active">Aktif</label>
+                            </div>
+                        </div>
+
+                        {# Featured toggle #}
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                {% set isFeatured = formData.is_featured is defined ? formData.is_featured : (product ? product.isFeatured : false) %}
+                                <input class="form-check-input" type="checkbox" id="is_featured" name="is_featured" value="1"
+                                       {{ isFeatured ? 'checked' : '' }}>
+                                <label class="form-check-label" for="is_featured">Öne Çıkan</label>
+                            </div>
+                        </div>
+
+                        {# Images #}
+                        <div class="mb-3">
+                            <label class="form-label">Görseller</label>
+                            <input type="hidden" name="image_media_uuids" id="imageMediaUuids"
+                                   value="{{ product ? product.images|map(i => i.media.uuid)|join(',') : '' }}">
+
+                            <div id="imagePreviewList">
+                                {% if product %}
+                                    {% for img in product.images %}
+                                        <div class="image-preview" data-uuid="{{ img.media.uuid }}">
+                                            <img src="{{ media_thumb_url(img.media.storagePath) }}"
+                                                 alt="" onerror="this.src='{{ media_url(img.media.storagePath) }}'">
+                                            <button type="button" class="remove-image" onclick="removeImage(this)">&times;</button>
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+
+                            <div class="mt-2">
+                                <label class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-cloud-upload"></i> Görsel Yükle
+                                    <input type="file" accept="image/jpeg,image/png,image/webp" class="d-none"
+                                           id="imageUpload" multiple>
+                                </label>
+                                <a href="{{ path('admin_media_index') }}" target="_blank" class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-images"></i> Medya Kütüphanesi
+                                </a>
+                            </div>
+                            <div id="uploadStatus" class="mt-2"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg"></i> {{ product ? 'Güncelle' : 'Oluştur' }}
+                    </button>
+                    <a href="{{ path('admin_product_web_index') }}" class="btn btn-outline-secondary">İptal</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const imageUpload = document.getElementById('imageUpload');
+    const imageMediaUuids = document.getElementById('imageMediaUuids');
+    const imagePreviewList = document.getElementById('imagePreviewList');
+    const uploadStatus = document.getElementById('uploadStatus');
+
+    imageUpload.addEventListener('change', function() {
+        const files = this.files;
+        if (!files.length) return;
+
+        for (const file of files) {
+            uploadImage(file);
+        }
+        this.value = '';
+    });
+
+    function uploadImage(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        uploadStatus.innerHTML = '<small class="text-muted"><i class="bi bi-hourglass-split"></i> Yükleniyor...</small>';
+
+        fetch('{{ path("admin_media_upload") }}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.error) {
+                uploadStatus.innerHTML = '<small class="text-danger">' + data.error + '</small>';
+                return;
+            }
+
+            // Add to preview
+            const div = document.createElement('div');
+            div.className = 'image-preview';
+            div.dataset.uuid = data.uuid;
+            div.innerHTML = '<img src="' + data.url + '" alt="">' +
+                '<button type="button" class="remove-image" onclick="removeImage(this)">&times;</button>';
+            imagePreviewList.appendChild(div);
+
+            updateImageUuids();
+            uploadStatus.innerHTML = '<small class="text-success"><i class="bi bi-check"></i> Yüklendi</small>';
+            setTimeout(() => uploadStatus.innerHTML = '', 2000);
+        })
+        .catch(() => {
+            uploadStatus.innerHTML = '<small class="text-danger">Yükleme hatası</small>';
+        });
+    }
+});
+
+function removeImage(btn) {
+    btn.closest('.image-preview').remove();
+    updateImageUuids();
+}
+
+function updateImageUuids() {
+    const uuids = Array.from(document.querySelectorAll('.image-preview')).map(el => el.dataset.uuid);
+    document.getElementById('imageMediaUuids').value = uuids.join(',');
+}
+</script>
+{% endblock %}
