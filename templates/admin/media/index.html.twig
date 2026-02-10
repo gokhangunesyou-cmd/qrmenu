@@ -1,0 +1,613 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Medya Yönetimi{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .media-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+    .media-card {
+        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #fff;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+        transition: transform 0.2s, box-shadow 0.2s;
+        cursor: pointer;
+    }
+    .media-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .media-card img {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+        display: block;
+    }
+    .media-card .media-info {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+    }
+    .media-card .media-info .filename {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-weight: 500;
+    }
+    .media-card .media-info .meta {
+        color: #6c757d;
+        font-size: 0.75rem;
+    }
+    .media-card .media-actions {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+    .media-card:hover .media-actions {
+        opacity: 1;
+    }
+
+    /* Drop zone */
+    .drop-zone {
+        border: 2px dashed #dee2e6;
+        border-radius: 12px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s;
+        cursor: pointer;
+        background: #fafafa;
+    }
+    .drop-zone.drag-over {
+        border-color: #0d6efd;
+        background: #e7f1ff;
+    }
+    .drop-zone i {
+        font-size: 3rem;
+        color: #6c757d;
+    }
+    .drop-zone.drag-over i {
+        color: #0d6efd;
+    }
+
+    /* Upload progress */
+    .upload-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .upload-item .upload-thumb {
+        width: 48px;
+        height: 48px;
+        object-fit: cover;
+        border-radius: 4px;
+    }
+    .upload-item .upload-info {
+        flex: 1;
+        min-width: 0;
+    }
+    .upload-item .upload-filename {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 0.85rem;
+    }
+
+    /* Lightbox */
+    .lightbox-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.85);
+        z-index: 9999;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+    }
+    .lightbox-overlay.active {
+        display: flex;
+    }
+    .lightbox-overlay img {
+        max-width: 90vw;
+        max-height: 85vh;
+        object-fit: contain;
+        border-radius: 8px;
+    }
+    .lightbox-close {
+        position: absolute;
+        top: 1rem;
+        right: 1.5rem;
+        color: #fff;
+        font-size: 2rem;
+        cursor: pointer;
+        background: none;
+        border: none;
+        z-index: 10000;
+    }
+    .lightbox-info {
+        position: absolute;
+        bottom: 1.5rem;
+        left: 50%;
+        transform: translateX(-50%);
+        color: #fff;
+        background: rgba(0,0,0,0.6);
+        padding: 0.5rem 1.5rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        text-align: center;
+    }
+    .lightbox-delete {
+        position: absolute;
+        bottom: 1.5rem;
+        right: 1.5rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #6c757d;
+    }
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    {# Flash messages #}
+    {% for type in ['success', 'error'] %}
+        {% for message in app.flashes(type) %}
+            <div class="alert alert-{{ type == 'error' ? 'danger' : type }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    {# Header #}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Medya Kütüphanesi</h2>
+            <small class="text-muted">{{ totalItems }} dosya</small>
+        </div>
+        <button class="btn btn-primary" id="uploadBtn">
+            <i class="bi bi-cloud-upload"></i> Yükle
+        </button>
+    </div>
+
+    {# Search #}
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <form method="get" action="{{ path('admin_media_index') }}">
+                <div class="input-group">
+                    <input type="text" name="search" class="form-control" placeholder="Dosya adı ara..."
+                           value="{{ search }}" autocomplete="off">
+                    <button class="btn btn-outline-secondary" type="submit">
+                        <i class="bi bi-search"></i>
+                    </button>
+                    {% if search %}
+                        <a href="{{ path('admin_media_index') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-lg"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {# Upload Zone (hidden by default) #}
+    <div id="uploadArea" class="mb-4" style="display: none;">
+        <div class="card">
+            <div class="card-body">
+                <div class="drop-zone" id="dropZone">
+                    <i class="bi bi-cloud-arrow-up"></i>
+                    <p class="mt-2 mb-1 fw-semibold">Dosyaları sürükleyip bırakın</p>
+                    <p class="text-muted mb-0">veya <span class="text-primary">dosya seçmek için tıklayın</span></p>
+                    <small class="text-muted d-block mt-2">JPEG, PNG, WebP — Maks. 5MB</small>
+                    <input type="file" id="fileInput" multiple accept="image/jpeg,image/png,image/webp" class="d-none">
+                </div>
+                <div id="uploadProgress" class="mt-3" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <strong id="uploadStatus">Yükleniyor...</strong>
+                        <small id="uploadCount" class="text-muted"></small>
+                    </div>
+                    <div id="uploadList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Media Grid #}
+    {% if mediaItems|length > 0 %}
+        <div class="media-grid" id="mediaGrid">
+            {% for media in mediaItems %}
+                <div class="media-card" data-uuid="{{ media.uuid }}"
+                     data-filename="{{ media.originalFilename }}"
+                     data-size="{{ media.fileSize }}"
+                     data-mime="{{ media.mimeType }}"
+                     data-width="{{ media.width }}"
+                     data-height="{{ media.height }}"
+                     data-created="{{ media.createdAt|date('d.m.Y H:i') }}">
+                    <img src="{{ media_thumb_url(media.storagePath) }}"
+                         data-full="{{ media_url(media.storagePath) }}"
+                         alt="{{ media.originalFilename }}"
+                         loading="lazy"
+                         onerror="this.src='{{ media_url(media.storagePath) }}'">
+                    <div class="media-actions">
+                        <form method="post" action="{{ path('admin_media_web_delete', {uuid: media.uuid}) }}"
+                              class="d-inline delete-form">
+                            <input type="hidden" name="_token" value="{{ csrf_token('media_delete_' ~ media.uuid) }}">
+                            <button type="submit" class="btn btn-sm btn-danger" title="Sil"
+                                    onclick="return confirm('Bu medyayı silmek istediğinize emin misiniz?')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                    <div class="media-info">
+                        <div class="filename" title="{{ media.originalFilename }}">{{ media.originalFilename }}</div>
+                        <div class="meta">
+                            {{ (media.fileSize / 1024)|number_format(0) }} KB
+                            {% if media.width and media.height %}
+                                · {{ media.width }}×{{ media.height }}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {# Pagination #}
+        {% if totalPages > 1 %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item {{ currentPage == 1 ? 'disabled' : '' }}">
+                        <a class="page-link" href="{{ path('admin_media_index', {page: currentPage - 1, search: search}) }}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% for p in 1..totalPages %}
+                        {% if p == currentPage or (p >= currentPage - 2 and p <= currentPage + 2) or p == 1 or p == totalPages %}
+                            <li class="page-item {{ p == currentPage ? 'active' : '' }}">
+                                <a class="page-link" href="{{ path('admin_media_index', {page: p, search: search}) }}">{{ p }}</a>
+                            </li>
+                        {% elseif p == currentPage - 3 or p == currentPage + 3 %}
+                            <li class="page-item disabled"><span class="page-link">…</span></li>
+                        {% endif %}
+                    {% endfor %}
+                    <li class="page-item {{ currentPage == totalPages ? 'disabled' : '' }}">
+                        <a class="page-link" href="{{ path('admin_media_index', {page: currentPage + 1, search: search}) }}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="empty-state">
+            <i class="bi bi-images"></i>
+            {% if search %}
+                <h5>"{{ search }}" için sonuç bulunamadı</h5>
+                <p>Farklı bir arama terimi deneyin.</p>
+            {% else %}
+                <h5>Henüz medya yüklenmemiş</h5>
+                <p>Yukarıdaki "Yükle" butonuna tıklayarak görsellerinizi yükleyin.</p>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+
+{# Lightbox #}
+<div class="lightbox-overlay" id="lightbox">
+    <button class="lightbox-close" id="lightboxClose">&times;</button>
+    <img src="" alt="" id="lightboxImage">
+    <div class="lightbox-info" id="lightboxInfo"></div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadBtn = document.getElementById('uploadBtn');
+    const uploadArea = document.getElementById('uploadArea');
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const uploadProgress = document.getElementById('uploadProgress');
+    const uploadList = document.getElementById('uploadList');
+    const uploadStatus = document.getElementById('uploadStatus');
+    const uploadCount = document.getElementById('uploadCount');
+    const mediaGrid = document.getElementById('mediaGrid');
+
+    // Toggle upload area
+    uploadBtn.addEventListener('click', function() {
+        uploadArea.style.display = uploadArea.style.display === 'none' ? 'block' : 'none';
+    });
+
+    // Drop zone events
+    dropZone.addEventListener('click', function() {
+        fileInput.click();
+    });
+
+    dropZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        dropZone.classList.add('drag-over');
+    });
+
+    dropZone.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+    });
+
+    dropZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+        handleFiles(e.dataTransfer.files);
+    });
+
+    fileInput.addEventListener('change', function() {
+        handleFiles(this.files);
+        this.value = '';
+    });
+
+    function handleFiles(files) {
+        if (!files.length) return;
+
+        const validFiles = [];
+        const maxSize = 5 * 1024 * 1024;
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+
+        for (const file of files) {
+            if (!allowedTypes.includes(file.type)) {
+                showToast(file.name + ': Desteklenmeyen dosya tipi.', 'danger');
+                continue;
+            }
+            if (file.size > maxSize) {
+                showToast(file.name + ': Dosya boyutu 5MB\'dan büyük.', 'danger');
+                continue;
+            }
+            validFiles.push(file);
+        }
+
+        if (!validFiles.length) return;
+
+        uploadProgress.style.display = 'block';
+        uploadFiles(validFiles);
+    }
+
+    async function uploadFiles(files) {
+        let completed = 0;
+        const total = files.length;
+        uploadCount.textContent = '0 / ' + total;
+        uploadList.innerHTML = '';
+
+        for (const file of files) {
+            const item = createUploadItem(file);
+            uploadList.appendChild(item.element);
+
+            try {
+                const result = await uploadFile(file, item);
+                item.setSuccess();
+                addMediaCard(result);
+                completed++;
+            } catch (err) {
+                item.setError(err.message || 'Yükleme hatası');
+                completed++;
+            }
+
+            uploadCount.textContent = completed + ' / ' + total;
+        }
+
+        uploadStatus.textContent = 'Tamamlandı!';
+        setTimeout(function() {
+            uploadProgress.style.display = 'none';
+            uploadList.innerHTML = '';
+        }, 3000);
+    }
+
+    function createUploadItem(file) {
+        const div = document.createElement('div');
+        div.className = 'upload-item';
+
+        const thumb = document.createElement('img');
+        thumb.className = 'upload-thumb';
+        thumb.src = URL.createObjectURL(file);
+
+        const info = document.createElement('div');
+        info.className = 'upload-info';
+
+        const name = document.createElement('div');
+        name.className = 'upload-filename';
+        name.textContent = file.name;
+
+        const progress = document.createElement('div');
+        progress.className = 'progress mt-1';
+        progress.style.height = '4px';
+        progress.innerHTML = '<div class="progress-bar" role="progressbar" style="width: 0%"></div>';
+
+        const statusText = document.createElement('small');
+        statusText.className = 'text-muted';
+        statusText.textContent = formatFileSize(file.size);
+
+        info.appendChild(name);
+        info.appendChild(progress);
+        info.appendChild(statusText);
+
+        div.appendChild(thumb);
+        div.appendChild(info);
+
+        return {
+            element: div,
+            setProgress: function(pct) {
+                progress.querySelector('.progress-bar').style.width = pct + '%';
+            },
+            setSuccess: function() {
+                progress.querySelector('.progress-bar').classList.add('bg-success');
+                progress.querySelector('.progress-bar').style.width = '100%';
+                statusText.textContent = 'Yüklendi ✓';
+                statusText.className = 'text-success';
+            },
+            setError: function(msg) {
+                progress.querySelector('.progress-bar').classList.add('bg-danger');
+                progress.querySelector('.progress-bar').style.width = '100%';
+                statusText.textContent = msg;
+                statusText.className = 'text-danger';
+            }
+        };
+    }
+
+    function uploadFile(file, item) {
+        return new Promise(function(resolve, reject) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '{{ path("admin_media_upload") }}');
+
+            xhr.upload.addEventListener('progress', function(e) {
+                if (e.lengthComputable) {
+                    const pct = Math.round((e.loaded / e.total) * 100);
+                    item.setProgress(pct);
+                }
+            });
+
+            xhr.addEventListener('load', function() {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    resolve(JSON.parse(xhr.responseText));
+                } else {
+                    try {
+                        const err = JSON.parse(xhr.responseText);
+                        reject(new Error(err.error || 'Hata: ' + xhr.status));
+                    } catch(e) {
+                        reject(new Error('Hata: ' + xhr.status));
+                    }
+                }
+            });
+
+            xhr.addEventListener('error', function() {
+                reject(new Error('Bağlantı hatası'));
+            });
+
+            xhr.send(formData);
+        });
+    }
+
+    function addMediaCard(data) {
+        if (!mediaGrid) {
+            // If empty state, reload page
+            location.reload();
+            return;
+        }
+
+        const card = document.createElement('div');
+        card.className = 'media-card';
+        card.dataset.uuid = data.uuid;
+        card.dataset.filename = data.originalFilename;
+        card.dataset.size = data.fileSize;
+        card.dataset.mime = data.mimeType;
+        card.dataset.width = data.width || '';
+        card.dataset.height = data.height || '';
+        card.dataset.created = data.createdAt;
+
+        const dimensions = data.width && data.height ? ' · ' + data.width + '×' + data.height : '';
+
+        card.innerHTML = '<img src="' + data.url + '" data-full="' + data.url + '" alt="' + escapeHtml(data.originalFilename) + '" loading="lazy">' +
+            '<div class="media-actions">' +
+                '<button type="button" class="btn btn-sm btn-danger ajax-delete" data-uuid="' + data.uuid + '" title="Sil"><i class="bi bi-trash"></i></button>' +
+            '</div>' +
+            '<div class="media-info">' +
+                '<div class="filename" title="' + escapeHtml(data.originalFilename) + '">' + escapeHtml(data.originalFilename) + '</div>' +
+                '<div class="meta">' + formatFileSize(data.fileSize) + dimensions + '</div>' +
+            '</div>';
+
+        // Remove empty state if present
+        const emptyState = document.querySelector('.empty-state');
+        if (emptyState) emptyState.remove();
+
+        mediaGrid.insertBefore(card, mediaGrid.firstChild);
+
+        // Update total count
+        const countEl = document.querySelector('.text-muted');
+        if (countEl && countEl.textContent.includes('dosya')) {
+            const currentCount = parseInt(countEl.textContent) || 0;
+            countEl.textContent = (currentCount + 1) + ' dosya';
+        }
+    }
+
+    // Lightbox
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImage = document.getElementById('lightboxImage');
+    const lightboxInfo = document.getElementById('lightboxInfo');
+    const lightboxClose = document.getElementById('lightboxClose');
+
+    document.addEventListener('click', function(e) {
+        const card = e.target.closest('.media-card');
+        if (card && !e.target.closest('.media-actions') && !e.target.closest('.delete-form')) {
+            const img = card.querySelector('img');
+            const fullUrl = img.dataset.full || img.src;
+            lightboxImage.src = fullUrl;
+
+            const filename = card.dataset.filename;
+            const size = formatFileSize(parseInt(card.dataset.size));
+            const w = card.dataset.width;
+            const h = card.dataset.height;
+            const dims = w && h ? ' · ' + w + '×' + h : '';
+            lightboxInfo.textContent = filename + ' · ' + size + dims;
+
+            lightbox.classList.add('active');
+        }
+    });
+
+    lightboxClose.addEventListener('click', function() {
+        lightbox.classList.remove('active');
+        lightboxImage.src = '';
+    });
+
+    lightbox.addEventListener('click', function(e) {
+        if (e.target === lightbox) {
+            lightbox.classList.remove('active');
+            lightboxImage.src = '';
+        }
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && lightbox.classList.contains('active')) {
+            lightbox.classList.remove('active');
+            lightboxImage.src = '';
+        }
+    });
+
+    // Helpers
+    function formatFileSize(bytes) {
+        if (bytes >= 1048576) return (bytes / 1048576).toFixed(1) + ' MB';
+        return Math.round(bytes / 1024) + ' KB';
+    }
+
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    function showToast(msg, type) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'alert alert-' + (type || 'info') + ' alert-dismissible fade show';
+        wrapper.style.cssText = 'position:fixed;top:1rem;right:1rem;z-index:10000;max-width:400px;';
+        wrapper.innerHTML = msg + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+        document.body.appendChild(wrapper);
+        setTimeout(function() { wrapper.remove(); }, 5000);
+    }
+});
+</script>
+{% endblock %}
