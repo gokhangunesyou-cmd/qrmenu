@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(php bin/console cache:clear:*)"
+    ]
+  }
+}

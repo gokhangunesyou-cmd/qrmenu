@@ -1,0 +1,91 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Kategoriler{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Kategoriler</h2>
+        <a href="{{ path('admin_category_new') }}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> Yeni Kategori
+        </a>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+
+    <div class="card">
+        <div class="card-body">
+            {% if categories is empty %}
+                <div class="text-center py-5">
+                    <p class="lead text-muted">Henüz kategori eklenmemiş.</p>
+                    <a href="{{ path('admin_category_new') }}" class="btn btn-outline-primary">İlk Kategoriyi Ekle</a>
+                </div>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px">Sıra</th>
+                                <th style="width: 80px">Görsel</th>
+                                <th>Kategori Adı</th>
+                                <th>Açıklama</th>
+                                <th class="text-center">Durum</th>
+                                <th class="text-end">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for category in categories %}
+                                <tr>
+                                    <td>{{ category.sortOrder }}</td>
+                                    <td>
+                                        {% if category.imageMedia %}
+                                            <img src="/{{ category.imageMedia.storagePath }}" alt="{{ category.name }}" class="rounded" style="width: 40px; height: 40px; object-fit: cover;">
+                                        {% elseif category.icon %}
+                                            <i class="{{ category.icon }} fs-4 text-muted"></i>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="fw-bold">{{ category.name }}</td>
+                                    <td class="text-muted small">{{ category.description|u.truncate(50, '...') }}</td>
+                                    <td class="text-center">
+                                        {% if category.isActive %}
+                                            <span class="badge bg-success">Aktif</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Pasif</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="btn-group">
+                                            <a href="{{ path('admin_category_edit', {'uuid': category.uuid}) }}" class="btn btn-sm btn-outline-primary" title="Düzenle">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <form method="post" action="{{ path('admin_category_delete', {'uuid': category.uuid}) }}" class="d-inline" onsubmit="return confirm('Bu kategoriyi silmek istediğinize emin misiniz?');">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ category.uuid) }}">
+                                                <button class="btn btn-sm btn-outline-danger" title="Sil">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

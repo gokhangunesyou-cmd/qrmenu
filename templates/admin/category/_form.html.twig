@@ -1,0 +1,101 @@
+{{ form_start(form, {'attr': {'enctype': 'multipart/form-data', 'novalidate': 'novalidate'}}) }}
+    
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Temel Bilgiler</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    {{ form_label(form.name) }}
+                    {{ form_widget(form.name) }}
+                    {{ form_errors(form.name) }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(form.description) }}
+                    {{ form_widget(form.description) }}
+                    {{ form_errors(form.description) }}
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        {{ form_label(form.icon) }}
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-emoji-smile"></i></span>
+                            {{ form_widget(form.icon) }}
+                        </div>
+                        {{ form_help(form.icon) }}
+                        {{ form_errors(form.icon) }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        {{ form_label(form.sortOrder) }}
+                        {{ form_widget(form.sortOrder) }}
+                        {{ form_errors(form.sortOrder) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Görsel & Durum</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    {{ form_label(form.isActive) }}
+                    <div class="form-check form-switch">
+                        {{ form_widget(form.isActive) }}
+                        <label class="form-check-label" for="{{ form.isActive.vars.id }}">Yayında</label>
+                    </div>
+                    {{ form_errors(form.isActive) }}
+                </div>
+
+                <hr>
+
+                <div class="mb-3 text-center">
+                    {% if category is defined and category.imageMedia %}
+                        <img src="/{{ category.imageMedia.storagePath }}" alt="Kategori Görseli" class="img-fluid rounded mb-2" id="category-preview" style="max-height: 200px;">
+                        <p class="text-muted small">Mevcut Görsel</p>
+                    {% else %}
+                        <img src="" alt="Önizleme" class="img-fluid rounded mb-2" id="category-preview" style="max-height: 200px; display: none;">
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(form.imageFile) }}
+                    {{ form_widget(form.imageFile, {'attr': {'onchange': 'previewImage(this, \"category-preview\")'}}) }}
+                    {{ form_errors(form.imageFile) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="bi bi-save"></i> Kaydet
+            </button>
+            <a href="{{ path('admin_category_index') }}" class="btn btn-outline-secondary">
+                İptal
+            </a>
+        </div>
+    </div>
+</div>
+
+{{ form_end(form) }}
+
+<script>
+function previewImage(input, previewId) {
+    const preview = document.getElementById(previewId);
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>

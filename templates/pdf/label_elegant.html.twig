@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Georgia, 'Times New Roman', serif; margin: 0; padding: 20px; }
+        .grid { display: flex; flex-wrap: wrap; gap: 20px; }
+        .label {
+            width: 45%;
+            border: 1px solid #c9a96e;
+            padding: 25px;
+            text-align: center;
+            page-break-inside: avoid;
+        }
+        .divider { width: 40px; height: 1px; background: #c9a96e; margin: 10px auto; }
+        .restaurant-name { font-size: 14px; font-style: italic; color: #333; }
+        .qr-image { width: 130px; height: 130px; margin: 15px auto; }
+        .table-number { font-size: 22px; color: #333; }
+        .table-label { font-size: 11px; color: #666; font-style: italic; }
+        .scan-text { font-size: 9px; color: #999; margin-top: 8px; }
+    </style>
+</head>
+<body>
+    <div class="grid">
+        {% for qr in qrCodes %}
+        <div class="label">
+            <div class="restaurant-name">{{ restaurant.name }}</div>
+            <div class="divider"></div>
+            <div class="qr-image">
+                <img src="{{ qr.encodedUrl }}" alt="QR" style="width:130px;height:130px;">
+            </div>
+            {% if qr.tableNumber %}
+                <div class="table-number">Table {{ qr.tableNumber }}</div>
+            {% endif %}
+            {% if qr.tableLabel %}
+                <div class="table-label">{{ qr.tableLabel }}</div>
+            {% endif %}
+            <div class="divider"></div>
+            <div class="scan-text">Scan to view our menu</div>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

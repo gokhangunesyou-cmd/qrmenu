@@ -1,0 +1,29 @@
+api_doc_ui:
+    resource: ../src/Controller/ApiDocController.php
+    type: attribute
+
+app.swagger_json:
+    path: /api/doc.json
+    controller: nelmio_api_doc.controller.swagger_json
+    defaults:
+        area: default
+
+public_api:
+    resource: routes/public_api.yaml
+    prefix: /api/public
+
+admin_api:
+    resource: routes/admin_api.yaml
+    prefix: /api/admin
+
+super_admin_api:
+    resource: routes/super_admin_api.yaml
+    prefix: /api/super-admin
+
+admin_security:
+    resource: ../src/Controller/Admin/SecurityController.php
+    type: attribute
+
+admin_restaurant_web:
+    resource: ../src/Controller/Admin/RestaurantWebController.php
+    type: attribute
