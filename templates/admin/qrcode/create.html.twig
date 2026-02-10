@@ -1,0 +1,312 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}QR Kod Oluştur{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .preview-card {
+        position: sticky;
+        top: 1rem;
+    }
+    .qr-preview-wrapper {
+        text-align: center;
+        padding: 1.5rem;
+        background: #fafafa;
+        border-radius: 8px;
+        min-height: 300px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .qr-preview-wrapper img {
+        max-width: 256px;
+        max-height: 256px;
+        border-radius: 4px;
+    }
+    .qr-preview-placeholder {
+        color: #adb5bd;
+        text-align: center;
+    }
+    .qr-preview-placeholder i {
+        font-size: 4rem;
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+    .color-preview {
+        width: 32px;
+        height: 32px;
+        border-radius: 4px;
+        border: 1px solid #dee2e6;
+        display: inline-block;
+        vertical-align: middle;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    {# Flash messages #}
+    {% for type in ['success', 'error'] %}
+        {% for message in app.flashes(type) %}
+            <div class="alert alert-{{ type == 'error' ? 'danger' : type }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>QR Kod Oluştur</h2>
+        <a href="{{ path('admin_qrcode_index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Geri
+        </a>
+    </div>
+
+    <form method="post" action="{{ path('admin_qrcode_create') }}" enctype="multipart/form-data" id="qrForm">
+        <input type="hidden" name="_token" value="{{ csrf_token('qrcode_create') }}">
+
+        <div class="row">
+            {# Form #}
+            <div class="col-md-7">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-gear"></i> Ayarlar</h5>
+                    </div>
+                    <div class="card-body">
+                        {# Type #}
+                        <div class="mb-3">
+                            <label for="type" class="form-label">QR Kod Tipi <span class="text-danger">*</span></label>
+                            <select class="form-select" id="type" name="type" required>
+                                <option value="restaurant" {{ (formData.type ?? 'restaurant') == 'restaurant' ? 'selected' : '' }}>
+                                    Restoran (Ana Menü)
+                                </option>
+                                <option value="table" {{ (formData.type ?? '') == 'table' ? 'selected' : '' }}>
+                                    Masa
+                                </option>
+                            </select>
+                        </div>
+
+                        {# Table fields (conditional) #}
+                        <div id="tableFields" style="display: {{ (formData.type ?? 'restaurant') == 'table' ? 'block' : 'none' }};">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="table_number" class="form-label">Masa Numarası</label>
+                                    <input type="number" class="form-control" id="table_number" name="table_number"
+                                           min="1" value="{{ formData.table_number ?? '' }}" placeholder="Örn: 1">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="table_label" class="form-label">Masa Etiketi</label>
+                                    <input type="text" class="form-control" id="table_label" name="table_label"
+                                           value="{{ formData.table_label ?? '' }}" placeholder="Örn: Bahçe Masa 1">
+                                </div>
+                            </div>
+                        </div>
+
+                        {# Encoded URL preview #}
+                        <div class="mb-3">
+                            <label class="form-label">Hedef URL</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-link-45deg"></i></span>
+                                <input type="text" class="form-control bg-light" id="urlPreview" readonly
+                                       value="{{ publicMenuUrl }}/{{ restaurantSlug }}">
+                            </div>
+                            <small class="text-muted">QR kod bu URL'ye yönlendirecek</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-palette"></i> Özelleştirme</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {# Foreground color #}
+                            <div class="col-md-6 mb-3">
+                                <label for="foreground_color" class="form-label">Ön Plan Rengi</label>
+                                <div class="d-flex align-items-center gap-2">
+                                    <input type="color" class="form-control form-control-color" id="foreground_color"
+                                           name="foreground_color" value="{{ formData.foreground_color ?? '#000000' }}">
+                                    <input type="text" class="form-control" id="fg_hex" maxlength="7"
+                                           value="{{ formData.foreground_color ?? '#000000' }}" style="max-width: 100px;">
+                                </div>
+                            </div>
+
+                            {# Background color #}
+                            <div class="col-md-6 mb-3">
+                                <label for="background_color" class="form-label">Arka Plan Rengi</label>
+                                <div class="d-flex align-items-center gap-2">
+                                    <input type="color" class="form-control form-control-color" id="background_color"
+                                           name="background_color" value="{{ formData.background_color ?? '#ffffff' }}">
+                                    <input type="text" class="form-control" id="bg_hex" maxlength="7"
+                                           value="{{ formData.background_color ?? '#ffffff' }}" style="max-width: 100px;">
+                                </div>
+                            </div>
+                        </div>
+
+                        {# Border radius #}
+                        <div class="mb-3">
+                            <label for="border_radius" class="form-label">Kenar Yuvarlaklığı</label>
+                            <div class="d-flex align-items-center gap-3">
+                                <input type="range" class="form-range flex-grow-1" id="border_radius"
+                                       name="border_radius" min="0" max="50" step="1"
+                                       value="{{ formData.border_radius ?? '0' }}">
+                                <span class="badge bg-secondary" id="radiusValue">{{ formData.border_radius ?? '0' }}%</span>
+                            </div>
+                        </div>
+
+                        {# Logo #}
+                        <div class="mb-3">
+                            <label for="logo" class="form-label">Logo (ortaya yerleştirilir)</label>
+                            <input type="file" class="form-control" id="logo" name="logo"
+                                   accept="image/jpeg,image/png,image/webp">
+                            <small class="text-muted">Opsiyonel. JPEG, PNG, WebP — Maks. 2MB</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 mb-4">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-qr-code"></i> Oluştur
+                    </button>
+                    <a href="{{ path('admin_qrcode_index') }}" class="btn btn-outline-secondary btn-lg">İptal</a>
+                </div>
+            </div>
+
+            {# Preview #}
+            <div class="col-md-5">
+                <div class="card shadow-sm preview-card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-eye"></i> Önizleme</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="qr-preview-wrapper" id="previewWrapper">
+                            <div class="qr-preview-placeholder" id="previewPlaceholder">
+                                <i class="bi bi-qr-code"></i>
+                                <p>QR kod önizlemesi</p>
+                                <small>Ayarları değiştirdiğinizde otomatik güncellenir</small>
+                            </div>
+                            <img src="" alt="QR Önizleme" id="previewImage" style="display: none;">
+                        </div>
+                        <div class="text-center mt-3">
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="refreshPreview">
+                                <i class="bi bi-arrow-clockwise"></i> Önizlemeyi Yenile
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var typeSelect = document.getElementById('type');
+    var tableFields = document.getElementById('tableFields');
+    var tableNumber = document.getElementById('table_number');
+    var urlPreview = document.getElementById('urlPreview');
+    var fgColor = document.getElementById('foreground_color');
+    var bgColor = document.getElementById('background_color');
+    var fgHex = document.getElementById('fg_hex');
+    var bgHex = document.getElementById('bg_hex');
+    var borderRadius = document.getElementById('border_radius');
+    var radiusValue = document.getElementById('radiusValue');
+    var previewImage = document.getElementById('previewImage');
+    var previewPlaceholder = document.getElementById('previewPlaceholder');
+    var refreshBtn = document.getElementById('refreshPreview');
+
+    var baseUrl = '{{ publicMenuUrl }}/{{ restaurantSlug }}';
+    var previewTimeout = null;
+
+    // Type change
+    typeSelect.addEventListener('change', function() {
+        tableFields.style.display = this.value === 'table' ? 'block' : 'none';
+        updateUrl();
+        schedulePreview();
+    });
+
+    // Table number change
+    tableNumber.addEventListener('input', function() {
+        updateUrl();
+        schedulePreview();
+    });
+
+    // Color sync
+    fgColor.addEventListener('input', function() {
+        fgHex.value = this.value;
+        schedulePreview();
+    });
+    fgHex.addEventListener('input', function() {
+        if (/^#[0-9a-fA-F]{6}$/.test(this.value)) {
+            fgColor.value = this.value;
+            schedulePreview();
+        }
+    });
+    bgColor.addEventListener('input', function() {
+        bgHex.value = this.value;
+        schedulePreview();
+    });
+    bgHex.addEventListener('input', function() {
+        if (/^#[0-9a-fA-F]{6}$/.test(this.value)) {
+            bgColor.value = this.value;
+            schedulePreview();
+        }
+    });
+
+    // Border radius
+    borderRadius.addEventListener('input', function() {
+        radiusValue.textContent = this.value + '%';
+    });
+
+    // Refresh button
+    refreshBtn.addEventListener('click', function() {
+        generatePreview();
+    });
+
+    function updateUrl() {
+        var url = baseUrl;
+        if (typeSelect.value === 'table' && tableNumber.value && parseInt(tableNumber.value) > 0) {
+            url += '?table=' + tableNumber.value;
+        }
+        urlPreview.value = url;
+    }
+
+    function schedulePreview() {
+        if (previewTimeout) clearTimeout(previewTimeout);
+        previewTimeout = setTimeout(generatePreview, 500);
+    }
+
+    function generatePreview() {
+        var formData = new FormData();
+        formData.append('type', typeSelect.value);
+        formData.append('table_number', tableNumber.value || '0');
+        formData.append('foreground_color', fgColor.value);
+        formData.append('background_color', bgColor.value);
+
+        fetch('{{ path("admin_qrcode_preview_generate") }}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(function(response) {
+            if (!response.ok) throw new Error('Preview failed');
+            return response.blob();
+        })
+        .then(function(blob) {
+            var url = URL.createObjectURL(blob);
+            previewImage.src = url;
+            previewImage.style.display = 'block';
+            previewPlaceholder.style.display = 'none';
+        })
+        .catch(function() {
+            // Silently fail preview
+        });
+    }
+
+    // Initial preview
+    generatePreview();
+});
+</script>
+{% endblock %}

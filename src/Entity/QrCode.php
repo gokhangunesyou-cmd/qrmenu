@@ -40,6 +40,18 @@ class QrCode
     #[ORM\Column(length: 500, nullable: true)]
     private ?string $storagePath = null;
 
+    #[ORM\Column(length: 7, nullable: true)]
+    private ?string $foregroundColor = null;
+
+    #[ORM\Column(length: 7, nullable: true)]
+    private ?string $backgroundColor = null;
+
+    #[ORM\Column(type: 'smallint', nullable: true)]
+    private ?int $borderRadius = null;
+
+    #[ORM\Column(length: 500, nullable: true)]
+    private ?string $logoStoragePath = null;
+
     #[ORM\Column]
     private bool $isActive = true;
 
@@ -112,6 +124,46 @@ class QrCode
     public function setStoragePath(?string $storagePath): void
     {
         $this->storagePath = $storagePath;
+    }
+
+    public function getForegroundColor(): ?string
+    {
+        return $this->foregroundColor;
+    }
+
+    public function setForegroundColor(?string $foregroundColor): void
+    {
+        $this->foregroundColor = $foregroundColor;
+    }
+
+    public function getBackgroundColor(): ?string
+    {
+        return $this->backgroundColor;
+    }
+
+    public function setBackgroundColor(?string $backgroundColor): void
+    {
+        $this->backgroundColor = $backgroundColor;
+    }
+
+    public function getBorderRadius(): ?int
+    {
+        return $this->borderRadius;
+    }
+
+    public function setBorderRadius(?int $borderRadius): void
+    {
+        $this->borderRadius = $borderRadius;
+    }
+
+    public function getLogoStoragePath(): ?string
+    {
+        return $this->logoStoragePath;
+    }
+
+    public function setLogoStoragePath(?string $logoStoragePath): void
+    {
+        $this->logoStoragePath = $logoStoragePath;
     }
 
     public function isActive(): bool

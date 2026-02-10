@@ -1,0 +1,218 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}QR Kodları{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .qr-thumb {
+        width: 64px;
+        height: 64px;
+        object-fit: contain;
+        border-radius: 6px;
+        background: #fff;
+        border: 1px solid #dee2e6;
+        padding: 4px;
+    }
+    .qr-thumb-placeholder {
+        width: 64px;
+        height: 64px;
+        border-radius: 6px;
+        background: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #adb5bd;
+        font-size: 1.5rem;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #6c757d;
+    }
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+    .download-dropdown .dropdown-menu {
+        min-width: 180px;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    {# Flash messages #}
+    {% for type in ['success', 'error'] %}
+        {% for message in app.flashes(type) %}
+            <div class="alert alert-{{ type == 'error' ? 'danger' : type }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    {# Header #}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">QR Kodları</h2>
+            <small class="text-muted">{{ qrCodes|length }} QR kod</small>
+        </div>
+        <a href="{{ path('admin_qrcode_create') }}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> QR Kod Oluştur
+        </a>
+    </div>
+
+    {# QR Codes Table #}
+    {% if qrCodes|length > 0 %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle bg-white rounded shadow-sm">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 80px;">Önizleme</th>
+                        <th>Tip</th>
+                        <th>Açıklama</th>
+                        <th>URL</th>
+                        <th>Tarih</th>
+                        <th>İndir</th>
+                        <th style="width: 80px;">Aksiyonlar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for qr in qrCodes %}
+                        <tr>
+                            <td>
+                                {% if qr.storagePath %}
+                                    <img src="{{ path('admin_qrcode_preview', {uuid: qr.uuid}) }}"
+                                         alt="QR" class="qr-thumb">
+                                {% else %}
+                                    <div class="qr-thumb-placeholder">
+                                        <i class="bi bi-qr-code"></i>
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if qr.type.value == 'restaurant' %}
+                                    <span class="badge bg-primary">Restoran</span>
+                                {% else %}
+                                    <span class="badge bg-info text-dark">Masa</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if qr.type.value == 'table' %}
+                                    <strong>{{ qr.tableLabel ?? ('Masa ' ~ qr.tableNumber) }}</strong>
+                                    <br><small class="text-muted">Masa #{{ qr.tableNumber }}</small>
+                                {% else %}
+                                    <strong>Ana Menü</strong>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small class="text-muted" style="word-break: break-all;">{{ qr.encodedUrl }}</small>
+                            </td>
+                            <td>
+                                <small>{{ qr.createdAt|date('d.m.Y H:i') }}</small>
+                            </td>
+                            <td>
+                                <div class="dropdown download-dropdown">
+                                    <button class="btn btn-sm btn-outline-success dropdown-toggle" type="button"
+                                            data-bs-toggle="dropdown">
+                                        <i class="bi bi-download"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><h6 class="dropdown-header">PNG</h6></li>
+                                        <li>
+                                            <a class="dropdown-item" href="{{ path('admin_qrcode_download', {uuid: qr.uuid, format: 'png', size: 256}) }}">
+                                                <i class="bi bi-file-image"></i> 256 × 256 px
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="{{ path('admin_qrcode_download', {uuid: qr.uuid, format: 'png', size: 512}) }}">
+                                                <i class="bi bi-file-image"></i> 512 × 512 px
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="{{ path('admin_qrcode_download', {uuid: qr.uuid, format: 'png', size: 1024}) }}">
+                                                <i class="bi bi-file-image"></i> 1024 × 1024 px
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><h6 class="dropdown-header">SVG</h6></li>
+                                        <li>
+                                            <a class="dropdown-item" href="{{ path('admin_qrcode_download', {uuid: qr.uuid, format: 'svg', size: 512}) }}">
+                                                <i class="bi bi-filetype-svg"></i> Vektör (SVG)
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-outline-danger delete-btn"
+                                        data-uuid="{{ qr.uuid }}"
+                                        data-label="{{ qr.type.value == 'table' ? (qr.tableLabel ?? 'Masa ' ~ qr.tableNumber) : 'Ana Menü' }}"
+                                        data-token="{{ csrf_token('qrcode_delete_' ~ qr.uuid) }}"
+                                        title="Sil">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="bi bi-qr-code"></i>
+            <h5>Henüz QR kod oluşturulmamış</h5>
+            <p>Restoranınız veya masalarınız için QR kod oluşturun.</p>
+            <a href="{{ path('admin_qrcode_create') }}" class="btn btn-primary mt-2">
+                <i class="bi bi-plus-lg"></i> QR Kod Oluştur
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+{# Delete Confirmation Modal #}
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">QR Kodu Sil</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong id="deleteLabel"></strong> QR kodunu silmek istediğinize emin misiniz?</p>
+                <p class="text-muted mb-0">Bu işlem geri alınamaz.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <form method="post" id="deleteForm" class="d-inline">
+                    <input type="hidden" name="_token" id="deleteToken">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Sil
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.delete-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var uuid = this.dataset.uuid;
+            var label = this.dataset.label;
+            var token = this.dataset.token;
+
+            document.getElementById('deleteLabel').textContent = label;
+            document.getElementById('deleteForm').action = '/admin/qrcodes/' + uuid + '/delete';
+            document.getElementById('deleteToken').value = token;
+
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        });
+    });
+});
+</script>
+{% endblock %}
