@@ -1,0 +1,16 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Yeni Kategori Ekle{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Yeni Kategori Ekle</h2>
+        <a href="{{ path('admin_category_index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Listeye Dön
+        </a>
+    </div>
+
+    {% include 'admin/category/_form.html.twig' with {'form': form} %}
+</div>
+{% endblock %}
