@@ -8,24 +8,24 @@
         width: 48px;
         height: 48px;
         object-fit: cover;
-        border-radius: 6px;
-        background: #f0f0f0;
+        border-radius: 12px;
+        background: #eef2ff;
     }
     .product-thumb-placeholder {
         width: 48px;
         height: 48px;
-        border-radius: 6px;
-        background: #f0f0f0;
+        border-radius: 12px;
+        background: #eef2ff;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #adb5bd;
+        color: #94a3b8;
         font-size: 1.2rem;
     }
     .empty-state {
         text-align: center;
         padding: 4rem 2rem;
-        color: #6c757d;
+        color: #64748b;
     }
     .empty-state i {
         font-size: 4rem;
@@ -68,7 +68,7 @@
                 <select name="category" class="form-select" onchange="document.getElementById('filterForm').submit()">
                     <option value="">Tüm Kategoriler</option>
                     {% for cat in categories %}
-                        <option value="{{ cat.uuid }}" {{ categoryUuid == cat.uuid|string ? 'selected' : '' }}>
+                        <option value="{{ cat.uuid }}" {{ categoryUuid == cat.uuid ? 'selected' : '' }}>
                             {{ cat.name }}
                         </option>
                     {% endfor %}

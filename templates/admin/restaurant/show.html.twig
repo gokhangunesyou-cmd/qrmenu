@@ -5,7 +5,10 @@
 {% block body %}
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Restoran Profili</h2>
+        <div>
+            <h2 class="mb-1">Restoran Profili</h2>
+            <div class="text-muted">Mekanın görünürlüğünü ve temel bilgilerini yönetin.</div>
+        </div>
         <a href="{{ path('admin_restaurant_edit') }}" class="btn btn-primary">
             <i class="bi bi-pencil"></i> Düzenle
         </a>
@@ -80,7 +83,7 @@
                 </div>
                 <div class="card-body text-center">
                     {% if restaurant.logoMedia %}
-                        <img src="{{ restaurant.logoMedia.storagePath }}" alt="Logo" class="img-fluid rounded" style="max-height: 150px;">
+                        <img src="{{ media_url(restaurant.logoMedia.storagePath) }}" alt="Logo" class="img-fluid rounded" style="max-height: 150px;">
                     {% else %}
                         <div class="text-muted py-4">
                             <i class="bi bi-image" style="font-size: 3rem;"></i>
@@ -96,7 +99,7 @@
                 </div>
                 <div class="card-body text-center">
                     {% if restaurant.coverMedia %}
-                        <img src="{{ restaurant.coverMedia.storagePath }}" alt="Kapak" class="img-fluid rounded">
+                        <img src="{{ media_url(restaurant.coverMedia.storagePath) }}" alt="Kapak" class="img-fluid rounded">
                     {% else %}
                         <div class="text-muted py-4">
                             <i class="bi bi-image" style="font-size: 3rem;"></i>

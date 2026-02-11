@@ -6,10 +6,13 @@ namespace App\Controller\Admin;
 
 use App\DTO\Request\Admin\CreateProductRequest;
 use App\DTO\Request\Admin\UpdateProductRequest;
+use App\Entity\Restaurant;
+use App\Entity\User;
 use App\Infrastructure\Storage\StorageInterface;
 use App\Repository\CategoryRepository;
 use App\Repository\ProductRepository;
 use App\Service\ProductService;
+use Ramsey\Uuid\Uuid;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -30,13 +33,7 @@ class ProductWebController extends AbstractController
     #[Route('', name: 'admin_product_web_index', methods: ['GET'])]
     public function index(Request $request): Response
     {
-        /** @var \App\Entity\User $user */
-        $user = $this->getUser();
-        $restaurant = $user->getRestaurant();
-
-        if (!$restaurant) {
-            throw $this->createNotFoundException('Restaurant not found');
-        }
+        $restaurant = $this->getRestaurantOrThrow();
 
         $search = $request->query->getString('search', '');
         $categoryUuid = $request->query->getString('category', '');
@@ -73,13 +70,7 @@ class ProductWebController extends AbstractController
     #[Route('/create', name: 'admin_product_web_create', methods: ['GET', 'POST'])]
     public function create(Request $request): Response
     {
-        /** @var \App\Entity\User $user */
-        $user = $this->getUser();
-        $restaurant = $user->getRestaurant();
-
-        if (!$restaurant) {
-            throw $this->createNotFoundException('Restaurant not found');
-        }
+        $restaurant = $this->getRestaurantOrThrow();
 
         $categories = $this->categoryRepository->findByRestaurant($restaurant);
 
@@ -91,7 +82,7 @@ class ProductWebController extends AbstractController
 
             try {
                 $allergens = $request->request->all('allergens');
-                $imageMediaUuids = array_filter(explode(',', $request->request->getString('image_media_uuids', '')));
+                $imageMediaUuids = $this->extractValidMediaUuids($request);
 
                 $dto = new CreateProductRequest(
                     name: trim($request->request->getString('name')),
@@ -146,13 +137,7 @@ class ProductWebController extends AbstractController
     #[Route('/{uuid}/edit', name: 'admin_product_web_edit', methods: ['GET', 'POST'])]
     public function edit(string $uuid, Request $request): Response
     {
-        /** @var \App\Entity\User $user */
-        $user = $this->getUser();
-        $restaurant = $user->getRestaurant();
-
-        if (!$restaurant) {
-            throw $this->createNotFoundException('Restaurant not found');
-        }
+        $restaurant = $this->getRestaurantOrThrow();
 
         $product = $this->productRepository->findOneByUuidAndRestaurant($uuid, $restaurant);
         if ($product === null) {
@@ -170,7 +155,7 @@ class ProductWebController extends AbstractController
 
             try {
                 $allergens = $request->request->all('allergens');
-                $imageMediaUuids = array_filter(explode(',', $request->request->getString('image_media_uuids', '')));
+                $imageMediaUuids = $this->extractValidMediaUuids($request);
 
                 $dto = new UpdateProductRequest(
                     name: trim($request->request->getString('name')),
@@ -213,13 +198,7 @@ class ProductWebController extends AbstractController
     #[Route('/{uuid}/delete', name: 'admin_product_web_delete', methods: ['POST'])]
     public function delete(string $uuid, Request $request): Response
     {
-        /** @var \App\Entity\User $user */
-        $user = $this->getUser();
-        $restaurant = $user->getRestaurant();
-
-        if (!$restaurant) {
-            throw $this->createNotFoundException('Restaurant not found');
-        }
+        $restaurant = $this->getRestaurantOrThrow();
 
         if (!$this->isCsrfTokenValid('product_delete_' . $uuid, $request->request->getString('_token'))) {
             $this->addFlash('error', 'Geçersiz CSRF token.');
@@ -241,13 +220,7 @@ class ProductWebController extends AbstractController
     #[Route('/{uuid}/toggle-active', name: 'admin_product_web_toggle_active', methods: ['POST'])]
     public function toggleActive(string $uuid, Request $request): JsonResponse
     {
-        /** @var \App\Entity\User $user */
-        $user = $this->getUser();
-        $restaurant = $user->getRestaurant();
-
-        if (!$restaurant) {
-            return new JsonResponse(['error' => 'Restaurant not found'], 404);
-        }
+        $restaurant = $this->getRestaurantOrThrow();
 
         if (!$this->isCsrfTokenValid('product_toggle_' . $uuid, $request->request->getString('_token'))) {
             return new JsonResponse(['error' => 'Geçersiz CSRF token.'], 403);
@@ -274,13 +247,7 @@ class ProductWebController extends AbstractController
     #[Route('/bulk-delete', name: 'admin_product_web_bulk_delete', methods: ['POST'])]
     public function bulkDelete(Request $request): Response
     {
-        /** @var \App\Entity\User $user */
-        $user = $this->getUser();
-        $restaurant = $user->getRestaurant();
-
-        if (!$restaurant) {
-            throw $this->createNotFoundException('Restaurant not found');
-        }
+        $restaurant = $this->getRestaurantOrThrow();
 
         if (!$this->isCsrfTokenValid('product_bulk_delete', $request->request->getString('_token'))) {
             $this->addFlash('error', 'Geçersiz CSRF token.');
@@ -305,5 +272,32 @@ class ProductWebController extends AbstractController
 
         $this->addFlash('success', sprintf('%d ürün başarıyla silindi.', $deleted));
         return $this->redirectToRoute('admin_product_web_index');
+    }
+
+    private function getRestaurantOrThrow(): Restaurant
+    {
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException('Authentication required.');
+        }
+
+        $restaurant = $user->getRestaurant();
+        if (!$restaurant) {
+            throw $this->createNotFoundException('Restaurant not found');
+        }
+
+        return $restaurant;
+    }
+
+    /**
+     * @return string[]
+     */
+    private function extractValidMediaUuids(Request $request): array
+    {
+        $raw = explode(',', $request->request->getString('image_media_uuids', ''));
+
+        return array_values(array_filter(array_map('trim', $raw), static function (string $uuid): bool {
+            return $uuid !== '' && $uuid !== 'undefined' && Uuid::isValid($uuid);
+        }));
     }
 }

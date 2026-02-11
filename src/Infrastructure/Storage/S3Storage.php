@@ -57,4 +57,14 @@ class S3Storage implements StorageInterface
             'Key' => $path,
         ]);
     }
+
+    public function get(string $path): string
+    {
+        $result = $this->s3Client->getObject([
+            'Bucket' => $this->bucket,
+            'Key' => $path,
+        ]);
+
+        return (string) $result['Body'];
+    }
 }

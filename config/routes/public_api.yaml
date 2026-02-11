@@ -1,3 +1,0 @@
-public_controllers:
-    resource: ../../src/Controller/Public/
-    type: attribute

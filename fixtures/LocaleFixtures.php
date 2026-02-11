@@ -19,6 +19,11 @@ class LocaleFixtures extends Fixture
         ];
 
         foreach ($locales as $data) {
+            $existing = $manager->getRepository(Locale::class)->findOneBy(['code' => $data['code']]);
+            if ($existing !== null) {
+                continue;
+            }
+
             $locale = new Locale($data['code'], $data['name']);
             $manager->persist($locale);
         }

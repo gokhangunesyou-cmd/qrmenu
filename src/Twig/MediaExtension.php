@@ -23,13 +23,19 @@ class MediaExtension extends AbstractExtension
         ];
     }
 
-    public function getMediaUrl(string $storagePath): string
+    public function getMediaUrl(?string $storagePath): string
     {
+        if (!$storagePath) {
+            return '';
+        }
         return $this->storage->getPublicUrl($storagePath);
     }
 
-    public function getMediaThumbUrl(string $storagePath): string
+    public function getMediaThumbUrl(?string $storagePath): string
     {
+        if (!$storagePath) {
+            return '';
+        }
         // Convert media/{uuid}/{file}.ext → media/{uuid}/thumbs/{file}.ext
         $parts = pathinfo($storagePath);
         $dir = $parts['dirname'] ?? '';

@@ -14,16 +14,6 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
 
-        api_doc:
-            pattern: ^/api/doc
-            stateless: true
-            security: false
-
-        public_api:
-            pattern: ^/api/public
-            stateless: true
-            security: false
-
         admin:
             pattern: ^/admin
             lazy: true
@@ -40,23 +30,6 @@ security:
                 secret: '%kernel.secret%'
                 lifetime: 604800
 
-        admin_api:
-            pattern: ^/api/admin
-            stateless: true
-            custom_authenticators:
-                - App\Security\JwtAuthenticator
-
-        super_admin_api:
-            pattern: ^/api/super-admin
-            stateless: true
-            custom_authenticators:
-                - App\Security\JwtAuthenticator
-
     access_control:
-        - { path: ^/api/doc, roles: PUBLIC_ACCESS }
-        - { path: ^/api/public, roles: PUBLIC_ACCESS }
-        - { path: ^/api/admin/auth, roles: PUBLIC_ACCESS }
-        - { path: ^/api/admin, roles: ROLE_RESTAURANT_OWNER }
-        - { path: ^/api/super-admin, roles: ROLE_SUPER_ADMIN }
         - { path: ^/admin/login, roles: PUBLIC_ACCESS }
         - { path: ^/admin, roles: ROLE_RESTAURANT_OWNER }

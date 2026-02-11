@@ -39,6 +39,6 @@ class SecurityController extends AbstractController
     #[Route('/admin', name: 'admin_dashboard')]
     public function dashboard(): Response
     {
-        return new Response('<h1>Admin Dashboard</h1><p>Welcome, ' . $this->getUser()->getUserIdentifier() . '</p>', 200);
+        return $this->render('admin/dashboard.html.twig');
     }
 }

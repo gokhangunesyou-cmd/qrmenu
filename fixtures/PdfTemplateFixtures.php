@@ -18,6 +18,11 @@ class PdfTemplateFixtures extends Fixture
         ];
 
         foreach ($templates as $data) {
+            $existing = $manager->getRepository(PdfTemplate::class)->findOneBy(['slug' => $data['slug']]);
+            if ($existing !== null) {
+                continue;
+            }
+
             $template = new PdfTemplate($data['slug'], $data['name'], $data['path']);
             $manager->persist($template);
         }

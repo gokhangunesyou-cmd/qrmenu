@@ -30,4 +30,9 @@ interface StorageInterface
      * Delete a file from storage.
      */
     public function delete(string $path): void;
+
+    /**
+     * Read a file from storage.
+     */
+    public function get(string $path): string;
 }

@@ -1,0 +1,3 @@
+services:
+    App\Infrastructure\Storage\StorageInterface:
+        alias: App\Infrastructure\Storage\S3Storage

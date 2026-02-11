@@ -85,6 +85,14 @@ class ThemeFixtures extends Fixture
         ];
 
         foreach ($themes as $i => $data) {
+            $existing = $manager->getRepository(Theme::class)->findOneBy(['slug' => $data['slug']]);
+            if ($existing !== null) {
+                if (isset($data['ref'])) {
+                    $this->addReference($data['ref'], $existing);
+                }
+                continue;
+            }
+
             $theme = new Theme($data['slug'], $data['name'], $data['config']);
             $theme->setSortOrder($i);
             $manager->persist($theme);
