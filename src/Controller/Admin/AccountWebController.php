@@ -6,6 +6,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\CustomerAccount;
 use App\Entity\CustomerSubscription;
+use App\Entity\Plan;
 use App\Entity\Restaurant;
 use App\Entity\User;
 use App\Repository\CustomerSubscriptionRepository;
@@ -14,6 +15,7 @@ use App\Repository\RestaurantRepository;
 use App\Repository\RoleRepository;
 use App\Repository\ThemeRepository;
 use App\Repository\UserRepository;
+use App\Service\PlanPeriod;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -114,11 +116,11 @@ class AccountWebController extends AbstractController
         $activeSubscription = $this->subscriptionRepository->findActiveForAccount($account, $today);
 
         if ($activeSubscription instanceof CustomerSubscription && $activeSubscription->getPlan()->getId() === $plan->getId()) {
-            $activeSubscription->setEndsAt($activeSubscription->getEndsAt()->modify('+1 year'));
+            $activeSubscription->setEndsAt(PlanPeriod::addDuration($activeSubscription->getEndsAt(), $plan));
             $activeSubscription->setIsActive(true);
             $this->em->flush();
 
-            $this->addFlash('success', sprintf('Aboneliginiz 1 yil uzatildi. Yeni bitis: %s', $activeSubscription->getEndsAt()->format('d.m.Y')));
+            $this->addFlash('success', sprintf('Aboneliginiz %s sure ile uzatildi. Yeni bitis: %s', $this->planDurationText($plan), $activeSubscription->getEndsAt()->format('d.m.Y')));
 
             return $this->redirectToRoute('admin_account_index');
         }
@@ -127,11 +129,11 @@ class AccountWebController extends AbstractController
             $activeSubscription->setIsActive(false);
         }
 
-        $subscription = new CustomerSubscription($account, $plan, $today, $today->modify('+1 year'));
+        $subscription = new CustomerSubscription($account, $plan, $today, PlanPeriod::addDuration($today, $plan));
         $this->em->persist($subscription);
         $this->em->flush();
 
-        $this->addFlash('success', sprintf('Aboneliginiz %s plani ile 1 yillik olarak baslatildi.', $plan->getName()));
+        $this->addFlash('success', sprintf('Aboneliginiz %s plani ile %s sureli olarak baslatildi.', $plan->getName(), $this->planDurationText($plan)));
 
         return $this->redirectToRoute('admin_account_index');
     }
@@ -187,13 +189,13 @@ class AccountWebController extends AbstractController
         $subscription = $this->subscriptionRepository->findActiveForAccount($account);
         if (!$subscription instanceof CustomerSubscription) {
             $today = new \DateTimeImmutable('today');
-            $subscription = new CustomerSubscription($account, $plan, $today, $today->modify('+1 year'));
+            $subscription = new CustomerSubscription($account, $plan, $today, PlanPeriod::addDuration($today, $plan));
             $this->em->persist($subscription);
         } else {
             $today = new \DateTimeImmutable('today');
             $subscription->setPlan($plan);
             $subscription->setStartsAt($today);
-            $subscription->setEndsAt($today->modify('+1 year'));
+            $subscription->setEndsAt(PlanPeriod::addDuration($today, $plan));
             $subscription->setIsActive(true);
         }
 
@@ -485,5 +487,10 @@ class AccountWebController extends AbstractController
             $attempt = sprintf('%s-%d', $base, $i);
             ++$i;
         }
+    }
+
+    private function planDurationText(Plan $plan): string
+    {
+        return PlanPeriod::durationMonthsForCode($plan->getCode()) === 3 ? '3 ay' : '1 yil';
     }
 }

@@ -6,6 +6,8 @@ namespace App\Form;
 
 use App\Entity\Restaurant;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\ColorType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\TelType;
@@ -13,6 +15,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Count;
 use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\Regex;
@@ -22,6 +25,9 @@ class RestaurantProfileType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $themeColors = $options['theme_colors'];
+        $localeChoices = $this->buildLocaleChoices($options['available_locales']);
+
         $builder
             ->add('name', TextType::class, [
                 'label' => 'Restoran Adı',
@@ -125,6 +131,59 @@ class RestaurantProfileType extends AbstractType
                 'attr' => ['class' => 'form-control', 'placeholder' => 'https://maps.google.com/...'],
                 'constraints' => [new Url(message: 'Geçerli bir URL giriniz.')],
             ])
+            ->add('menuTemplate', ChoiceType::class, [
+                'label' => 'Menü Şablonu',
+                'choices' => [
+                    'Showcase Spotlight' => 'showcase',
+                    'Editorial Slate' => 'editorial',
+                ],
+                'attr' => ['class' => 'form-select'],
+            ])
+            ->add('enabledLocales', ChoiceType::class, [
+                'label' => 'Yayın Dilleri',
+                'choices' => $localeChoices,
+                'multiple' => true,
+                'expanded' => true,
+                'constraints' => [
+                    new Count(min: 1, minMessage: 'En az bir dil seçiniz.'),
+                ],
+            ])
+            ->add('themePrimaryColor', ColorType::class, [
+                'label' => 'Ana Renk',
+                'mapped' => false,
+                'data' => (string) ($themeColors['primary'] ?? '#9A3412'),
+                'attr' => ['class' => 'form-control form-control-color'],
+            ])
+            ->add('themeSecondaryColor', ColorType::class, [
+                'label' => 'İkincil Renk',
+                'mapped' => false,
+                'data' => (string) ($themeColors['secondary'] ?? '#0F766E'),
+                'attr' => ['class' => 'form-control form-control-color'],
+            ])
+            ->add('themeBackgroundColor', ColorType::class, [
+                'label' => 'Arka Plan',
+                'mapped' => false,
+                'data' => (string) ($themeColors['background'] ?? '#FFF8F1'),
+                'attr' => ['class' => 'form-control form-control-color'],
+            ])
+            ->add('themeSurfaceColor', ColorType::class, [
+                'label' => 'Kart Rengi',
+                'mapped' => false,
+                'data' => (string) ($themeColors['surface'] ?? '#FFFFFF'),
+                'attr' => ['class' => 'form-control form-control-color'],
+            ])
+            ->add('themeTextColor', ColorType::class, [
+                'label' => 'Metin Rengi',
+                'mapped' => false,
+                'data' => (string) ($themeColors['text'] ?? '#1F2937'),
+                'attr' => ['class' => 'form-control form-control-color'],
+            ])
+            ->add('themeAccentColor', ColorType::class, [
+                'label' => 'Vurgu Rengi',
+                'mapped' => false,
+                'data' => (string) ($themeColors['accent'] ?? '#F59E0B'),
+                'attr' => ['class' => 'form-control form-control-color'],
+            ])
             ->add('logoFile', FileType::class, [
                 'label' => 'Logo',
                 'mapped' => false,
@@ -132,7 +191,7 @@ class RestaurantProfileType extends AbstractType
                 'attr' => ['class' => 'form-control'],
                 'constraints' => [
                     new File([
-                        'maxSize' => '2M',
+                        'maxSize' => '10M',
                     ]),
                 ],
             ])
@@ -143,7 +202,7 @@ class RestaurantProfileType extends AbstractType
                 'attr' => ['class' => 'form-control'],
                 'constraints' => [
                     new File([
-                        'maxSize' => '5M',
+                        'maxSize' => '10M',
                     ]),
                 ],
             ]);
@@ -154,6 +213,29 @@ class RestaurantProfileType extends AbstractType
         $resolver->setDefaults([
             'data_class' => Restaurant::class,
             'social_links' => [],
+            'theme_colors' => [],
+            'available_locales' => [],
         ]);
+        $resolver->setAllowedTypes('available_locales', 'array');
+    }
+
+    /**
+     * @param array<string, string> $availableLocales
+     *
+     * @return array<string, string>
+     */
+    private function buildLocaleChoices(array $availableLocales): array
+    {
+        $choices = [];
+        foreach ($availableLocales as $code => $label) {
+            $localeCode = strtolower(trim((string) $code));
+            if ($localeCode === '' || $label === '') {
+                continue;
+            }
+
+            $choices[(string) $label] = $localeCode;
+        }
+
+        return $choices;
     }
 }

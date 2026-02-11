@@ -459,7 +459,7 @@
 
                         <div class="mb-1">
                             <label class="form-label">{{ ui.target_url }}</label>
-                            <input type="text" class="form-control bg-light" id="urlPreview" readonly value="{{ publicMenuUrl }}/{{ restaurantSlug }}">
+                            <input type="text" class="form-control bg-light" id="urlPreview" readonly value="{{ menuBaseUrl }}">
                         </div>
                     </div>
                 </div>
@@ -730,7 +730,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var pdfPreviewLabel = document.getElementById('pdfPreviewLabel');
     var tableBadgePreview = document.getElementById('tableBadgePreview');
 
-    var baseUrl = '{{ publicMenuUrl }}/{{ restaurantSlug }}';
+    var baseUrl = '{{ menuBaseUrl }}';
     var previewTimeout = null;
     var lastPreviewUrl = null;
     var labelBackgroundObjectUrl = null;

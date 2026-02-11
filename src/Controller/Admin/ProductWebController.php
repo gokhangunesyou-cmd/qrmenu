@@ -38,7 +38,7 @@ class ProductWebController extends AbstractController
     public function index(Request $request): Response
     {
         $restaurant = $this->getRestaurantOrThrow();
-        $locale = $this->languageContext->resolveAdminLocale($request, $restaurant->getDefaultLocale());
+        $locale = $this->languageContext->resolveAdminLocale($request, $restaurant->getDefaultLocale(), $restaurant->getEnabledLocales());
 
         $search = $request->query->getString('search', '');
         $categoryUuid = $request->query->getString('category', '');
@@ -61,8 +61,8 @@ class ProductWebController extends AbstractController
         $categories = $this->categoryRepository->findByRestaurant($restaurant);
         $categoryIds = array_values(array_map(static fn ($category): int => (int) $category->getId(), $categories));
         $productIds = array_values(array_map(static fn ($product): int => (int) $product->getId(), $result['items']));
-        $categoryTranslations = $this->translationService->getFieldMapWithFallback('category', $categoryIds, $locale);
-        $productTranslations = $this->translationService->getFieldMapWithFallback('product', $productIds, $locale);
+        $categoryTranslations = $this->translationService->getFieldMap('category', $categoryIds, $locale);
+        $productTranslations = $this->translationService->getFieldMap('product', $productIds, $locale);
 
         $categoryView = [];
         foreach ($categories as $category) {
@@ -99,11 +99,11 @@ class ProductWebController extends AbstractController
     public function create(Request $request): Response
     {
         $restaurant = $this->getRestaurantOrThrow();
-        $locale = $this->languageContext->resolveAdminLocale($request, $restaurant->getDefaultLocale());
+        $locale = $this->languageContext->resolveAdminLocale($request, $restaurant->getDefaultLocale(), $restaurant->getEnabledLocales());
 
         $categories = $this->categoryRepository->findByRestaurant($restaurant);
         $categoryIds = array_values(array_map(static fn ($category): int => (int) $category->getId(), $categories));
-        $categoryTranslations = $this->translationService->getFieldMapWithFallback('category', $categoryIds, $locale);
+        $categoryTranslations = $this->translationService->getFieldMap('category', $categoryIds, $locale);
         $categoryView = [];
         foreach ($categories as $category) {
             $categoryId = (int) $category->getId();
@@ -184,7 +184,7 @@ class ProductWebController extends AbstractController
     public function edit(string $uuid, Request $request): Response
     {
         $restaurant = $this->getRestaurantOrThrow();
-        $locale = $this->languageContext->resolveAdminLocale($request, $restaurant->getDefaultLocale());
+        $locale = $this->languageContext->resolveAdminLocale($request, $restaurant->getDefaultLocale(), $restaurant->getEnabledLocales());
 
         $product = $this->productRepository->findOneByUuidAndRestaurant($uuid, $restaurant);
         if ($product === null) {
@@ -194,13 +194,13 @@ class ProductWebController extends AbstractController
 
         $categories = $this->categoryRepository->findByRestaurant($restaurant);
         $categoryIds = array_values(array_map(static fn ($category): int => (int) $category->getId(), $categories));
-        $categoryTranslations = $this->translationService->getFieldMapWithFallback('category', $categoryIds, $locale);
+        $categoryTranslations = $this->translationService->getFieldMap('category', $categoryIds, $locale);
         $categoryView = [];
         foreach ($categories as $category) {
             $categoryId = (int) $category->getId();
             $categoryView[$categoryId] = $this->translationService->resolve($categoryTranslations, $categoryId, 'name', $category->getName()) ?? $category->getName();
         }
-        $productTranslation = $this->translationService->getFieldMapWithFallback('product', [(int) $product->getId()], $locale);
+        $productTranslation = $this->translationService->getFieldMap('product', [(int) $product->getId()], $locale);
 
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('product_edit_' . $uuid, $request->request->getString('_token'))) {
@@ -263,7 +263,7 @@ class ProductWebController extends AbstractController
     public function delete(string $uuid, Request $request): Response
     {
         $restaurant = $this->getRestaurantOrThrow();
-        $locale = $this->languageContext->resolveAdminLocale($request, $restaurant->getDefaultLocale());
+        $locale = $this->languageContext->resolveAdminLocale($request, $restaurant->getDefaultLocale(), $restaurant->getEnabledLocales());
 
         if (!$this->isCsrfTokenValid('product_delete_' . $uuid, $request->request->getString('_token'))) {
             $this->addFlash('error', 'Geçersiz CSRF token.');
@@ -313,7 +313,7 @@ class ProductWebController extends AbstractController
     public function bulkDelete(Request $request): Response
     {
         $restaurant = $this->getRestaurantOrThrow();
-        $locale = $this->languageContext->resolveAdminLocale($request, $restaurant->getDefaultLocale());
+        $locale = $this->languageContext->resolveAdminLocale($request, $restaurant->getDefaultLocale(), $restaurant->getEnabledLocales());
 
         if (!$this->isCsrfTokenValid('product_bulk_delete', $request->request->getString('_token'))) {
             $this->addFlash('error', 'Geçersiz CSRF token.');
@@ -344,7 +344,7 @@ class ProductWebController extends AbstractController
     public function bulkPriceUpdate(Request $request): Response
     {
         $restaurant = $this->getRestaurantOrThrow();
-        $locale = $this->languageContext->resolveAdminLocale($request, $restaurant->getDefaultLocale());
+        $locale = $this->languageContext->resolveAdminLocale($request, $restaurant->getDefaultLocale(), $restaurant->getEnabledLocales());
 
         if (!$this->isCsrfTokenValid('product_bulk_price_update', $request->request->getString('_token'))) {
             $this->addFlash('error', 'Geçersiz CSRF token.');

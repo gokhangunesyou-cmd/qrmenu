@@ -50,10 +50,16 @@ class RestaurantContextController extends AbstractController
 
         if ($request->hasSession()) {
             $request->getSession()->set('admin.selected_restaurant_id', $restaurant->getId());
-            $requestedLocale = trim($request->request->getString('lang'));
-            if ($requestedLocale !== '') {
-                $request->getSession()->set(LanguageContext::ADMIN_SESSION_KEY, $requestedLocale);
+            $requestedLocale = strtolower(trim($request->request->getString('lang')));
+            $allowedLocales = array_keys($this->languageContext->getLocaleLabelMap($restaurant->getEnabledLocales()));
+            if ($requestedLocale === '' || !in_array($requestedLocale, $allowedLocales, true)) {
+                $fallback = strtolower($restaurant->getDefaultLocale());
+                $requestedLocale = in_array($fallback, $allowedLocales, true)
+                    ? $fallback
+                    : ($allowedLocales[0] ?? 'tr');
             }
+
+            $request->getSession()->set(LanguageContext::ADMIN_SESSION_KEY, $requestedLocale);
         }
 
         $target = $request->headers->get('referer');
@@ -71,10 +77,16 @@ class RestaurantContextController extends AbstractController
             throw $this->createAccessDeniedException('Invalid CSRF token.');
         }
 
-        $locale = trim($request->request->getString('lang'));
-        $allowed = array_keys($this->languageContext->getLocaleLabelMap());
+        $user = $this->getUser();
+        $currentRestaurant = $user instanceof User ? $user->getRestaurant() : null;
+
+        $locale = strtolower(trim($request->request->getString('lang')));
+        $allowed = array_keys($this->languageContext->getLocaleLabelMap($currentRestaurant?->getEnabledLocales()));
         if (!in_array($locale, $allowed, true)) {
-            $locale = 'tr';
+            $fallback = strtolower($currentRestaurant?->getDefaultLocale() ?? 'tr');
+            $locale = in_array($fallback, $allowed, true)
+                ? $fallback
+                : ($allowed[0] ?? 'tr');
         }
 
         if ($request->hasSession()) {

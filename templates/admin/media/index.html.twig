@@ -9,7 +9,7 @@
         search_placeholder: 'Dosya adı ara...',
         drop_title: 'Dosyaları sürükleyip bırakın',
         drop_hint: 'veya dosya seçmek için tıklayın',
-        file_types: 'JPEG, PNG, WebP — Maks. 5MB',
+        file_types: 'JPEG, PNG, WebP — Maks. 10MB',
         uploading: 'Yükleniyor...',
         delete: 'Sil',
         delete_confirm: 'Bu medyayı silmek istediğinize emin misiniz?',
@@ -18,7 +18,7 @@
         empty_title: 'Henüz medya yüklenmemiş',
         empty_body: 'Yukarıdaki "Yükle" butonuna tıklayarak görsellerinizi yükleyin.',
         unsupported_type: 'Desteklenmeyen dosya tipi.',
-        file_too_large: 'Dosya boyutu 5MB\'dan büyük.',
+        file_too_large: 'Dosya boyutu 10MB\'dan büyük.',
         upload_error: 'Yükleme hatası',
         error_prefix: 'Hata',
         completed: 'Tamamlandı!',
@@ -33,7 +33,7 @@
         search_placeholder: 'Search filename...',
         drop_title: 'Drag and drop files',
         drop_hint: 'or click to select files',
-        file_types: 'JPEG, PNG, WebP — Max 5MB',
+        file_types: 'JPEG, PNG, WebP — Max 10MB',
         uploading: 'Uploading...',
         delete: 'Delete',
         delete_confirm: 'Are you sure you want to delete this media?',
@@ -42,7 +42,7 @@
         empty_title: 'No media uploaded yet',
         empty_body: 'Click the "Upload" button above to upload your images.',
         unsupported_type: 'Unsupported file type.',
-        file_too_large: 'File size is larger than 5MB.',
+        file_too_large: 'File size is larger than 10MB.',
         upload_error: 'Upload error',
         error_prefix: 'Error',
         completed: 'Completed!',
@@ -57,7 +57,7 @@
         search_placeholder: 'ابحث باسم الملف...',
         drop_title: 'اسحب الملفات وأفلتها',
         drop_hint: 'أو انقر لاختيار الملفات',
-        file_types: 'JPEG, PNG, WebP — الحد الأقصى 5MB',
+        file_types: 'JPEG, PNG, WebP — الحد الأقصى 10MB',
         uploading: 'جارٍ الرفع...',
         delete: 'حذف',
         delete_confirm: 'هل أنت متأكد أنك تريد حذف هذه الوسائط؟',
@@ -66,7 +66,7 @@
         empty_title: 'لم يتم رفع وسائط بعد',
         empty_body: 'انقر على زر "رفع" أعلاه لرفع الصور.',
         unsupported_type: 'نوع ملف غير مدعوم.',
-        file_too_large: 'حجم الملف أكبر من 5MB.',
+        file_too_large: 'حجم الملف أكبر من 10MB.',
         upload_error: 'خطأ في الرفع',
         error_prefix: 'خطأ',
         completed: 'اكتمل!',
@@ -81,7 +81,7 @@
         search_placeholder: 'Поиск по имени файла...',
         drop_title: 'Перетащите файлы сюда',
         drop_hint: 'или нажмите, чтобы выбрать файлы',
-        file_types: 'JPEG, PNG, WebP — максимум 5MB',
+        file_types: 'JPEG, PNG, WebP — максимум 10MB',
         uploading: 'Загрузка...',
         delete: 'Удалить',
         delete_confirm: 'Вы уверены, что хотите удалить этот файл?',
@@ -90,7 +90,7 @@
         empty_title: 'Медиа еще не загружены',
         empty_body: 'Нажмите кнопку "Загрузить" выше, чтобы загрузить изображения.',
         unsupported_type: 'Неподдерживаемый тип файла.',
-        file_too_large: 'Размер файла больше 5MB.',
+        file_too_large: 'Размер файла больше 10MB.',
         upload_error: 'Ошибка загрузки',
         error_prefix: 'Ошибка',
         completed: 'Завершено!',
@@ -105,7 +105,7 @@
     search_placeholder: 'Search filename...',
     drop_title: 'Drag and drop files',
     drop_hint: 'or click to select files',
-    file_types: 'JPEG, PNG, WebP — Max 5MB',
+    file_types: 'JPEG, PNG, WebP — Max 10MB',
     uploading: 'Uploading...',
     delete: 'Delete',
     delete_confirm: 'Are you sure you want to delete this media?',
@@ -114,7 +114,7 @@
     empty_title: 'No media uploaded yet',
     empty_body: 'Click the "Upload" button above to upload your images.',
     unsupported_type: 'Unsupported file type.',
-    file_too_large: 'File size is larger than 5MB.',
+    file_too_large: 'File size is larger than 10MB.',
     upload_error: 'Upload error',
     error_prefix: 'Error',
     completed: 'Completed!',
@@ -487,7 +487,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!files.length) return;
 
         const validFiles = [];
-        const maxSize = 5 * 1024 * 1024;
+        const maxSize = 10 * 1024 * 1024;
         const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
 
         for (const file of files) {

@@ -33,11 +33,11 @@ class CategoryWebController extends AbstractController
     public function index(Request $request): Response
     {
         $restaurant = $this->getRestaurantOrThrow();
-        $locale = $this->languageContext->resolveAdminLocale($request, $restaurant->getDefaultLocale());
+        $locale = $this->languageContext->resolveAdminLocale($request, $restaurant->getDefaultLocale(), $restaurant->getEnabledLocales());
 
         $categories = $this->categoryRepository->findByRestaurant($restaurant);
         $categoryIds = array_values(array_map(static fn (Category $category): int => (int) $category->getId(), $categories));
-        $translations = $this->translationService->getFieldMapWithFallback('category', $categoryIds, $locale);
+        $translations = $this->translationService->getFieldMap('category', $categoryIds, $locale);
 
         $categoryView = [];
         foreach ($categories as $category) {
@@ -59,7 +59,7 @@ class CategoryWebController extends AbstractController
     public function create(Request $request): Response
     {
         $restaurant = $this->getRestaurantOrThrow();
-        $locale = $this->languageContext->resolveAdminLocale($request, $restaurant->getDefaultLocale());
+        $locale = $this->languageContext->resolveAdminLocale($request, $restaurant->getDefaultLocale(), $restaurant->getEnabledLocales());
 
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('category_create', $request->request->getString('_token'))) {
@@ -119,14 +119,14 @@ class CategoryWebController extends AbstractController
     public function edit(string $uuid, Request $request): Response
     {
         $restaurant = $this->getRestaurantOrThrow();
-        $locale = $this->languageContext->resolveAdminLocale($request, $restaurant->getDefaultLocale());
+        $locale = $this->languageContext->resolveAdminLocale($request, $restaurant->getDefaultLocale(), $restaurant->getEnabledLocales());
 
         $category = $this->categoryRepository->findOneByUuidAndRestaurant($uuid, $restaurant);
         if ($category === null) {
             $this->addFlash('error', 'Kategori bulunamadı.');
             return $this->redirectToRoute('admin_category_index', ['lang' => $locale]);
         }
-        $translationMap = $this->translationService->getFieldMapWithFallback('category', [(int) $category->getId()], $locale);
+        $translationMap = $this->translationService->getFieldMap('category', [(int) $category->getId()], $locale);
 
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('category_edit_' . $uuid, $request->request->getString('_token'))) {
@@ -183,7 +183,7 @@ class CategoryWebController extends AbstractController
     public function delete(string $uuid, Request $request): Response
     {
         $restaurant = $this->getRestaurantOrThrow();
-        $locale = $this->languageContext->resolveAdminLocale($request, $restaurant->getDefaultLocale());
+        $locale = $this->languageContext->resolveAdminLocale($request, $restaurant->getDefaultLocale(), $restaurant->getEnabledLocales());
 
         if (!$this->isCsrfTokenValid('category_delete_' . $uuid, $request->request->getString('_token'))) {
             $this->addFlash('error', 'Geçersiz CSRF token.');

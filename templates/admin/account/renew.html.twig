@@ -6,65 +6,82 @@
         header: 'Abonelik Yenileme',
         last_subscription: 'Son aboneliginiz',
         end_date: 'bitis tarihi',
-        note: 'Tum planlar 1 yillik baslar. Yenilemede secilen plan 1 yil daha aktif edilir.',
+        note: 'Free plan 3 ay, diger planlar 1 yillik yenilenir. Kampanyali fiyatlar plana gore gosterilir.',
         plan_select: 'Plan Secimi',
         select_plan: 'Plan seciniz',
         per_year: '/ yil',
         restaurant_short: 'restoran',
         user_short: 'kullanici',
-        renew_button: 'Aboneligi 1 Yil Yenile'
+        renew_button: 'Aboneligi Yenile'
     },
     en: {
         title: 'Renew Subscription',
         header: 'Subscription Renewal',
         last_subscription: 'Your last subscription',
         end_date: 'end date',
-        note: 'All plans start for 1 year. The selected plan is extended by 1 year on renewal.',
+        note: 'Free plan renews for 3 months, other plans renew for 1 year. Campaign prices are plan-based.',
         plan_select: 'Plan Selection',
         select_plan: 'Select a plan',
         per_year: '/ year',
         restaurant_short: 'restaurants',
         user_short: 'users',
-        renew_button: 'Renew Subscription for 1 Year'
+        renew_button: 'Renew Subscription'
     },
     ar: {
         title: 'تجديد الاشتراك',
         header: 'تجديد الاشتراك',
         last_subscription: 'آخر اشتراك لديك',
         end_date: 'تاريخ الانتهاء',
-        note: 'تبدأ كل الخطط لمدة سنة واحدة. يتم تمديد الخطة المختارة سنة إضافية عند التجديد.',
+        note: 'الخطة المجانية 3 أشهر، وباقي الخطط سنة واحدة عند التجديد.',
         plan_select: 'اختيار الخطة',
         select_plan: 'اختر خطة',
         per_year: '/ سنة',
         restaurant_short: 'مطاعم',
         user_short: 'مستخدمين',
-        renew_button: 'تجديد الاشتراك لمدة سنة'
+        renew_button: 'تجديد الاشتراك'
     },
     ru: {
         title: 'Продление подписки',
         header: 'Продление подписки',
         last_subscription: 'Ваша последняя подписка',
         end_date: 'дата окончания',
-        note: 'Все планы рассчитаны на 1 год. Выбранный план продлевается на 1 год.',
+        note: 'Free-план продлевается на 3 месяца, остальные планы на 1 год.',
         plan_select: 'Выбор плана',
         select_plan: 'Выберите план',
         per_year: '/ год',
         restaurant_short: 'ресторанов',
         user_short: 'пользователей',
-        renew_button: 'Продлить подписку на 1 год'
+        renew_button: 'Продлить подписку'
     }
 }[currentLocale] ?? {
     title: 'Renew Subscription',
     header: 'Subscription Renewal',
     last_subscription: 'Your last subscription',
     end_date: 'end date',
-    note: 'All plans start for 1 year. The selected plan is extended by 1 year on renewal.',
+    note: 'Free plan renews for 3 months, other plans renew for 1 year. Campaign prices are plan-based.',
     plan_select: 'Plan Selection',
     select_plan: 'Select a plan',
     per_year: '/ year',
     restaurant_short: 'restaurants',
     user_short: 'users',
-    renew_button: 'Renew Subscription for 1 Year'
+    renew_button: 'Renew Subscription'
+} %}
+
+{% set planMeta = {
+    tr: {
+        duration_suffixes: { free: '/ 3 ay', starter: '/ 1 yil', branch10: '/ 1 yil', premium: '/ 1 yil' },
+        old_prices: { starter: '599', branch10: '2999' },
+        display_prices: { free: '0', starter: '0', branch10: '0', premium: '5000' }
+    },
+    en: {
+        duration_suffixes: { free: '/ 3 months', starter: '/ 1 year', branch10: '/ 1 year', premium: '/ 1 year' },
+        old_prices: { starter: '599', branch10: '2999' },
+        display_prices: { free: '0', starter: '0', branch10: '0', premium: '5000' }
+    }
+}[currentLocale] ?? {
+    duration_suffixes: { free: '/ 3 months', starter: '/ 1 year', branch10: '/ 1 year', premium: '/ 1 year' },
+    old_prices: { starter: '599', branch10: '2999' },
+    display_prices: { free: '0', starter: '0', branch10: '0', premium: '5000' }
 } %}
 
 {% block title %}{{ ui.title }}{% endblock %}
@@ -92,11 +109,17 @@
                         <select class="form-select" name="plan_id" required>
                             <option value="">{{ ui.select_plan }}</option>
                             {% for plan in plans %}
+                                {% set planCode = plan.code|lower %}
+                                {% set planOldPrice = planMeta.old_prices[planCode] ?? null %}
+                                {% set planDisplayPrice = planMeta.display_prices[planCode] ?? plan.yearlyPrice %}
+                                {% set planDurationSuffix = planMeta.duration_suffixes[planCode] ?? ui.per_year %}
                                 <option
                                     value="{{ plan.id }}"
                                     {{ latestSubscription and latestSubscription.plan.id == plan.id ? 'selected' : '' }}
                                 >
-                                    {{ plan.name }} - {{ plan.yearlyPrice }} TRY {{ ui.per_year }} ({{ plan.maxRestaurants }} {{ ui.restaurant_short }} / {{ plan.maxUsers }} {{ ui.user_short }})
+                                    {{ plan.name }} -
+                                    {% if planOldPrice %}{{ planOldPrice }} TRY -> {% endif %}
+                                    {{ planDisplayPrice }} TRY {{ planDurationSuffix }} ({{ plan.maxRestaurants }} {{ ui.restaurant_short }} / {{ plan.maxUsers }} {{ ui.user_short }})
                                 </option>
                             {% endfor %}
                         </select>

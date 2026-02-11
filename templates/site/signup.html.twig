@@ -124,6 +124,23 @@
     price_suffix: '/ year'
 } %}
 
+{% set planMeta = {
+    tr: {
+        duration_suffixes: { free: '/ 3 ay', starter: '/ 1 yil', branch10: '/ 1 yil', premium: '/ 1 yil' },
+        old_prices: { starter: '599', branch10: '2999' },
+        display_prices: { free: '0', starter: '0', branch10: '0', premium: '5000' }
+    },
+    en: {
+        duration_suffixes: { free: '/ 3 months', starter: '/ 1 year', branch10: '/ 1 year', premium: '/ 1 year' },
+        old_prices: { starter: '599', branch10: '2999' },
+        display_prices: { free: '0', starter: '0', branch10: '0', premium: '5000' }
+    }
+}[currentLocale] ?? {
+    duration_suffixes: { free: '/ 3 months', starter: '/ 1 year', branch10: '/ 1 year', premium: '/ 1 year' },
+    old_prices: { starter: '599', branch10: '2999' },
+    display_prices: { free: '0', starter: '0', branch10: '0', premium: '5000' }
+} %}
+
 {% block title %}{{ meta.title }}{% endblock %}
 {% block meta_description %}{{ meta.description }}{% endblock %}
 {% block meta_keywords %}{{ meta.keywords }}{% endblock %}
@@ -348,7 +365,13 @@
                 <select name="plan_code" required>
                     <option value="">{{ ui.choose_plan_placeholder }}</option>
                     {% for plan in plans %}
-                        <option value="{{ plan.code }}">{{ plan.name }} - {{ plan.yearlyPrice }} TRY {{ ui.price_suffix }}</option>
+                        {% set planCode = plan.code|lower %}
+                        {% set planOldPrice = planMeta.old_prices[planCode] ?? null %}
+                        {% set planDisplayPrice = planMeta.display_prices[planCode] ?? plan.yearlyPrice %}
+                        {% set planDurationSuffix = planMeta.duration_suffixes[planCode] ?? ui.price_suffix %}
+                        <option value="{{ plan.code }}">
+                            {{ plan.name }} - {% if planOldPrice %}{{ planOldPrice }} TRY -> {% endif %}{{ planDisplayPrice }} TRY {{ planDurationSuffix }}
+                        </option>
                     {% endfor %}
                 </select>
             </div>

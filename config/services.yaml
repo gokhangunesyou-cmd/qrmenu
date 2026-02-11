@@ -1,5 +1,6 @@
 parameters:
     app.public_menu_url: '%env(PUBLIC_MENU_URL)%'
+    env(S3_AUTO_SET_PUBLIC_READ_POLICY): '0'
 
 services:
     _defaults:
@@ -45,9 +46,18 @@ services:
             $s3Client: '@s3_client'
             $bucket: '%env(S3_BUCKET)%'
             $endpoint: '%env(S3_ENDPOINT)%'
+            $publicEndpoint: '%env(string:S3_PUBLIC_ENDPOINT)%'
+            $autoCreateBucket: '%env(bool:S3_AUTO_CREATE_BUCKET)%'
+            $autoSetPublicReadPolicy: '%env(bool:S3_AUTO_SET_PUBLIC_READ_POLICY)%'
+
+    App\Infrastructure\Storage\ConfiguredStorage:
+        arguments:
+            $localStorage: '@App\Infrastructure\Storage\LocalStorage'
+            $s3Storage: '@App\Infrastructure\Storage\S3Storage'
+            $driver: '%env(string:STORAGE_DRIVER)%'
 
     App\Infrastructure\Storage\StorageInterface:
-        alias: App\Infrastructure\Storage\LocalStorage
+        alias: App\Infrastructure\Storage\ConfiguredStorage
 
 
     # S3 Client

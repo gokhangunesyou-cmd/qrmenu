@@ -25,37 +25,58 @@ class LanguageContext
         return $this->localeRepository->findAllActive();
     }
 
-    public function resolveAdminLocale(Request $request, string $fallback = 'tr'): string
+    /**
+     * @param string[]|null $allowedLocales
+     */
+    public function resolveAdminLocale(Request $request, string $fallback = 'tr', ?array $allowedLocales = null): string
     {
-        return $this->resolveLocale($request, self::ADMIN_SESSION_KEY, $fallback);
-    }
-
-    public function resolveSiteLocale(Request $request, string $fallback = 'tr'): string
-    {
-        return $this->resolveLocale($request, self::SITE_SESSION_KEY, $fallback);
+        return $this->resolveLocale($request, self::ADMIN_SESSION_KEY, $fallback, $allowedLocales);
     }
 
     /**
+     * @param string[]|null $allowedLocales
+     */
+    public function resolveSiteLocale(Request $request, string $fallback = 'tr', ?array $allowedLocales = null): string
+    {
+        return $this->resolveLocale($request, self::SITE_SESSION_KEY, $fallback, $allowedLocales);
+    }
+
+    /**
+     * @param string[]|null $allowedLocales
+     *
      * @return array<string, string>
      */
-    public function getLocaleLabelMap(): array
+    public function getLocaleLabelMap(?array $allowedLocales = null): array
     {
+        $activeMap = $this->getActiveLocaleMap();
+        if ($allowedLocales === null) {
+            return $activeMap;
+        }
+
         $map = [];
-        foreach ($this->getActiveLocales() as $locale) {
-            $map[$locale->getCode()] = $locale->getName();
+        foreach ($allowedLocales as $allowedLocale) {
+            $code = $this->normalizeLocaleCode((string) $allowedLocale);
+            if ($code === '' || !isset($activeMap[$code])) {
+                continue;
+            }
+
+            $map[$code] = $activeMap[$code];
         }
 
         return $map;
     }
 
-    private function resolveLocale(Request $request, string $sessionKey, string $fallback): string
+    /**
+     * @param string[]|null $allowedLocales
+     */
+    private function resolveLocale(Request $request, string $sessionKey, string $fallback, ?array $allowedLocales = null): string
     {
-        $allowed = array_keys($this->getLocaleLabelMap());
+        $allowed = array_keys($this->getLocaleLabelMap($allowedLocales));
         if ($allowed === []) {
-            return $fallback;
+            return $this->normalizeLocaleCode($fallback) ?: 'tr';
         }
 
-        $queryLocale = trim($request->query->getString('lang'));
+        $queryLocale = $this->normalizeLocaleCode($request->query->getString('lang'));
         if ($queryLocale !== '' && in_array($queryLocale, $allowed, true)) {
             if ($request->hasSession()) {
                 $request->getSession()->set($sessionKey, $queryLocale);
@@ -65,7 +86,7 @@ class LanguageContext
         }
 
         if ($request->isMethod('POST')) {
-            $postedLocale = trim($request->request->getString('lang'));
+            $postedLocale = $this->normalizeLocaleCode($request->request->getString('lang'));
             if ($postedLocale !== '' && in_array($postedLocale, $allowed, true)) {
                 if ($request->hasSession()) {
                     $request->getSession()->set($sessionKey, $postedLocale);
@@ -76,16 +97,41 @@ class LanguageContext
         }
 
         if ($request->hasSession()) {
-            $sessionLocale = (string) $request->getSession()->get($sessionKey, '');
+            $sessionLocale = $this->normalizeLocaleCode((string) $request->getSession()->get($sessionKey, ''));
             if ($sessionLocale !== '' && in_array($sessionLocale, $allowed, true)) {
                 return $sessionLocale;
             }
         }
 
-        if (in_array($fallback, $allowed, true)) {
-            return $fallback;
+        $normalizedFallback = $this->normalizeLocaleCode($fallback);
+        if ($normalizedFallback !== '' && in_array($normalizedFallback, $allowed, true)) {
+            return $normalizedFallback;
         }
 
         return $allowed[0];
     }
+
+    /**
+     * @return array<string, string>
+     */
+    private function getActiveLocaleMap(): array
+    {
+        $map = [];
+        foreach ($this->getActiveLocales() as $locale) {
+            $code = $this->normalizeLocaleCode($locale->getCode());
+            if ($code === '') {
+                continue;
+            }
+
+            $map[$code] = $locale->getName();
+        }
+
+        return $map;
+    }
+
+    private function normalizeLocaleCode(string $code): string
+    {
+        return strtolower(trim($code));
+    }
+
 }

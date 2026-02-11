@@ -20,9 +20,13 @@ use App\Repository\PlanRepository;
 use App\Repository\RestaurantRepository;
 use App\Repository\RoleRepository;
 use App\Repository\SiteContentRepository;
+use App\Repository\SiteSettingRepository;
+use App\Repository\SiteWidgetRepository;
 use App\Repository\ThemeRepository;
 use App\Repository\UserRepository;
 use App\Service\LanguageContext;
+use App\Service\SiteThemeRegistry;
+use App\Service\SiteWidgetRegistry;
 use App\Service\TranslationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -44,6 +48,8 @@ class SuperAdminWebController extends AbstractController
         private readonly BlogPostRepository $blogPostRepository,
         private readonly BlogCommentRepository $blogCommentRepository,
         private readonly SiteContentRepository $siteContentRepository,
+        private readonly SiteWidgetRepository $siteWidgetRepository,
+        private readonly SiteSettingRepository $siteSettingRepository,
         private readonly ThemeRepository $themeRepository,
         private readonly CustomerAccountRepository $customerAccountRepository,
         private readonly CustomerSubscriptionRepository $subscriptionRepository,
@@ -52,6 +58,8 @@ class SuperAdminWebController extends AbstractController
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly TranslationService $translationService,
         private readonly LanguageContext $languageContext,
+        private readonly SiteWidgetRegistry $siteWidgetRegistry,
+        private readonly SiteThemeRegistry $siteThemeRegistry,
     ) {
     }
 
@@ -83,7 +91,7 @@ class SuperAdminWebController extends AbstractController
         $locale = $this->languageContext->resolveAdminLocale($request, 'tr');
         $sliderContents = $this->siteContentRepository->findByPrefix('home_slider_');
         $contentIds = array_values(array_map(static fn (SiteContent $content): int => (int) $content->getId(), $sliderContents));
-        $translations = $this->translationService->getFieldMapWithFallback('site_content', $contentIds, $locale);
+        $translations = $this->translationService->getFieldMap('site_content', $contentIds, $locale);
         $sliderRows = array_map(fn (SiteContent $content): array => $this->mapSliderContent($content, $translations), $sliderContents);
 
         return $this->render('admin/super/slider.html.twig', [
@@ -102,7 +110,7 @@ class SuperAdminWebController extends AbstractController
         $contents = $this->siteContentRepository->findByPrefix('home_');
         $cmsContents = [];
         $contentIds = array_values(array_map(static fn (SiteContent $content): int => (int) $content->getId(), $contents));
-        $translations = $this->translationService->getFieldMapWithFallback('site_content', $contentIds, $locale);
+        $translations = $this->translationService->getFieldMap('site_content', $contentIds, $locale);
 
         foreach ($contents as $content) {
             if (str_starts_with($content->getKeyName(), 'home_slider_')) {
@@ -125,6 +133,226 @@ class SuperAdminWebController extends AbstractController
         ]);
     }
 
+    #[Route('/site-theme', name: 'admin_super_site_theme', methods: ['GET'])]
+    public function siteTheme(Request $request): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
+        $locale = $this->languageContext->resolveAdminLocale($request, 'tr');
+        $themes = $this->siteThemeRegistry->getThemes();
+
+        $activeTheme = $this->siteSettingRepository->findOneByKey('site_theme_active');
+        $activeKey = $activeTheme?->getValue() ?: 'theme_1';
+
+        $paletteSetting = $this->siteSettingRepository->findOneByKey('site_theme_palette');
+        $paletteValue = $paletteSetting?->getValue() ?: '';
+        if ($paletteValue === '') {
+            $paletteValue = json_encode($this->siteThemeRegistry->getDefaultPalette($activeKey), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+        }
+
+        return $this->render('admin/super/site_theme.html.twig', [
+            'themes' => $themes,
+            'activeKey' => $activeKey,
+            'paletteValue' => $paletteValue,
+            'currentLocale' => $locale,
+        ]);
+    }
+
+    #[Route('/site-theme/update', name: 'admin_super_site_theme_update', methods: ['POST'])]
+    public function updateSiteTheme(Request $request): RedirectResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
+        $this->validateCsrfOrFail($request, 'super_site_theme_update');
+        $locale = $this->languageContext->resolveAdminLocale($request, 'tr');
+
+        $themeKey = trim($request->request->getString('active_theme'));
+        $themes = $this->siteThemeRegistry->getThemes();
+        if (!isset($themes[$themeKey])) {
+            $this->addFlash('error', 'Gecerli bir tema seciniz.');
+            return $this->redirectToRoute('admin_super_site_theme', ['lang' => $locale]);
+        }
+
+        $palette = trim($request->request->getString('palette_json'));
+        if ($palette === '') {
+            $palette = json_encode($this->siteThemeRegistry->getDefaultPalette($themeKey), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+        }
+
+        $decoded = json_decode($palette, true);
+        if (!is_array($decoded)) {
+            $this->addFlash('error', 'Renk paleti JSON formatinda olmali.');
+            return $this->redirectToRoute('admin_super_site_theme', ['lang' => $locale]);
+        }
+
+        $activeSetting = $this->siteSettingRepository->findOneByKey('site_theme_active');
+        if (!$activeSetting) {
+            $activeSetting = new \App\Entity\SiteSetting('site_theme_active', $themeKey);
+            $this->em->persist($activeSetting);
+        } else {
+            $activeSetting->setValue($themeKey);
+            $activeSetting->touch();
+        }
+
+        $paletteSetting = $this->siteSettingRepository->findOneByKey('site_theme_palette');
+        if (!$paletteSetting) {
+            $paletteSetting = new \App\Entity\SiteSetting('site_theme_palette', $palette);
+            $this->em->persist($paletteSetting);
+        } else {
+            $paletteSetting->setValue($palette);
+            $paletteSetting->touch();
+        }
+
+        $this->em->flush();
+        $this->addFlash('success', 'Site temasi guncellendi.');
+
+        return $this->redirectToRoute('admin_super_site_theme', ['lang' => $locale]);
+    }
+
+    #[Route('/widgets', name: 'admin_super_widgets', methods: ['GET'])]
+    public function widgets(Request $request): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
+        $locale = $this->languageContext->resolveAdminLocale($request, 'tr');
+        $definitions = $this->siteWidgetRegistry->getDefinitions();
+        $widgets = $this->siteWidgetRepository->findAllOrdered();
+        $widgetIds = array_values(array_map(static fn ($widget): int => (int) $widget->getId(), $widgets));
+        $translations = $this->translationService->getFieldMap('site_widget', $widgetIds, $locale);
+
+        $rows = [];
+        foreach ($widgets as $widget) {
+            $definition = $definitions[$widget->getType()] ?? null;
+            if ($definition === null) {
+                continue;
+            }
+            $config = $this->siteWidgetRegistry->mergeTranslations($widget->getConfig(), $translations, (int) $widget->getId(), $definition);
+            $config = $this->siteWidgetRegistry->normalizeConfig($config, $definition);
+            $rows[] = [
+                'widget' => $widget,
+                'definition' => $definition,
+                'values' => $this->siteWidgetRegistry->exportFormValues($config, $definition['fields']),
+            ];
+        }
+
+        return $this->render('admin/super/widgets.html.twig', [
+            'definitions' => $definitions,
+            'widgets' => $rows,
+            'currentLocale' => $locale,
+        ]);
+    }
+
+    #[Route('/widgets/create', name: 'admin_super_widget_create', methods: ['POST'])]
+    public function createWidget(Request $request): RedirectResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
+        $this->validateCsrfOrFail($request, 'super_widget_create');
+        $locale = $this->languageContext->resolveAdminLocale($request, 'tr');
+
+        $type = trim($request->request->getString('type'));
+        $keyName = trim($request->request->getString('key_name'));
+        $sortOrder = $request->request->getInt('sort_order', 0);
+        $definition = $this->siteWidgetRegistry->getDefinition($type);
+
+        if ($definition === null) {
+            $this->addFlash('error', 'Gecerli bir widget tipi seciniz.');
+            return $this->redirectToRoute('admin_super_widgets', ['lang' => $locale]);
+        }
+        if ($keyName === '') {
+            $this->addFlash('error', 'Widget key zorunludur.');
+            return $this->redirectToRoute('admin_super_widgets', ['lang' => $locale]);
+        }
+        if ($this->siteWidgetRepository->findOneBy(['keyName' => $keyName])) {
+            $this->addFlash('error', 'Bu key ile bir widget zaten mevcut.');
+            return $this->redirectToRoute('admin_super_widgets', ['lang' => $locale]);
+        }
+
+        $jsonError = $this->validateWidgetJsonFields($request, $definition);
+        if ($jsonError !== null) {
+            $this->addFlash('error', $jsonError);
+            return $this->redirectToRoute('admin_super_widgets', ['lang' => $locale]);
+        }
+
+        $config = $this->buildWidgetConfig($request, $definition);
+        $widget = new \App\Entity\SiteWidget($keyName, $type, $config);
+        $widget->setSortOrder($sortOrder);
+        $widget->setIsActive($request->request->getBoolean('is_active', true));
+
+        $this->em->persist($widget);
+        $this->em->flush();
+
+        $this->upsertWidgetTranslations($widget, $definition, $locale, $request);
+        $this->em->flush();
+
+        $this->addFlash('success', 'Widget eklendi.');
+
+        return $this->redirectToRoute('admin_super_widgets', ['lang' => $locale]);
+    }
+
+    #[Route('/widgets/{id}/update', name: 'admin_super_widget_update', methods: ['POST'])]
+    public function updateWidget(int $id, Request $request): RedirectResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
+        $this->validateCsrfOrFail($request, 'super_widget_update_' . $id);
+        $locale = $this->languageContext->resolveAdminLocale($request, 'tr');
+
+        $widget = $this->siteWidgetRepository->find($id);
+        if (!$widget instanceof \App\Entity\SiteWidget) {
+            throw $this->createNotFoundException('Widget not found.');
+        }
+
+        $definition = $this->siteWidgetRegistry->getDefinition($widget->getType());
+        if ($definition === null) {
+            $this->addFlash('error', 'Widget tipi bulunamadi.');
+            return $this->redirectToRoute('admin_super_widgets', ['lang' => $locale]);
+        }
+
+        $keyName = trim($request->request->getString('key_name'));
+        if ($keyName === '') {
+            $this->addFlash('error', 'Widget key zorunludur.');
+            return $this->redirectToRoute('admin_super_widgets', ['lang' => $locale]);
+        }
+
+        $existing = $this->siteWidgetRepository->findOneBy(['keyName' => $keyName]);
+        if ($existing && $existing->getId() !== $widget->getId()) {
+            $this->addFlash('error', 'Bu key ile baska bir widget mevcut.');
+            return $this->redirectToRoute('admin_super_widgets', ['lang' => $locale]);
+        }
+
+        $jsonError = $this->validateWidgetJsonFields($request, $definition);
+        if ($jsonError !== null) {
+            $this->addFlash('error', $jsonError);
+            return $this->redirectToRoute('admin_super_widgets', ['lang' => $locale]);
+        }
+
+        $widget->setKeyName($keyName);
+        $widget->setSortOrder($request->request->getInt('sort_order', $widget->getSortOrder()));
+        $widget->setIsActive($request->request->getBoolean('is_active', $widget->isActive()));
+        if ($locale === 'tr') {
+            $widget->setConfig($this->buildWidgetConfig($request, $definition));
+        }
+        $widget->touch();
+
+        $this->upsertWidgetTranslations($widget, $definition, $locale, $request);
+        $this->em->flush();
+
+        $this->addFlash('success', 'Widget guncellendi.');
+
+        return $this->redirectToRoute('admin_super_widgets', ['lang' => $locale]);
+    }
+
+    #[Route('/widgets/{id}/delete', name: 'admin_super_widget_delete', methods: ['POST'])]
+    public function deleteWidget(int $id, Request $request): RedirectResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
+        $this->validateCsrfOrFail($request, 'super_widget_delete_' . $id);
+        $locale = $this->languageContext->resolveAdminLocale($request, 'tr');
+
+        $widget = $this->siteWidgetRepository->find($id);
+        if ($widget) {
+            $this->em->remove($widget);
+            $this->em->flush();
+        }
+
+        return $this->redirectToRoute('admin_super_widgets', ['lang' => $locale]);
+    }
+
     #[Route('/blog', name: 'admin_super_blog_index', methods: ['GET'])]
     public function blog(Request $request): Response
     {
@@ -132,7 +360,7 @@ class SuperAdminWebController extends AbstractController
         $locale = $this->languageContext->resolveAdminLocale($request, 'tr');
         $posts = $this->blogPostRepository->findBy([], ['createdAt' => 'DESC']);
         $postIds = array_values(array_map(static fn (BlogPost $post): int => (int) $post->getId(), $posts));
-        $translations = $this->translationService->getFieldMapWithFallback('blog_post', $postIds, $locale);
+        $translations = $this->translationService->getFieldMap('blog_post', $postIds, $locale);
 
         $postView = [];
         foreach ($posts as $post) {
@@ -154,12 +382,14 @@ class SuperAdminWebController extends AbstractController
     }
 
     #[Route('/blog/comments', name: 'admin_super_blog_comments', methods: ['GET'])]
-    public function blogComments(): Response
+    public function blogComments(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
+        $locale = $this->languageContext->resolveAdminLocale($request, 'tr');
 
         return $this->render('admin/super/blog_comments.html.twig', [
             'comments' => $this->blogCommentRepository->findAllForModeration(),
+            'currentLocale' => $locale,
         ]);
     }
 
@@ -524,6 +754,7 @@ class SuperAdminWebController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
         $this->validateCsrfOrFail($request, 'super_blog_comment_approve_' . $id);
+        $locale = $this->languageContext->resolveAdminLocale($request, 'tr');
 
         $comment = $this->blogCommentRepository->find($id);
         if (!$comment instanceof BlogComment) {
@@ -534,7 +765,7 @@ class SuperAdminWebController extends AbstractController
         $this->em->flush();
         $this->addFlash('success', 'Yorum onaylandi.');
 
-        return $this->redirectToRoute('admin_super_blog_comments');
+        return $this->redirectToRoute('admin_super_blog_comments', ['lang' => $locale]);
     }
 
     #[Route('/blog/comments/{id}/reject', name: 'admin_super_blog_comment_reject', methods: ['POST'])]
@@ -542,6 +773,7 @@ class SuperAdminWebController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
         $this->validateCsrfOrFail($request, 'super_blog_comment_reject_' . $id);
+        $locale = $this->languageContext->resolveAdminLocale($request, 'tr');
 
         $comment = $this->blogCommentRepository->find($id);
         if (!$comment instanceof BlogComment) {
@@ -552,7 +784,7 @@ class SuperAdminWebController extends AbstractController
         $this->em->flush();
         $this->addFlash('success', 'Yorum onaydan kaldirildi.');
 
-        return $this->redirectToRoute('admin_super_blog_comments');
+        return $this->redirectToRoute('admin_super_blog_comments', ['lang' => $locale]);
     }
 
     #[Route('/blog/comments/{id}/delete', name: 'admin_super_blog_comment_delete', methods: ['POST'])]
@@ -560,6 +792,7 @@ class SuperAdminWebController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
         $this->validateCsrfOrFail($request, 'super_blog_comment_delete_' . $id);
+        $locale = $this->languageContext->resolveAdminLocale($request, 'tr');
 
         $comment = $this->blogCommentRepository->find($id);
         if ($comment instanceof BlogComment) {
@@ -568,7 +801,7 @@ class SuperAdminWebController extends AbstractController
             $this->addFlash('success', 'Yorum silindi.');
         }
 
-        return $this->redirectToRoute('admin_super_blog_comments');
+        return $this->redirectToRoute('admin_super_blog_comments', ['lang' => $locale]);
     }
 
     #[Route('/cms/update', name: 'admin_super_cms_update', methods: ['POST'])]
@@ -959,6 +1192,68 @@ class SuperAdminWebController extends AbstractController
                 'placeholder' => 'Orn: Altay QR Menu - tum haklari saklidir.',
             ],
         ];
+    }
+
+    /**
+     * @param array{fields: array<string, array{label: string, type: string, placeholder?: string}>, jsonFields: list<string>} $definition
+     * @return array<string, mixed>
+     */
+    private function buildWidgetConfig(Request $request, array $definition): array
+    {
+        $config = [];
+        foreach ($definition['fields'] as $key => $field) {
+            $value = trim($request->request->getString('field_' . $key));
+            if ($value === '') {
+                $config[$key] = '';
+                continue;
+            }
+            if ($field['type'] === 'json') {
+                $decoded = json_decode($value, true);
+                $config[$key] = is_array($decoded) ? $decoded : [];
+                continue;
+            }
+            $config[$key] = $value;
+        }
+
+        return $config;
+    }
+
+    /**
+     * @param array{fields: array<string, array{label: string, type: string, placeholder?: string}>} $definition
+     */
+    private function validateWidgetJsonFields(Request $request, array $definition): ?string
+    {
+        foreach ($definition['fields'] as $key => $field) {
+            if ($field['type'] !== 'json') {
+                continue;
+            }
+            $value = trim($request->request->getString('field_' . $key));
+            if ($value === '') {
+                continue;
+            }
+            $decoded = json_decode($value, true);
+            if (!is_array($decoded)) {
+                return sprintf('"%s" alani gecerli bir JSON olmalidir.', $field['label']);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array{translatable: list<string>} $definition
+     */
+    private function upsertWidgetTranslations(\App\Entity\SiteWidget $widget, array $definition, string $locale, Request $request): void
+    {
+        $widgetId = (int) $widget->getId();
+        if ($widgetId <= 0) {
+            return;
+        }
+
+        foreach ($definition['translatable'] as $field) {
+            $value = trim($request->request->getString('field_' . $field));
+            $this->translationService->upsert('site_widget', $widgetId, $locale, $field, $value);
+        }
     }
 
     private function buildSliderBodyJson(Request $request, string $description): string

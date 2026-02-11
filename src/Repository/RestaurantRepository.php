@@ -43,7 +43,28 @@ class RestaurantRepository extends ServiceEntityRepository
             ->addSelect('cm')
             ->where('r.slug = :slug')
             ->andWhere('r.isActive = true')
+            ->andWhere('r.deletedAt IS NULL')
             ->setParameter('slug', $slug)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
+     * Find an active restaurant by id with theme, logo and cover eagerly loaded.
+     */
+    public function findActiveByIdForMenu(int $id): ?Restaurant
+    {
+        return $this->createQueryBuilder('r')
+            ->leftJoin('r.theme', 't')
+            ->addSelect('t')
+            ->leftJoin('r.logoMedia', 'lm')
+            ->addSelect('lm')
+            ->leftJoin('r.coverMedia', 'cm')
+            ->addSelect('cm')
+            ->where('r.id = :id')
+            ->andWhere('r.isActive = true')
+            ->andWhere('r.deletedAt IS NULL')
+            ->setParameter('id', $id)
             ->getQuery()
             ->getOneOrNullResult();
     }

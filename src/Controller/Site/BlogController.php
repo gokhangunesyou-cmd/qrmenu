@@ -33,7 +33,7 @@ class BlogController extends AbstractController
             : $blogPostRepository->searchPublished($q, 30);
 
         $postIds = array_values(array_map(static fn ($post): int => (int) $post->getId(), $posts));
-        $postTranslations = $translationService->getFieldMapWithFallback('blog_post', $postIds, $locale);
+        $postTranslations = $translationService->getFieldMap('blog_post', $postIds, $locale);
 
         $postView = [];
         foreach ($posts as $post) {
@@ -76,7 +76,7 @@ class BlogController extends AbstractController
         $post->incrementViewCount();
         $entityManager->flush();
 
-        $postTranslations = $translationService->getFieldMapWithFallback('blog_post', [(int) $post->getId()], $locale);
+        $postTranslations = $translationService->getFieldMap('blog_post', [(int) $post->getId()], $locale);
         $postView = [
             'title' => $translationService->resolve($postTranslations, (int) $post->getId(), 'title', $post->getTitle()) ?? $post->getTitle(),
             'body' => $translationService->resolve($postTranslations, (int) $post->getId(), 'body', $post->getBody()) ?? $post->getBody(),
@@ -147,7 +147,7 @@ class BlogController extends AbstractController
         $publishedHomeContents = $siteContentRepository->findPublishedByPrefix('home_');
         $contentMap = [];
         $contentIds = array_values(array_map(static fn ($content): int => (int) $content->getId(), $publishedHomeContents));
-        $translations = $translationService->getFieldMapWithFallback('site_content', $contentIds, $locale);
+        $translations = $translationService->getFieldMap('site_content', $contentIds, $locale);
 
         foreach ($publishedHomeContents as $content) {
             if (str_starts_with($content->getKeyName(), 'home_slider_')) {

@@ -9,13 +9,13 @@
         restaurant_limit: 'Restoran Limiti',
         user_limit: 'Kullanici Limiti',
         subscription_end: 'Abonelik Bitis',
-        premium_active: 'Premium uyelik aktif: restoran ve ekip yonetimi acik.',
+        premium_active: 'Premium uyelik aktif: 10 sube/10 kullanici, data yukleme, ozel QR/menu tasarimi ve 7/24 iletisim destegi acik.',
         membership_info: 'Uyelik Bilgileri',
         business_name: 'Musteri/Isletme Adi',
         email: 'E-posta',
         update_info: 'Bilgileri Guncelle',
         change_plan: 'Plan Degistir',
-        plan_note: 'Fiyatlar planlarin yillik ucretini ifade eder.',
+        plan_note: 'Plan suresi ve kampanya fiyatlari plana gore degisir (Free: 3 ay, diger planlar: 1 yil).',
         active_plans: 'Aktif Planlar',
         select_plan: 'Plan seciniz',
         per_year: '/ yil',
@@ -52,13 +52,13 @@
         restaurant_limit: 'Restaurant Limit',
         user_limit: 'User Limit',
         subscription_end: 'Subscription End',
-        premium_active: 'Premium membership active: restaurant and team management enabled.',
+        premium_active: 'Premium membership active: 10 branches/10 users, data upload, custom QR/menu design, and 24/7 support enabled.',
         membership_info: 'Membership Information',
         business_name: 'Customer/Business Name',
         email: 'Email',
         update_info: 'Update Information',
         change_plan: 'Change Plan',
-        plan_note: 'Prices represent annual plan fees.',
+        plan_note: 'Plan durations and campaign prices vary by plan (Free: 3 months, others: 1 year).',
         active_plans: 'Active Plans',
         select_plan: 'Select a plan',
         per_year: '/ year',
@@ -95,13 +95,13 @@
         restaurant_limit: 'حد المطاعم',
         user_limit: 'حد المستخدمين',
         subscription_end: 'انتهاء الاشتراك',
-        premium_active: 'اشتراك بريميوم نشط: إدارة المطاعم والفريق مفعلة.',
+        premium_active: 'اشتراك بريميوم نشط مع دعم التصميم المخصص ورفع البيانات والتواصل 24/7.',
         membership_info: 'معلومات الاشتراك',
         business_name: 'اسم العميل/النشاط',
         email: 'البريد الإلكتروني',
         update_info: 'تحديث المعلومات',
         change_plan: 'تغيير الخطة',
-        plan_note: 'الأسعار تمثل الرسوم السنوية للخطة.',
+        plan_note: 'مدة الخطة والأسعار الترويجية تختلف حسب الخطة.',
         active_plans: 'الخطط النشطة',
         select_plan: 'اختر خطة',
         per_year: '/ سنة',
@@ -138,13 +138,13 @@
         restaurant_limit: 'Лимит ресторанов',
         user_limit: 'Лимит пользователей',
         subscription_end: 'Окончание подписки',
-        premium_active: 'Премиум подписка активна: управление ресторанами и командой включено.',
+        premium_active: 'Премиум-подписка активна: 10 филиалов/10 пользователей, поддержка загрузки данных и дизайна, связь 24/7.',
         membership_info: 'Информация о подписке',
         business_name: 'Название клиента/бизнеса',
         email: 'Email',
         update_info: 'Обновить данные',
         change_plan: 'Сменить план',
-        plan_note: 'Цены указаны за годовой план.',
+        plan_note: 'Длительность и промо-цены зависят от плана.',
         active_plans: 'Активные планы',
         select_plan: 'Выберите план',
         per_year: '/ год',
@@ -181,13 +181,13 @@
     restaurant_limit: 'Restaurant Limit',
     user_limit: 'User Limit',
     subscription_end: 'Subscription End',
-    premium_active: 'Premium membership active: restaurant and team management enabled.',
+    premium_active: 'Premium membership active: 10 branches/10 users, data upload, custom QR/menu design, and 24/7 support enabled.',
     membership_info: 'Membership Information',
     business_name: 'Customer/Business Name',
     email: 'Email',
     update_info: 'Update Information',
     change_plan: 'Change Plan',
-    plan_note: 'Prices represent annual plan fees.',
+    plan_note: 'Plan durations and campaign prices vary by plan (Free: 3 months, others: 1 year).',
     active_plans: 'Active Plans',
     select_plan: 'Select a plan',
     per_year: '/ year',
@@ -215,6 +215,23 @@
     action: 'Action',
     save: 'Save',
     no_users: 'No users linked to this account.'
+} %}
+
+{% set planMeta = {
+    tr: {
+        duration_suffixes: { free: '/ 3 ay', starter: '/ 1 yil', branch10: '/ 1 yil', premium: '/ 1 yil' },
+        old_prices: { starter: '599', branch10: '2999' },
+        display_prices: { free: '0', starter: '0', branch10: '0', premium: '5000' }
+    },
+    en: {
+        duration_suffixes: { free: '/ 3 months', starter: '/ 1 year', branch10: '/ 1 year', premium: '/ 1 year' },
+        old_prices: { starter: '599', branch10: '2999' },
+        display_prices: { free: '0', starter: '0', branch10: '0', premium: '5000' }
+    }
+}[currentLocale] ?? {
+    duration_suffixes: { free: '/ 3 months', starter: '/ 1 year', branch10: '/ 1 year', premium: '/ 1 year' },
+    old_prices: { starter: '599', branch10: '2999' },
+    display_prices: { free: '0', starter: '0', branch10: '0', premium: '5000' }
 } %}
 
 {% block title %}{{ ui.title }}{% endblock %}
@@ -296,8 +313,14 @@
                         <select class="form-select" name="plan_id" required>
                             <option value="">{{ ui.select_plan }}</option>
                             {% for plan in plans %}
+                                {% set planCode = plan.code|lower %}
+                                {% set planOldPrice = planMeta.old_prices[planCode] ?? null %}
+                                {% set planDisplayPrice = planMeta.display_prices[planCode] ?? plan.yearlyPrice %}
+                                {% set planDurationSuffix = planMeta.duration_suffixes[planCode] ?? ui.per_year %}
                                 <option value="{{ plan.id }}" {{ currentPlan and currentPlan.id == plan.id ? 'selected' : '' }}>
-                                    {{ plan.name }} - {{ plan.yearlyPrice }} TRY {{ ui.per_year }} ({{ plan.maxRestaurants }} {{ ui.restaurant_short }} / {{ plan.maxUsers }} {{ ui.user_short }})
+                                    {{ plan.name }} -
+                                    {% if planOldPrice %}{{ planOldPrice }} TRY -> {% endif %}
+                                    {{ planDisplayPrice }} TRY {{ planDurationSuffix }} ({{ plan.maxRestaurants }} {{ ui.restaurant_short }} / {{ plan.maxUsers }} {{ ui.user_short }})
                                 </option>
                             {% endfor %}
                         </select>

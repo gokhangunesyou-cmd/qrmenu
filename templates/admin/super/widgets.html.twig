@@ -1,0 +1,124 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Super Admin - Widgetlar{% endblock %}
+
+{% block body %}
+    {% set ui = {
+        title: 'Widgetlar',
+        subtitle: 'Anasayfa bolumlerini surukle - birak mantiginda degil, siralayarak yonetin.',
+        create: 'Widget Ekle',
+        update: 'Guncelle',
+        delete: 'Sil',
+        active: 'Aktif',
+        key: 'Key',
+        type: 'Tip',
+        order: 'Sira',
+        fields: 'Alanlar'
+    } %}
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">{{ ui.title }}</h2>
+            <div class="text-muted">{{ ui.subtitle }}</div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <strong>{{ ui.create }}</strong>
+        </div>
+        <div class="card-body">
+            <form method="post" action="{{ path('admin_super_widget_create', {lang: currentLocale}) }}" class="row g-3">
+                <input type="hidden" name="_token" value="{{ csrf_token('super_widget_create') }}">
+                <input type="hidden" name="lang" value="{{ currentLocale }}">
+                <div class="col-12 col-md-4">
+                    <label class="form-label">{{ ui.type }}</label>
+                    <select class="form-select" name="type" required>
+                        <option value="">Seciniz</option>
+                        {% for key, definition in definitions %}
+                            <option value="{{ key }}">{{ definition.label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label">{{ ui.key }}</label>
+                    <input class="form-control" name="key_name" placeholder="home_features" required>
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label">{{ ui.order }}</label>
+                    <input class="form-control" name="sort_order" type="number" value="0">
+                </div>
+                <div class="col-6 col-md-2 d-flex align-items-end">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="create_active" name="is_active" checked>
+                        <label class="form-check-label" for="create_active">{{ ui.active }}</label>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <button class="btn btn-primary">{{ ui.create }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% for row in widgets %}
+        {% set widget = row.widget %}
+        {% set definition = row.definition %}
+        {% set values = row.values %}
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>{{ definition.label }}</strong>
+                    <span class="text-muted">/ {{ widget.keyName }}</span>
+                </div>
+                <span class="badge bg-light text-dark">{{ widget.type }}</span>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{{ path('admin_super_widget_update', {id: widget.id, lang: currentLocale}) }}" class="row g-3">
+                    <input type="hidden" name="_token" value="{{ csrf_token('super_widget_update_' ~ widget.id) }}">
+                    <input type="hidden" name="lang" value="{{ currentLocale }}">
+                    <div class="col-12 col-md-4">
+                        <label class="form-label">{{ ui.key }}</label>
+                        <input class="form-control" name="key_name" value="{{ widget.keyName }}">
+                    </div>
+                    <div class="col-6 col-md-2">
+                        <label class="form-label">{{ ui.order }}</label>
+                        <input class="form-control" name="sort_order" type="number" value="{{ widget.sortOrder }}">
+                    </div>
+                    <div class="col-6 col-md-2 d-flex align-items-end">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="active_{{ widget.id }}" name="is_active" {{ widget.isActive ? 'checked' : '' }}>
+                            <label class="form-check-label" for="active_{{ widget.id }}">{{ ui.active }}</label>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="row g-3">
+                            {% for key, field in definition.fields %}
+                                <div class="col-12 col-lg-6">
+                                    <label class="form-label">{{ field.label }}</label>
+                                    {% if field.type == 'textarea' %}
+                                        <textarea class="form-control" name="field_{{ key }}" rows="4">{{ values[key] }}</textarea>
+                                    {% elseif field.type == 'json' %}
+                                        <textarea class="form-control font-monospace" name="field_{{ key }}" rows="6">{{ values[key] }}</textarea>
+                                    {% else %}
+                                        <input class="form-control" name="field_{{ key }}" value="{{ values[key] }}" placeholder="{{ field.placeholder|default('') }}">
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="col-12 d-flex justify-content-end gap-2">
+                        <button class="btn btn-primary">{{ ui.update }}</button>
+                    </div>
+                </form>
+                <form method="post" action="{{ path('admin_super_widget_delete', {id: widget.id, lang: currentLocale}) }}" class="text-end mt-2">
+                    <input type="hidden" name="_token" value="{{ csrf_token('super_widget_delete_' ~ widget.id) }}">
+                    <input type="hidden" name="lang" value="{{ currentLocale }}">
+                    <button class="btn btn-outline-danger btn-sm">{{ ui.delete }}</button>
+                </form>
+            </div>
+        </div>
+    {% else %}
+        <div class="text-muted">Hic widget yok. Yukaridan yeni widget ekleyin.</div>
+    {% endfor %}
+{% endblock %}

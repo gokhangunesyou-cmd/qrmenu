@@ -11,6 +11,7 @@ use App\Repository\RoleRepository;
 use App\Repository\SiteContentRepository;
 use App\Repository\ThemeRepository;
 use App\Service\LanguageContext;
+use App\Service\PlanPeriod;
 use App\Service\TranslationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -113,7 +114,7 @@ class SignupController extends AbstractController
         $user->setCustomerAccount($account);
 
         $start = new \DateTimeImmutable('today');
-        $end = $start->modify('+1 year');
+        $end = PlanPeriod::addDuration($start, $plan);
         $subscription = new CustomerSubscription($account, $plan, $start, $end);
 
         $em->persist($account);
@@ -151,7 +152,7 @@ class SignupController extends AbstractController
         $publishedHomeContents = $siteContentRepository->findPublishedByPrefix('home_');
         $contentMap = [];
         $contentIds = array_values(array_map(static fn ($content): int => (int) $content->getId(), $publishedHomeContents));
-        $translations = $translationService->getFieldMapWithFallback('site_content', $contentIds, $locale);
+        $translations = $translationService->getFieldMap('site_content', $contentIds, $locale);
 
         foreach ($publishedHomeContents as $content) {
             if (str_starts_with($content->getKeyName(), 'home_slider_')) {

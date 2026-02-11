@@ -53,7 +53,7 @@
         <div class="card h-100">
             <div class="card-header"><strong>{{ ui.new_post }}</strong></div>
             <div class="card-body">
-                <form method="post" action="{{ path('admin_super_blog_create') }}" class="row g-2">
+                <form method="post" action="{{ path('admin_super_blog_create', {lang: currentLocale}) }}" class="row g-2">
                     <input type="hidden" name="_token" value="{{ csrf_token('super_blog_create') }}">
                     <input type="hidden" name="lang" value="{{ currentLocale }}">
                     <div class="col-12"><input class="form-control" name="title" placeholder="Baslik" required></div>
@@ -77,7 +77,7 @@
                 {% for post in posts %}
                     {% set row = postView[post.id] ?? {'title': post.title, 'body': post.body, 'metaTitle': post.metaTitle, 'metaDescription': post.metaDescription} %}
                     <div class="border rounded p-3 mb-3">
-                        <form method="post" action="{{ path('admin_super_blog_update', {id: post.id}) }}" class="row g-2">
+                        <form method="post" action="{{ path('admin_super_blog_update', {id: post.id, lang: currentLocale}) }}" class="row g-2">
                             <input type="hidden" name="_token" value="{{ csrf_token('super_blog_update_' ~ post.id) }}">
                             <input type="hidden" name="lang" value="{{ currentLocale }}">
                             <div class="col-md-8">
@@ -97,7 +97,7 @@
                                 <button class="btn btn-sm btn-primary">{{ ui.update }}</button>
                             </div>
                         </form>
-                        <form method="post" action="{{ path('admin_super_blog_delete', {id: post.id}) }}" class="mt-2 text-end">
+                        <form method="post" action="{{ path('admin_super_blog_delete', {id: post.id, lang: currentLocale}) }}" class="mt-2 text-end">
                             <input type="hidden" name="_token" value="{{ csrf_token('super_blog_delete_' ~ post.id) }}">
                             <input type="hidden" name="lang" value="{{ currentLocale }}">
                             <button class="btn btn-sm btn-outline-danger">{{ ui.delete }}</button>

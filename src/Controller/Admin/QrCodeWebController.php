@@ -81,6 +81,7 @@ class QrCodeWebController extends AbstractController
                             'formData' => $request->request->all(),
                             'publicMenuUrl' => $this->publicMenuUrl,
                             'restaurantSlug' => $restaurant->getSlug(),
+                            'menuBaseUrl' => $this->buildMenuBaseUrl($restaurant),
                             'templates' => $templates,
                             'batchResults' => $batchResults,
                         ]);
@@ -88,7 +89,7 @@ class QrCodeWebController extends AbstractController
                 }
 
                 // Build URL
-                $baseUrl = sprintf('%s/%s', rtrim($this->publicMenuUrl, '/'), $restaurant->getSlug());
+                $baseUrl = $this->buildMenuBaseUrl($restaurant);
                 $tableBadgeTheme = $this->buildTableBadgeTheme($request);
 
                 // Customization
@@ -278,6 +279,7 @@ class QrCodeWebController extends AbstractController
             'formData' => $request->isMethod('POST') ? $request->request->all() : [],
             'publicMenuUrl' => $this->publicMenuUrl,
             'restaurantSlug' => $restaurant->getSlug(),
+            'menuBaseUrl' => $this->buildMenuBaseUrl($restaurant),
             'templates' => $templates,
             'batchResults' => $batchResults,
         ]);
@@ -440,7 +442,7 @@ class QrCodeWebController extends AbstractController
             }
         }
 
-        $baseUrl = sprintf('%s/%s', rtrim($this->publicMenuUrl, '/'), $restaurant->getSlug());
+        $baseUrl = $this->buildMenuBaseUrl($restaurant);
         $encodedUrl = ($type === 'table' && $tableNumber > 0)
             ? sprintf('%s?table=%d', $baseUrl, $tableNumber)
             : $baseUrl;
@@ -533,6 +535,21 @@ class QrCodeWebController extends AbstractController
         $allowedSizes = [128, 256, 384, 512, 768, 1024];
 
         return in_array($size, $allowedSizes, true) ? $size : 512;
+    }
+
+    private function buildMenuBaseUrl(Restaurant $restaurant): string
+    {
+        $restaurantId = $restaurant->getId();
+        if ($restaurantId === null) {
+            throw new \LogicException('Restaurant id is required for menu URL generation.');
+        }
+
+        return sprintf(
+            '%s/menu/%s-r-%d',
+            rtrim($this->publicMenuUrl, '/'),
+            $restaurant->getSlug(),
+            $restaurantId,
+        );
     }
 
     /**

@@ -10,30 +10,76 @@ class PlanFixtures extends Fixture
 {
     public function load(ObjectManager $manager): void
     {
-        $free = $manager->getRepository(Plan::class)->findOneBy(['code' => 'free']);
-        if ($free === null) {
-            $free = new Plan('free', 'Free', 1, 1, '0.00');
-            $free->setDescription('1 restoran 1 kullanici yillik plan');
-            $manager->persist($free);
-        } else {
-            $free->setMaxRestaurants(1);
-            $free->setMaxUsers(1);
-            $free->setYearlyPrice('0.00');
-            $free->setDescription('1 restoran 1 kullanici yillik plan');
-        }
+        $this->upsertPlan(
+            $manager,
+            code: 'free',
+            name: 'Free Plan',
+            maxRestaurants: 1,
+            maxUsers: 1,
+            yearlyPrice: '0.00',
+            description: '3 aylik ucretsiz abonelik, 1 restoran, 1 kullanici.',
+        );
 
-        $premium = $manager->getRepository(Plan::class)->findOneBy(['code' => 'premium']);
-        if ($premium === null) {
-            $premium = new Plan('premium', 'Premium', 20, 25, '0.00');
-            $premium->setDescription('20 restoran 25 kullanici yillik plan');
-            $manager->persist($premium);
-        } else {
-            $premium->setMaxRestaurants(20);
-            $premium->setMaxUsers(25);
-            $premium->setYearlyPrice('0.00');
-            $premium->setDescription('20 restoran 25 kullanici yillik plan');
+        $this->upsertPlan(
+            $manager,
+            code: 'starter',
+            name: 'Baslangic Plan',
+            maxRestaurants: 1,
+            maxUsers: 1,
+            yearlyPrice: '0.00',
+            description: '599 TL yerine indirimli 0 TL, 1 yillik abonelik, 1 restoran, 1 kullanici.',
+        );
+
+        $this->upsertPlan(
+            $manager,
+            code: 'branch10',
+            name: '10 Subeli 10 Kullanicili Plan',
+            maxRestaurants: 10,
+            maxUsers: 10,
+            yearlyPrice: '0.00',
+            description: '2999 TL yerine indirimli 0 TL, 1 yillik abonelik, 10 sube, 10 kullanici.',
+        );
+
+        $this->upsertPlan(
+            $manager,
+            code: 'premium',
+            name: 'Premium Plan',
+            maxRestaurants: 10,
+            maxUsers: 10,
+            yearlyPrice: '5000.00',
+            description: '5000 TL indirimli 1 yillik abonelik, 10 sube, 10 kullanici, data yukleme destegi, ozel QR tasarim destegi, ozel menu tasarimi, 7/24 iletisim.',
+        );
+
+        $activeCodes = ['free', 'starter', 'branch10', 'premium'];
+        foreach ($manager->getRepository(Plan::class)->findAll() as $plan) {
+            if (!in_array($plan->getCode(), $activeCodes, true)) {
+                $plan->setIsActive(false);
+            }
         }
 
         $manager->flush();
+    }
+
+    private function upsertPlan(
+        ObjectManager $manager,
+        string $code,
+        string $name,
+        int $maxRestaurants,
+        int $maxUsers,
+        string $yearlyPrice,
+        string $description,
+    ): void {
+        $plan = $manager->getRepository(Plan::class)->findOneBy(['code' => $code]);
+        if ($plan === null) {
+            $plan = new Plan($code, $name, $maxRestaurants, $maxUsers, $yearlyPrice);
+            $manager->persist($plan);
+        }
+
+        $plan->setName($name);
+        $plan->setDescription($description);
+        $plan->setMaxRestaurants($maxRestaurants);
+        $plan->setMaxUsers($maxUsers);
+        $plan->setYearlyPrice($yearlyPrice);
+        $plan->setIsActive(true);
     }
 }

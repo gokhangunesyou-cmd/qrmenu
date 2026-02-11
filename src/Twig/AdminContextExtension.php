@@ -72,7 +72,11 @@ class AdminContextExtension extends AbstractExtension
             return 'tr';
         }
 
-        return $this->languageContext->resolveAdminLocale($request, 'tr');
+        $currentRestaurant = $this->getCurrentRestaurant();
+        $fallback = $currentRestaurant?->getDefaultLocale() ?? 'tr';
+        $allowedLocales = $currentRestaurant?->getEnabledLocales();
+
+        return $this->languageContext->resolveAdminLocale($request, $fallback, $allowedLocales);
     }
 
     /**
@@ -80,6 +84,8 @@ class AdminContextExtension extends AbstractExtension
      */
     public function getAvailableLocales(): array
     {
-        return $this->languageContext->getLocaleLabelMap();
+        $currentRestaurant = $this->getCurrentRestaurant();
+
+        return $this->languageContext->getLocaleLabelMap($currentRestaurant?->getEnabledLocales());
     }
 }

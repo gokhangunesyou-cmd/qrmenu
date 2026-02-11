@@ -68,8 +68,14 @@ class Restaurant
     #[ORM\JoinColumn(nullable: false)]
     private Theme $theme;
 
+    #[ORM\Column(length: 30, options: ['default' => 'showcase'])]
+    private string $menuTemplate = 'showcase';
+
     #[ORM\Column(length: 5)]
     private string $defaultLocale = 'tr';
+
+    #[ORM\Column(type: 'json')]
+    private array $enabledLocales = ['tr'];
 
     #[ORM\Column(length: 3)]
     private string $currencyCode = 'TRY';
@@ -288,6 +294,16 @@ class Restaurant
         $this->theme = $theme;
     }
 
+    public function getMenuTemplate(): string
+    {
+        return $this->menuTemplate;
+    }
+
+    public function setMenuTemplate(string $menuTemplate): void
+    {
+        $this->menuTemplate = $menuTemplate;
+    }
+
     public function getDefaultLocale(): string
     {
         return $this->defaultLocale;
@@ -295,7 +311,39 @@ class Restaurant
 
     public function setDefaultLocale(string $defaultLocale): void
     {
-        $this->defaultLocale = $defaultLocale;
+        $normalizedLocale = strtolower(trim($defaultLocale));
+        $this->defaultLocale = $normalizedLocale !== '' ? $normalizedLocale : 'tr';
+
+        if (!in_array($this->defaultLocale, $this->enabledLocales, true)) {
+            $this->enabledLocales[] = $this->defaultLocale;
+        }
+
+        $this->enabledLocales = $this->normalizeLocaleList($this->enabledLocales);
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getEnabledLocales(): array
+    {
+        return $this->enabledLocales;
+    }
+
+    /**
+     * @param string[] $enabledLocales
+     */
+    public function setEnabledLocales(array $enabledLocales): void
+    {
+        $normalizedLocales = $this->normalizeLocaleList($enabledLocales);
+        if ($normalizedLocales === []) {
+            $normalizedLocales = ['tr'];
+        }
+
+        if (!in_array($this->defaultLocale, $normalizedLocales, true)) {
+            $this->defaultLocale = $normalizedLocales[0];
+        }
+
+        $this->enabledLocales = $normalizedLocales;
     }
 
     public function getCurrencyCode(): string
@@ -422,5 +470,29 @@ class Restaurant
     public function getUsers(): Collection
     {
         return $this->users;
+    }
+
+    /**
+     * @param string[] $locales
+     *
+     * @return string[]
+     */
+    private function normalizeLocaleList(array $locales): array
+    {
+        $normalized = [];
+        foreach ($locales as $locale) {
+            if (!is_string($locale)) {
+                continue;
+            }
+
+            $code = strtolower(trim($locale));
+            if ($code === '' || isset($normalized[$code])) {
+                continue;
+            }
+
+            $normalized[$code] = $code;
+        }
+
+        return array_values($normalized);
     }
 }

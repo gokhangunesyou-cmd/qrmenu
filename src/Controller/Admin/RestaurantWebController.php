@@ -9,6 +9,8 @@ use App\Entity\Restaurant;
 use App\Enum\SocialPlatform;
 use App\Form\RestaurantProfileType;
 use App\Infrastructure\Storage\StorageInterface;
+use App\Service\Image\ImagePipeline;
+use App\Service\LanguageContext;
 use App\Service\SocialLinkService;
 use Doctrine\ORM\EntityManagerInterface;
 use Ramsey\Uuid\Uuid;
@@ -24,7 +26,9 @@ class RestaurantWebController extends AbstractController
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly StorageInterface $storage,
+        private readonly ImagePipeline $imagePipeline,
         private readonly SocialLinkService $socialLinkService,
+        private readonly LanguageContext $languageContext,
     ) {
     }
 
@@ -64,6 +68,8 @@ class RestaurantWebController extends AbstractController
 
         $form = $this->createForm(RestaurantProfileType::class, $restaurant, [
             'social_links' => $socialLinks,
+            'theme_colors' => $this->resolveThemeColors($restaurant),
+            'available_locales' => $this->languageContext->getLocaleLabelMap(),
         ]);
         $form->handleRequest($request);
 
@@ -72,11 +78,20 @@ class RestaurantWebController extends AbstractController
                 $restaurant->setCountryCode(strtoupper($restaurant->getCountryCode()));
             }
 
+            $restaurant->setColorOverrides([
+                'primary' => $this->sanitizeHexColor((string) $form->get('themePrimaryColor')->getData(), '#9A3412'),
+                'secondary' => $this->sanitizeHexColor((string) $form->get('themeSecondaryColor')->getData(), '#0F766E'),
+                'background' => $this->sanitizeHexColor((string) $form->get('themeBackgroundColor')->getData(), '#FFF8F1'),
+                'surface' => $this->sanitizeHexColor((string) $form->get('themeSurfaceColor')->getData(), '#FFFFFF'),
+                'text' => $this->sanitizeHexColor((string) $form->get('themeTextColor')->getData(), '#1F2937'),
+                'accent' => $this->sanitizeHexColor((string) $form->get('themeAccentColor')->getData(), '#F59E0B'),
+            ]);
+
             // Handle logo upload
             $logoFile = $form->get('logoFile')->getData();
             if ($logoFile instanceof UploadedFile) {
                 try {
-                    $media = $this->uploadMedia($logoFile, $restaurant);
+                    $media = $this->uploadMedia($logoFile, $restaurant, ImagePipeline::PROFILE_LOGO);
                     $restaurant->setLogoMedia($media);
                 } catch (\Throwable $e) {
                     $this->addFlash('error', 'Logo yüklenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.');
@@ -87,7 +102,7 @@ class RestaurantWebController extends AbstractController
             $coverFile = $form->get('coverFile')->getData();
             if ($coverFile instanceof UploadedFile) {
                 try {
-                    $media = $this->uploadMedia($coverFile, $restaurant);
+                    $media = $this->uploadMedia($coverFile, $restaurant, ImagePipeline::PROFILE_COVER);
                     $restaurant->setCoverMedia($media);
                 } catch (\Throwable $e) {
                     $this->addFlash('error', 'Kapak fotoğrafı yüklenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.');
@@ -133,7 +148,32 @@ class RestaurantWebController extends AbstractController
         ]);
     }
 
-    private function uploadMedia(UploadedFile $file, Restaurant $restaurant): Media
+    /**
+     * @return array{primary:string,secondary:string,background:string,surface:string,text:string,accent:string}
+     */
+    private function resolveThemeColors(Restaurant $restaurant): array
+    {
+        $overrides = $restaurant->getColorOverrides();
+        if (!is_array($overrides)) {
+            $overrides = [];
+        }
+
+        return [
+            'primary' => $this->sanitizeHexColor((string) ($overrides['primary'] ?? ''), '#9A3412'),
+            'secondary' => $this->sanitizeHexColor((string) ($overrides['secondary'] ?? ''), '#0F766E'),
+            'background' => $this->sanitizeHexColor((string) ($overrides['background'] ?? ''), '#FFF8F1'),
+            'surface' => $this->sanitizeHexColor((string) ($overrides['surface'] ?? ''), '#FFFFFF'),
+            'text' => $this->sanitizeHexColor((string) ($overrides['text'] ?? ''), '#1F2937'),
+            'accent' => $this->sanitizeHexColor((string) ($overrides['accent'] ?? ''), '#F59E0B'),
+        ];
+    }
+
+    private function sanitizeHexColor(string $color, string $fallback): string
+    {
+        return (bool) preg_match('/^#[0-9A-Fa-f]{6}$/', $color) ? strtoupper($color) : strtoupper($fallback);
+    }
+
+    private function uploadMedia(UploadedFile $file, Restaurant $restaurant, string $profile): Media
     {
         $mimeType = $this->resolveMimeType($file);
         if (!in_array($mimeType, ['image/jpeg', 'image/png', 'image/webp'], true)) {
@@ -149,26 +189,19 @@ class RestaurantWebController extends AbstractController
         $mediaUuid = Uuid::uuid7()->toString();
         $storagePath = sprintf('media/%s/%s.%s', $restaurant->getUuid()->toString(), $mediaUuid, $extension);
 
-        // Upload to storage
-        $fileContent = file_get_contents($file->getPathname());
-        if ($fileContent === false) {
-            throw new \RuntimeException('Uploaded file could not be read.');
-        }
-        $this->storage->put($storagePath, $fileContent, $mimeType);
-
-        $size = @filesize($file->getPathname());
-        if (!is_int($size) || $size < 0) {
-            throw new \RuntimeException('Uploaded file size could not be determined.');
-        }
+        $processed = $this->imagePipeline->processUploadedFile($file, $mimeType, $profile);
+        $this->storage->put($storagePath, $processed->getContents(), $processed->getMimeType());
 
         // Create media entity
         $media = new Media(
             $file->getClientOriginalName(),
             $storagePath,
-            $mimeType,
-            $size,
+            $processed->getMimeType(),
+            $processed->getSize(),
             $restaurant
         );
+        $media->setWidth($processed->getWidth());
+        $media->setHeight($processed->getHeight());
 
         $this->em->persist($media);
 

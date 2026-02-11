@@ -6,7 +6,11 @@ use App\Entity\SiteContent;
 use App\Repository\BlogPostRepository;
 use App\Repository\PlanRepository;
 use App\Repository\SiteContentRepository;
+use App\Repository\SiteSettingRepository;
+use App\Repository\SiteWidgetRepository;
 use App\Service\LanguageContext;
+use App\Service\SiteThemeRegistry;
+use App\Service\SiteWidgetRegistry;
 use App\Service\TranslationService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,15 +25,19 @@ class LandingController extends AbstractController
         PlanRepository $planRepository,
         BlogPostRepository $blogPostRepository,
         SiteContentRepository $siteContentRepository,
+        SiteWidgetRepository $siteWidgetRepository,
+        SiteSettingRepository $siteSettingRepository,
         LanguageContext $languageContext,
         TranslationService $translationService,
+        SiteWidgetRegistry $siteWidgetRegistry,
+        SiteThemeRegistry $siteThemeRegistry,
     ): Response
     {
         $locale = $languageContext->resolveSiteLocale($request, 'tr');
         $plans = $planRepository->findActiveOrdered();
         $posts = $blogPostRepository->findLatestPublished(3);
         $postIds = array_values(array_map(static fn ($post): int => (int) $post->getId(), $posts));
-        $postTranslations = $translationService->getFieldMapWithFallback('blog_post', $postIds, $locale);
+        $postTranslations = $translationService->getFieldMap('blog_post', $postIds, $locale);
         $postView = [];
         foreach ($posts as $post) {
             $postId = (int) $post->getId();
@@ -42,7 +50,7 @@ class LandingController extends AbstractController
         $sliderContents = $siteContentRepository->findPublishedByPrefix('home_slider_');
         $publishedHomeContents = $siteContentRepository->findPublishedByPrefix('home_');
         $contentIds = array_values(array_map(static fn (SiteContent $content): int => (int) $content->getId(), $publishedHomeContents));
-        $translations = $translationService->getFieldMapWithFallback('site_content', $contentIds, $locale);
+        $translations = $translationService->getFieldMap('site_content', $contentIds, $locale);
 
         $sliderItems = [];
         foreach ($sliderContents as $index => $content) {
@@ -84,12 +92,59 @@ class LandingController extends AbstractController
             'footerText' => $this->resolveContentValue($contentMap, 'home_footer_text', 'Altay QR Menu - tum haklari saklidir.'),
         ];
 
-        return $this->render('site/home.html.twig', [
+        $widgets = $siteWidgetRepository->findActiveOrdered();
+        $widgetIds = array_values(array_map(static fn ($widget): int => (int) $widget->getId(), $widgets));
+        $widgetTranslations = $translationService->getFieldMap('site_widget', $widgetIds, $locale);
+        $widgetViews = [];
+        foreach ($widgets as $widget) {
+            $definition = $siteWidgetRegistry->getDefinition($widget->getType());
+            if ($definition === null) {
+                continue;
+            }
+            $config = $siteWidgetRegistry->mergeTranslations($widget->getConfig(), $widgetTranslations, (int) $widget->getId(), $definition);
+            $config = $siteWidgetRegistry->normalizeConfig($config, $definition);
+            $widgetViews[] = [
+                'id' => $widget->getId(),
+                'key' => $widget->getKeyName(),
+                'type' => $widget->getType(),
+                'config' => $config,
+            ];
+        }
+
+        $themeKey = $siteSettingRepository->findOneByKey('site_theme_active')?->getValue() ?: 'theme_1';
+        $paletteSetting = $siteSettingRepository->findOneByKey('site_theme_palette')?->getValue();
+        $paletteOverride = [];
+        if (is_string($paletteSetting) && $paletteSetting !== '') {
+            $decoded = json_decode($paletteSetting, true);
+            if (is_array($decoded)) {
+                $paletteOverride = $decoded;
+            }
+        }
+        $themes = $siteThemeRegistry->getThemes();
+        $themeMeta = $themes[$themeKey] ?? $themes['theme_1'];
+        $palette = $siteThemeRegistry->mergePalette($themeKey, $paletteOverride);
+        $theme = [
+            'key' => $themeKey,
+            'name' => $themeMeta['name'],
+            'font_head' => $themeMeta['font_head'],
+            'font_body' => $themeMeta['font_body'],
+            'palette' => $palette,
+        ];
+
+        $template = match ($themeKey) {
+            'theme_2' => 'site/home_theme_two.html.twig',
+            'theme_3' => 'site/home_theme_three.html.twig',
+            default => 'site/home_theme_one.html.twig',
+        };
+
+        return $this->render($template, [
             'plans' => $plans,
             'posts' => $posts,
             'postView' => $postView,
             'sliderItems' => $sliderItems,
             'cms' => $cms,
+            'widgets' => $widgetViews,
+            'theme' => $theme,
             'currentLocale' => $locale,
             'availableLocales' => $languageContext->getLocaleLabelMap(),
         ]);
