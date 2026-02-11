@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 480">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#f2eee6"/>
+      <stop offset="1" stop-color="#e5ded0"/>
+    </linearGradient>
+  </defs>
+  <rect width="720" height="480" fill="url(#bg)"/>
+  <rect x="60" y="60" width="600" height="360" rx="22" fill="#ffffff" stroke="#d2c9b8" stroke-width="2"/>
+  <rect x="100" y="120" width="520" height="42" rx="10" fill="#efe8dc"/>
+  <rect x="100" y="190" width="240" height="170" rx="12" fill="#f6f1e7"/>
+  <rect x="360" y="190" width="260" height="20" rx="8" fill="#dcd2c2"/>
+  <rect x="360" y="225" width="220" height="20" rx="8" fill="#e6ddce"/>
+  <rect x="360" y="260" width="200" height="20" rx="8" fill="#e6ddce"/>
+  <rect x="360" y="305" width="160" height="20" rx="8" fill="#e6ddce"/>
+  <text x="100" y="98" font-family="Manrope, Arial, sans-serif" font-size="18" fill="#74685a">Panel Overview</text>
+  <text x="100" y="152" font-family="Manrope, Arial, sans-serif" font-size="13" fill="#958a7b">Dashboard snapshot placeholder</text>
+</svg>

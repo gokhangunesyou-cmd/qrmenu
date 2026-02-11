@@ -1,6 +1,228 @@
 {% extends 'admin/base.html.twig' %}
 
-{% block title %}Ürünler{% endblock %}
+{% set ui = {
+    tr: {
+        title: 'Ürünler',
+        count: 'ürün',
+        language: 'Dil',
+        new_product: 'Yeni Ürün Ekle',
+        all_categories: 'Tüm Kategoriler',
+        search_placeholder: 'Ürün adı ara...',
+        bulk_price_title: 'Toplu Fiyat Güncelleme',
+        operation_type: 'İşlem Tipi',
+        op_increase_fixed: '+ Sabit Tutar Artış',
+        op_decrease_fixed: '- Sabit Tutar İndirim',
+        op_increase_percent: '% Artış',
+        op_decrease_percent: '% İndirim',
+        value: 'Değer',
+        category_optional: 'Kategori (Opsiyonel)',
+        apply: 'Uygula',
+        bulk_price_note: 'Sabit tutar işlemlerinde değer TL, yüzde işlemlerinde % olarak yorumlanır.',
+        bulk_delete_selected: 'Seçilenleri Sil',
+        image: 'Görsel',
+        name: 'Ad',
+        category: 'Kategori',
+        price: 'Fiyat',
+        status: 'Durum',
+        actions: 'Aksiyonlar',
+        featured: 'Öne Çıkan',
+        toggle_status_title: 'Durumu değiştirmek için tıklayın',
+        edit: 'Düzenle',
+        delete: 'Sil',
+        active: 'Aktif',
+        passive: 'Pasif',
+        no_results_title: 'Aramanızla eşleşen ürün bulunamadı',
+        no_results_body: 'Farklı bir arama terimi veya kategori deneyin.',
+        clear_filters: 'Filtreleri Temizle',
+        empty_title: 'Henüz ürün eklenmemiş',
+        empty_body: 'İlk ürününüzü ekleyerek başlayın.',
+        add_first_product: 'Yeni Ürün Ekle',
+        delete_modal_title: 'Ürünü Sil',
+        delete_modal_body: 'ürününü silmek istediğinize emin misiniz?',
+        delete_modal_note: 'Bu işlem geri alınamaz.',
+        bulk_delete_title: 'Toplu Silme',
+        bulk_delete_body: 'ürünü silmek istediğinize emin misiniz?',
+        cancel: 'İptal',
+        error_generic: 'Bir hata oluştu.'
+    },
+    en: {
+        title: 'Products',
+        count: 'products',
+        language: 'Language',
+        new_product: 'Add New Product',
+        all_categories: 'All Categories',
+        search_placeholder: 'Search product name...',
+        bulk_price_title: 'Bulk Price Update',
+        operation_type: 'Operation Type',
+        op_increase_fixed: '+ Fixed Amount Increase',
+        op_decrease_fixed: '- Fixed Amount Discount',
+        op_increase_percent: '% Increase',
+        op_decrease_percent: '% Discount',
+        value: 'Value',
+        category_optional: 'Category (Optional)',
+        apply: 'Apply',
+        bulk_price_note: 'Fixed amount operations are treated as TRY; percent operations are treated as %.',
+        bulk_delete_selected: 'Delete Selected',
+        image: 'Image',
+        name: 'Name',
+        category: 'Category',
+        price: 'Price',
+        status: 'Status',
+        actions: 'Actions',
+        featured: 'Featured',
+        toggle_status_title: 'Click to change status',
+        edit: 'Edit',
+        delete: 'Delete',
+        active: 'Active',
+        passive: 'Inactive',
+        no_results_title: 'No products match your search',
+        no_results_body: 'Try a different search term or category.',
+        clear_filters: 'Clear Filters',
+        empty_title: 'No products added yet',
+        empty_body: 'Start by adding your first product.',
+        add_first_product: 'Add New Product',
+        delete_modal_title: 'Delete Product',
+        delete_modal_body: 'Do you want to delete the product?',
+        delete_modal_note: 'This action cannot be undone.',
+        bulk_delete_title: 'Bulk Delete',
+        bulk_delete_body: 'Do you want to delete the products?',
+        cancel: 'Cancel',
+        error_generic: 'An error occurred.'
+    },
+    ar: {
+        title: 'المنتجات',
+        count: 'منتج',
+        language: 'اللغة',
+        new_product: 'إضافة منتج جديد',
+        all_categories: 'كل الفئات',
+        search_placeholder: 'ابحث باسم المنتج...',
+        bulk_price_title: 'تحديث الأسعار بالجملة',
+        operation_type: 'نوع العملية',
+        op_increase_fixed: '+ زيادة مبلغ ثابت',
+        op_decrease_fixed: '- خصم مبلغ ثابت',
+        op_increase_percent: '% زيادة',
+        op_decrease_percent: '% خصم',
+        value: 'القيمة',
+        category_optional: 'الفئة (اختياري)',
+        apply: 'تطبيق',
+        bulk_price_note: 'في العمليات ذات المبلغ الثابت تُعتبر القيمة بالليرة، وفي النسبة تُعتبر %.',
+        bulk_delete_selected: 'حذف المحدد',
+        image: 'الصورة',
+        name: 'الاسم',
+        category: 'الفئة',
+        price: 'السعر',
+        status: 'الحالة',
+        actions: 'الإجراءات',
+        featured: 'مميز',
+        toggle_status_title: 'انقر لتغيير الحالة',
+        edit: 'تعديل',
+        delete: 'حذف',
+        active: 'نشط',
+        passive: 'غير نشط',
+        no_results_title: 'لم يتم العثور على منتجات مطابقة',
+        no_results_body: 'جرّب مصطلح بحث مختلفًا أو فئة أخرى.',
+        clear_filters: 'مسح الفلاتر',
+        empty_title: 'لم تتم إضافة منتجات بعد',
+        empty_body: 'ابدأ بإضافة أول منتج لديك.',
+        add_first_product: 'إضافة منتج جديد',
+        delete_modal_title: 'حذف المنتج',
+        delete_modal_body: 'هل تريد حذف المنتج؟',
+        delete_modal_note: 'لا يمكن التراجع عن هذا الإجراء.',
+        bulk_delete_title: 'حذف جماعي',
+        bulk_delete_body: 'هل تريد حذف المنتجات؟',
+        cancel: 'إلغاء',
+        error_generic: 'حدث خطأ.'
+    },
+    ru: {
+        title: 'Товары',
+        count: 'товаров',
+        language: 'Язык',
+        new_product: 'Добавить продукт',
+        all_categories: 'Все категории',
+        search_placeholder: 'Поиск по названию...',
+        bulk_price_title: 'Массовое обновление цен',
+        operation_type: 'Тип операции',
+        op_increase_fixed: '+ Увеличение на фикс. сумму',
+        op_decrease_fixed: '- Скидка на фикс. сумму',
+        op_increase_percent: '% Увеличение',
+        op_decrease_percent: '% Скидка',
+        value: 'Значение',
+        category_optional: 'Категория (опционально)',
+        apply: 'Применить',
+        bulk_price_note: 'Фиксированная сумма трактуется как TRY, процент — как %.',
+        bulk_delete_selected: 'Удалить выбранные',
+        image: 'Изображение',
+        name: 'Название',
+        category: 'Категория',
+        price: 'Цена',
+        status: 'Статус',
+        actions: 'Действия',
+        featured: 'Рекомендуемое',
+        toggle_status_title: 'Нажмите, чтобы изменить статус',
+        edit: 'Редактировать',
+        delete: 'Удалить',
+        active: 'Активно',
+        passive: 'Неактивно',
+        no_results_title: 'По вашему запросу ничего не найдено',
+        no_results_body: 'Попробуйте другой запрос или категорию.',
+        clear_filters: 'Сбросить фильтры',
+        empty_title: 'Продукты еще не добавлены',
+        empty_body: 'Начните с добавления первого продукта.',
+        add_first_product: 'Добавить продукт',
+        delete_modal_title: 'Удалить продукт',
+        delete_modal_body: 'Вы уверены, что хотите удалить продукт?',
+        delete_modal_note: 'Это действие нельзя отменить.',
+        bulk_delete_title: 'Массовое удаление',
+        bulk_delete_body: 'Вы уверены, что хотите удалить продукты?',
+        cancel: 'Отмена',
+        error_generic: 'Произошла ошибка.'
+    }
+}[currentLocale] ?? {
+    title: 'Products',
+    count: 'products',
+    language: 'Language',
+    new_product: 'Add New Product',
+    all_categories: 'All Categories',
+    search_placeholder: 'Search product name...',
+    bulk_price_title: 'Bulk Price Update',
+    operation_type: 'Operation Type',
+    op_increase_fixed: '+ Fixed Amount Increase',
+    op_decrease_fixed: '- Fixed Amount Discount',
+    op_increase_percent: '% Increase',
+    op_decrease_percent: '% Discount',
+    value: 'Value',
+    category_optional: 'Category (Optional)',
+    apply: 'Apply',
+    bulk_price_note: 'Fixed amount operations are treated as TRY; percent operations are treated as %.',
+    bulk_delete_selected: 'Delete Selected',
+    image: 'Image',
+    name: 'Name',
+    category: 'Category',
+    price: 'Price',
+    status: 'Status',
+    actions: 'Actions',
+    featured: 'Featured',
+    toggle_status_title: 'Click to change status',
+    edit: 'Edit',
+    delete: 'Delete',
+    active: 'Active',
+    passive: 'Inactive',
+    no_results_title: 'No products match your search',
+    no_results_body: 'Try a different search term or category.',
+    clear_filters: 'Clear Filters',
+    empty_title: 'No products added yet',
+    empty_body: 'Start by adding your first product.',
+    add_first_product: 'Add New Product',
+    delete_modal_title: 'Delete Product',
+    delete_modal_body: 'Do you want to delete the product?',
+    delete_modal_note: 'This action cannot be undone.',
+    bulk_delete_title: 'Bulk Delete',
+    bulk_delete_body: 'Do you want to delete the products?',
+    cancel: 'Cancel',
+    error_generic: 'An error occurred.'
+} %}
+
+{% block title %}{{ ui.title }}{% endblock %}
 
 {% block stylesheets %}
 <style>
@@ -53,11 +275,12 @@
     {# Header #}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="mb-1">Ürünler</h2>
-            <small class="text-muted">{{ totalItems }} ürün</small>
+            <h2 class="mb-1">{{ ui.title }}</h2>
+            <small class="text-muted">{{ totalItems }} {{ ui.count }}</small>
+            <div class="small text-primary mt-1">{{ ui.language }}: {{ currentLocale|upper }}</div>
         </div>
-        <a href="{{ path('admin_product_web_create') }}" class="btn btn-primary">
-            <i class="bi bi-plus-lg"></i> Yeni Ürün Ekle
+        <a href="{{ path('admin_product_web_create', {lang: currentLocale}) }}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> {{ ui.new_product }}
         </a>
     </div>
 
@@ -65,11 +288,13 @@
     <div class="row mb-4 g-2">
         <div class="col-md-3">
             <form method="get" action="{{ path('admin_product_web_index') }}" id="filterForm">
+                <input type="hidden" name="lang" value="{{ currentLocale }}">
                 <select name="category" class="form-select" onchange="document.getElementById('filterForm').submit()">
-                    <option value="">Tüm Kategoriler</option>
+                    <option value="">{{ ui.all_categories }}</option>
                     {% for cat in categories %}
+                        {% set catLabel = categoryView[cat.id] ?? cat.name %}
                         <option value="{{ cat.uuid }}" {{ categoryUuid == cat.uuid ? 'selected' : '' }}>
-                            {{ cat.name }}
+                            {{ catLabel }}
                         </option>
                     {% endfor %}
                 </select>
@@ -80,14 +305,15 @@
         </div>
         <div class="col-md-4">
             <form method="get" action="{{ path('admin_product_web_index') }}" id="searchForm">
+                <input type="hidden" name="lang" value="{{ currentLocale }}">
                 <div class="input-group">
-                    <input type="text" name="search" class="form-control" placeholder="Ürün adı ara..."
+                    <input type="text" name="search" class="form-control" placeholder="{{ ui.search_placeholder }}"
                            value="{{ search }}" autocomplete="off">
                     <button class="btn btn-outline-secondary" type="submit">
                         <i class="bi bi-search"></i>
                     </button>
                     {% if search %}
-                        <a href="{{ path('admin_product_web_index', {category: categoryUuid}) }}" class="btn btn-outline-secondary">
+                        <a href="{{ path('admin_product_web_index', {category: categoryUuid, lang: currentLocale}) }}" class="btn btn-outline-secondary">
                             <i class="bi bi-x-lg"></i>
                         </a>
                     {% endif %}
@@ -99,14 +325,58 @@
         </div>
     </div>
 
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">{{ ui.bulk_price_title }}</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" action="{{ path('admin_product_web_bulk_price_update') }}" class="row g-2 align-items-end">
+                <input type="hidden" name="_token" value="{{ csrf_token('product_bulk_price_update') }}">
+                <input type="hidden" name="lang" value="{{ currentLocale }}">
+                <div class="col-md-4">
+                    <label class="form-label">{{ ui.operation_type }}</label>
+                    <select class="form-select" name="operation" required>
+                        <option value="increase_fixed">{{ ui.op_increase_fixed }}</option>
+                        <option value="decrease_fixed">{{ ui.op_decrease_fixed }}</option>
+                        <option value="increase_percent">{{ ui.op_increase_percent }}</option>
+                        <option value="decrease_percent">{{ ui.op_decrease_percent }}</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">{{ ui.value }}</label>
+                    <input type="number" class="form-control" name="amount" min="0.01" step="0.01" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">{{ ui.category_optional }}</label>
+                    <select class="form-select" name="category_uuid">
+                        <option value="">{{ ui.all_categories }}</option>
+                        {% for cat in categories %}
+                            {% set catLabel = categoryView[cat.id] ?? cat.name %}
+                            <option value="{{ cat.uuid }}" {{ categoryUuid == cat.uuid ? 'selected' : '' }}>
+                                {{ catLabel }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 d-grid">
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-cash-stack"></i> {{ ui.apply }}
+                    </button>
+                </div>
+            </form>
+            <div class="small text-muted mt-2">{{ ui.bulk_price_note }}</div>
+        </div>
+    </div>
+
     {# Products Table #}
     {% if products|length > 0 %}
         <form method="post" action="{{ path('admin_product_web_bulk_delete') }}" id="bulkForm">
             <input type="hidden" name="_token" value="{{ csrf_token('product_bulk_delete') }}">
+            <input type="hidden" name="lang" value="{{ currentLocale }}">
 
             <div class="mb-3" id="bulkActions" style="display: none;">
                 <button type="button" class="btn btn-danger btn-sm" id="bulkDeleteBtn">
-                    <i class="bi bi-trash"></i> Seçilenleri Sil (<span id="selectedCount">0</span>)
+                    <i class="bi bi-trash"></i> {{ ui.bulk_delete_selected }} (<span id="selectedCount">0</span>)
                 </button>
             </div>
 
@@ -117,17 +387,18 @@
                             <th style="width: 40px;">
                                 <input type="checkbox" class="form-check-input" id="selectAll">
                             </th>
-                            <th style="width: 60px;">Görsel</th>
-                            <th>Ad</th>
-                            <th>Kategori</th>
-                            <th>Fiyat</th>
-                            <th>Durum</th>
-                            <th style="width: 140px;">Aksiyonlar</th>
+                            <th style="width: 60px;">{{ ui.image }}</th>
+                            <th>{{ ui.name }}</th>
+                            <th>{{ ui.category }}</th>
+                            <th>{{ ui.price }}</th>
+                            <th>{{ ui.status }}</th>
+                            <th style="width: 140px;">{{ ui.actions }}</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for product in products %}
-                            <tr>
+                            {% for product in products %}
+                                {% set productLabel = productView[product.id] ?? {'name': product.name, 'description': product.description, 'categoryName': product.category.name} %}
+                                <tr>
                                 <td>
                                     <input type="checkbox" class="form-check-input product-checkbox"
                                            name="uuids[]" value="{{ product.uuid }}">
@@ -136,7 +407,7 @@
                                     {% if product.images|length > 0 %}
                                         {% set firstImage = product.images|first %}
                                         <img src="{{ media_thumb_url(firstImage.media.storagePath) }}"
-                                             alt="{{ product.name }}"
+                                             alt="{{ productLabel.name }}"
                                              class="product-thumb"
                                              onerror="this.src='{{ media_url(firstImage.media.storagePath) }}'">
                                     {% else %}
@@ -146,18 +417,18 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <strong>{{ product.name }}</strong>
+                                    <strong>{{ productLabel.name }}</strong>
                                     {% if product.isFeatured %}
-                                        <span class="badge bg-warning text-dark ms-1" title="Öne Çıkan">
+                                        <span class="badge bg-warning text-dark ms-1" title="{{ ui.featured }}">
                                             <i class="bi bi-star-fill"></i>
                                         </span>
                                     {% endif %}
-                                    {% if product.description %}
-                                        <br><small class="text-muted">{{ product.description|length > 60 ? product.description|slice(0, 60) ~ '...' : product.description }}</small>
+                                    {% if productLabel.description %}
+                                        <br><small class="text-muted">{{ productLabel.description|length > 60 ? productLabel.description|slice(0, 60) ~ '...' : productLabel.description }}</small>
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <span class="badge bg-light text-dark">{{ product.category.name }}</span>
+                                    <span class="badge bg-light text-dark">{{ productLabel.categoryName }}</span>
                                 </td>
                                 <td>
                                     <strong>{{ product.price|number_format(2, ',', '.') }} ₺</strong>
@@ -166,21 +437,21 @@
                                     <span class="badge status-badge {{ product.isActive ? 'bg-success' : 'bg-secondary' }}"
                                           data-uuid="{{ product.uuid }}"
                                           data-token="{{ csrf_token('product_toggle_' ~ product.uuid) }}"
-                                          title="Durumu değiştirmek için tıklayın"
+                                          title="{{ ui.toggle_status_title }}"
                                           onclick="toggleActive(this)">
-                                        {{ product.isActive ? 'Aktif' : 'Pasif' }}
+                                        {{ product.isActive ? ui.active : ui.passive }}
                                     </span>
                                 </td>
                                 <td>
-                                    <a href="{{ path('admin_product_web_edit', {uuid: product.uuid}) }}"
-                                       class="btn btn-sm btn-outline-primary" title="Düzenle">
+                                    <a href="{{ path('admin_product_web_edit', {uuid: product.uuid, lang: currentLocale}) }}"
+                                       class="btn btn-sm btn-outline-primary" title="{{ ui.edit }}">
                                         <i class="bi bi-pencil"></i>
                                     </a>
                                     <button type="button" class="btn btn-sm btn-outline-danger delete-btn"
                                             data-uuid="{{ product.uuid }}"
-                                            data-name="{{ product.name }}"
+                                            data-name="{{ productLabel.name }}"
                                             data-token="{{ csrf_token('product_delete_' ~ product.uuid) }}"
-                                            title="Sil">
+                                            title="{{ ui.delete }}">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </td>
@@ -196,21 +467,21 @@
             <nav class="mt-4">
                 <ul class="pagination justify-content-center">
                     <li class="page-item {{ currentPage == 1 ? 'disabled' : '' }}">
-                        <a class="page-link" href="{{ path('admin_product_web_index', {page: currentPage - 1, search: search, category: categoryUuid}) }}">
+                        <a class="page-link" href="{{ path('admin_product_web_index', {page: currentPage - 1, search: search, category: categoryUuid, lang: currentLocale}) }}">
                             <i class="bi bi-chevron-left"></i>
                         </a>
                     </li>
                     {% for p in 1..totalPages %}
                         {% if p == currentPage or (p >= currentPage - 2 and p <= currentPage + 2) or p == 1 or p == totalPages %}
                             <li class="page-item {{ p == currentPage ? 'active' : '' }}">
-                                <a class="page-link" href="{{ path('admin_product_web_index', {page: p, search: search, category: categoryUuid}) }}">{{ p }}</a>
+                                <a class="page-link" href="{{ path('admin_product_web_index', {page: p, search: search, category: categoryUuid, lang: currentLocale}) }}">{{ p }}</a>
                             </li>
                         {% elseif p == currentPage - 3 or p == currentPage + 3 %}
                             <li class="page-item disabled"><span class="page-link">…</span></li>
                         {% endif %}
                     {% endfor %}
                     <li class="page-item {{ currentPage == totalPages ? 'disabled' : '' }}">
-                        <a class="page-link" href="{{ path('admin_product_web_index', {page: currentPage + 1, search: search, category: categoryUuid}) }}">
+                        <a class="page-link" href="{{ path('admin_product_web_index', {page: currentPage + 1, search: search, category: categoryUuid, lang: currentLocale}) }}">
                             <i class="bi bi-chevron-right"></i>
                         </a>
                     </li>
@@ -221,16 +492,16 @@
         <div class="empty-state">
             <i class="bi bi-box-seam"></i>
             {% if search or categoryUuid %}
-                <h5>Aramanızla eşleşen ürün bulunamadı</h5>
-                <p>Farklı bir arama terimi veya kategori deneyin.</p>
-                <a href="{{ path('admin_product_web_index') }}" class="btn btn-outline-primary mt-2">
-                    Filtreleri Temizle
+                <h5>{{ ui.no_results_title }}</h5>
+                <p>{{ ui.no_results_body }}</p>
+                <a href="{{ path('admin_product_web_index', {lang: currentLocale}) }}" class="btn btn-outline-primary mt-2">
+                    {{ ui.clear_filters }}
                 </a>
             {% else %}
-                <h5>Henüz ürün eklenmemiş</h5>
-                <p>İlk ürününüzü ekleyerek başlayın.</p>
-                <a href="{{ path('admin_product_web_create') }}" class="btn btn-primary mt-2">
-                    <i class="bi bi-plus-lg"></i> Yeni Ürün Ekle
+                <h5>{{ ui.empty_title }}</h5>
+                <p>{{ ui.empty_body }}</p>
+                <a href="{{ path('admin_product_web_create', {lang: currentLocale}) }}" class="btn btn-primary mt-2">
+                    <i class="bi bi-plus-lg"></i> {{ ui.add_first_product }}
                 </a>
             {% endif %}
         </div>
@@ -242,19 +513,20 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Ürünü Sil</h5>
+                <h5 class="modal-title">{{ ui.delete_modal_title }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p><strong id="deleteProductName"></strong> ürününü silmek istediğinize emin misiniz?</p>
-                <p class="text-muted mb-0">Bu işlem geri alınamaz.</p>
+                <p><strong id="deleteProductName"></strong> {{ ui.delete_modal_body }}</p>
+                <p class="text-muted mb-0">{{ ui.delete_modal_note }}</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ ui.cancel }}</button>
                 <form method="post" id="deleteForm" class="d-inline">
                     <input type="hidden" name="_token" id="deleteToken">
+                    <input type="hidden" name="lang" value="{{ currentLocale }}">
                     <button type="submit" class="btn btn-danger">
-                        <i class="bi bi-trash"></i> Sil
+                        <i class="bi bi-trash"></i> {{ ui.delete }}
                     </button>
                 </form>
             </div>
@@ -267,17 +539,17 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Toplu Silme</h5>
+                <h5 class="modal-title">{{ ui.bulk_delete_title }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p><strong id="bulkDeleteCount"></strong> ürünü silmek istediğinize emin misiniz?</p>
-                <p class="text-muted mb-0">Bu işlem geri alınamaz.</p>
+                <p><strong id="bulkDeleteCount"></strong> {{ ui.bulk_delete_body }}</p>
+                <p class="text-muted mb-0">{{ ui.delete_modal_note }}</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ ui.cancel }}</button>
                 <button type="button" class="btn btn-danger" id="confirmBulkDelete">
-                    <i class="bi bi-trash"></i> Sil
+                    <i class="bi bi-trash"></i> {{ ui.delete }}
                 </button>
             </div>
         </div>
@@ -319,7 +591,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const token = this.dataset.token;
 
             document.getElementById('deleteProductName').textContent = name;
-            document.getElementById('deleteForm').action = '/admin/products/' + uuid + '/delete';
+            document.getElementById('deleteForm').action = '/admin/products/' + uuid + '/delete?lang={{ currentLocale }}';
             document.getElementById('deleteToken').value = token;
 
             new bootstrap.Modal(document.getElementById('deleteModal')).show();
@@ -348,7 +620,7 @@ function toggleActive(el) {
     const uuid = el.dataset.uuid;
     const token = el.dataset.token;
 
-    fetch('/admin/products/' + uuid + '/toggle-active', {
+    fetch('/admin/products/' + uuid + '/toggle-active?lang={{ currentLocale }}', {
         method: 'POST',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: '_token=' + encodeURIComponent(token)
@@ -356,12 +628,12 @@ function toggleActive(el) {
     .then(r => r.json())
     .then(data => {
         if (data.success) {
-            el.textContent = data.isActive ? 'Aktif' : 'Pasif';
+            el.textContent = data.isActive ? '{{ ui.active }}' : '{{ ui.passive }}';
             el.className = 'badge status-badge ' + (data.isActive ? 'bg-success' : 'bg-secondary');
         }
     })
     .catch(() => {
-        alert('Bir hata oluştu.');
+        alert('{{ ui.error_generic }}');
     });
 }
 </script>

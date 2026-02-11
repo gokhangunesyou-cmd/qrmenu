@@ -1,0 +1,469 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ postView.metaTitle ?: postView.title }} | Altay QR Menu{% endblock %}
+{% block meta_description %}{{ (postView.metaDescription ?: postView.body|striptags|slice(0, 155)) ~ (((postView.metaDescription ?: postView.body|striptags)|length > 155) ? '...' : '') }}{% endblock %}
+{% block meta_keywords %}qr menu, karekod menu, dijital menu, restoran menu yonetimi{% endblock %}
+{% block canonical_url %}{{ absolute_url(path('site_blog_detail', {slug: post.slug, lang: currentLocale})) }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_title %}{{ postView.metaTitle ?: postView.title }} | Altay QR Menu{% endblock %}
+{% block og_description %}{{ (postView.metaDescription ?: postView.body|striptags|slice(0, 155)) ~ (((postView.metaDescription ?: postView.body|striptags)|length > 155) ? '...' : '') }}{% endblock %}
+{% block og_url %}{{ absolute_url(path('site_blog_detail', {slug: post.slug, lang: currentLocale})) }}{% endblock %}
+{% block og_image %}{{ absolute_url('/assets/slider/banner-3.svg') }}{% endblock %}
+{% block twitter_title %}{{ postView.metaTitle ?: postView.title }} | Altay QR Menu{% endblock %}
+{% block twitter_description %}{{ (postView.metaDescription ?: postView.body|striptags|slice(0, 155)) ~ (((postView.metaDescription ?: postView.body|striptags)|length > 155) ? '...' : '') }}{% endblock %}
+{% block twitter_image %}{{ absolute_url('/assets/slider/banner-3.svg') }}{% endblock %}
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "{{ postView.title|e('js') }}",
+  "description": "{{ (postView.metaDescription ?: postView.body|striptags|slice(0, 155))|e('js') }}",
+  "datePublished": "{{ post.publishedAt ? post.publishedAt|date('c') : post.createdAt|date('c') }}",
+  "dateModified": "{{ post.updatedAt|date('c') }}",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "{{ absolute_url(path('site_blog_detail', {slug: post.slug, lang: currentLocale})) }}"
+  },
+  "author": {
+    "@type": "Organization",
+    "name": "Altay QR Menu"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Altay QR Menu",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "{{ absolute_url('/assets/slider/banner-1.svg') }}"
+    }
+  },
+  "image": "{{ absolute_url('/assets/slider/banner-3.svg') }}",
+  "inLanguage": "{{ currentLocale }}"
+}
+</script>
+{% endblock %}
+
+{% block stylesheets %}
+<style>
+    :root {
+        --bg: #f9fafb;
+        --panel: #ffffff;
+        --ink: #111827;
+        --muted: #4b5563;
+        --line: #d1d5db;
+        --brand: #0f766e;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        font-family: "Manrope", sans-serif;
+        color: var(--ink);
+        background:
+            radial-gradient(circle at 14% 8%, rgba(15, 118, 110, 0.1) 0%, rgba(15, 118, 110, 0) 34%),
+            linear-gradient(180deg, #fcfdfd 0%, #f9fafb 50%, #f3f4f6 100%);
+    }
+
+    .container {
+        width: min(900px, 92vw);
+        margin: 0 auto;
+    }
+
+    .nav-wrap {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        backdrop-filter: blur(6px);
+        background: rgba(249, 250, 251, 0.85);
+        border-bottom: 1px solid var(--line);
+    }
+
+    .nav {
+        display: flex;
+        gap: 12px;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 0;
+    }
+
+    .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-family: "Plus Jakarta Sans", sans-serif;
+        font-weight: 700;
+        color: var(--ink);
+        text-decoration: none;
+    }
+
+    .brand-mark {
+        width: 30px;
+        height: 30px;
+        border-radius: 9px;
+        background: linear-gradient(140deg, var(--brand), #2d6a54);
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.78rem;
+        font-weight: 800;
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 14px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .nav-links a {
+        text-decoration: none;
+        color: var(--muted);
+        font-weight: 600;
+    }
+
+    .nav-cta {
+        background: var(--brand);
+        color: #fff !important;
+        padding: 8px 12px;
+        border-radius: 10px;
+    }
+
+    .lang-flags {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 6px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: #fff;
+    }
+
+    .lang-flag {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        text-decoration: none;
+        font-size: 1rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .lang-flag.active {
+        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.18);
+        transform: translateY(-1px);
+    }
+
+    .top {
+        padding: 24px 0 12px;
+    }
+
+    .crumb {
+        color: var(--muted);
+        text-decoration: none;
+        font-weight: 700;
+    }
+
+    .post {
+        margin: 4px 0 22px;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: var(--panel);
+        padding: 22px;
+    }
+
+    h1 {
+        margin: 0 0 12px;
+        font-family: "Plus Jakarta Sans", sans-serif;
+        font-size: clamp(1.7rem, 4vw, 2.5rem);
+        line-height: 1.12;
+        letter-spacing: -0.02em;
+    }
+
+    .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        color: var(--muted);
+        font-size: 0.9rem;
+        margin-bottom: 16px;
+    }
+
+    .body {
+        color: #1f2937;
+        line-height: 1.75;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+
+    .comments,
+    .comment-form {
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: var(--panel);
+        padding: 18px;
+        margin-bottom: 16px;
+    }
+
+    h2 {
+        margin: 0 0 12px;
+        font-family: "Plus Jakarta Sans", sans-serif;
+        font-size: 1.2rem;
+    }
+
+    .comment-list {
+        display: grid;
+        gap: 10px;
+    }
+
+    .comment {
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 12px;
+        background: #fafafa;
+    }
+
+    .comment-head {
+        color: var(--muted);
+        font-size: 0.85rem;
+        margin-bottom: 6px;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    label {
+        display: block;
+        margin: 10px 0 6px;
+        font-size: 0.9rem;
+        font-weight: 700;
+    }
+
+    input,
+    textarea {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 10px 11px;
+        font-family: inherit;
+    }
+
+    textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    button {
+        margin-top: 10px;
+        border: 0;
+        background: var(--brand);
+        color: #fff;
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .flash {
+        border-radius: 10px;
+        padding: 10px 11px;
+        margin-bottom: 10px;
+        font-size: 0.92rem;
+    }
+
+    .flash-success {
+        border: 1px solid #86efac;
+        background: #f0fdf4;
+        color: #166534;
+    }
+
+    .flash-error {
+        border: 1px solid #fca5a5;
+        background: #fef2f2;
+        color: #991b1b;
+    }
+
+    footer {
+        margin: 18px 0 24px;
+        color: var(--muted);
+        font-size: 0.92rem;
+        border-top: 1px solid var(--line);
+        padding-top: 16px;
+    }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+{% set ui = {
+    tr: {
+        features: 'Özellikler',
+        plans: 'Planlar',
+        blog: 'Blog',
+        contact: 'İletişim',
+        back_blog: 'Bloga dön',
+        home: 'Anasayfa',
+        reads: 'okunma',
+        comments_count: 'yorum',
+        comments: 'Yorumlar',
+        no_comments: 'Henüz yorum yok.',
+        add_comment: 'Yorum Ekle',
+        name: 'Adınız',
+        your_comment: 'Yorumunuz',
+        send_comment: 'Yorumu Gönder'
+    },
+    en: {
+        features: 'Features',
+        plans: 'Plans',
+        blog: 'Blog',
+        contact: 'Contact',
+        back_blog: 'Back to blog',
+        home: 'Home',
+        reads: 'views',
+        comments_count: 'comments',
+        comments: 'Comments',
+        no_comments: 'No comments yet.',
+        add_comment: 'Add Comment',
+        name: 'Your name',
+        your_comment: 'Your comment',
+        send_comment: 'Send Comment'
+    },
+    ar: {
+        features: 'الميزات',
+        plans: 'الخطط',
+        blog: 'المدونة',
+        contact: 'التواصل',
+        back_blog: 'العودة إلى المدونة',
+        home: 'الرئيسية',
+        reads: 'مشاهدة',
+        comments_count: 'تعليق',
+        comments: 'التعليقات',
+        no_comments: 'لا توجد تعليقات بعد.',
+        add_comment: 'أضف تعليقًا',
+        name: 'اسمك',
+        your_comment: 'تعليقك',
+        send_comment: 'إرسال التعليق'
+    },
+    ru: {
+        features: 'Функции',
+        plans: 'Тарифы',
+        blog: 'Блог',
+        contact: 'Контакты',
+        back_blog: 'Назад к блогу',
+        home: 'Главная',
+        reads: 'просмотров',
+        comments_count: 'комментариев',
+        comments: 'Комментарии',
+        no_comments: 'Пока нет комментариев.',
+        add_comment: 'Добавить комментарий',
+        name: 'Ваше имя',
+        your_comment: 'Ваш комментарий',
+        send_comment: 'Отправить комментарий'
+    }
+}[currentLocale] ?? {
+    features: 'Features',
+    plans: 'Plans',
+    blog: 'Blog',
+    contact: 'Contact',
+    back_blog: 'Back to blog',
+    home: 'Home',
+    reads: 'views',
+    comments_count: 'comments',
+    comments: 'Comments',
+    no_comments: 'No comments yet.',
+    add_comment: 'Add Comment',
+    name: 'Your name',
+    your_comment: 'Your comment',
+    send_comment: 'Send Comment'
+} %}
+<div class="nav-wrap">
+    <div class="container">
+        <nav class="nav">
+            <a class="brand" href="{{ path('site_home', {lang: currentLocale}) }}">
+                <span class="brand-mark">AQ</span>
+                <span>{{ cms.headerBrand }}</span>
+            </a>
+            <div class="nav-links">
+                <a href="{{ path('site_home', {lang: currentLocale}) }}#ozellikler">{{ ui.features }}</a>
+                <a href="{{ path('site_home', {lang: currentLocale}) }}#plans">{{ ui.plans }}</a>
+                <a href="{{ path('site_blog_index', {lang: currentLocale}) }}">{{ ui.blog }}</a>
+                <a href="{{ path('site_home', {lang: currentLocale}) }}#contact">{{ ui.contact }}</a>
+                <div class="lang-flags" role="group" aria-label="Language">
+                    {% for localeCode, localeLabel in availableLocales %}
+                        <a class="lang-flag {{ localeCode == currentLocale ? 'active' : '' }}" href="{{ path('site_blog_detail', {slug: post.slug, lang: localeCode}) }}" title="{{ localeLabel }}">
+                            {% if localeCode == 'tr' %}🇹🇷{% elseif localeCode == 'en' %}🇬🇧{% elseif localeCode == 'ar' %}🇸🇦{% elseif localeCode == 'ru' %}🇷🇺{% else %}🌐{% endif %}
+                        </a>
+                    {% endfor %}
+                </div>
+                <a href="{{ cms.headerCtaUrl }}" class="nav-cta">{{ cms.headerCtaText }}</a>
+            </div>
+        </nav>
+    </div>
+</div>
+
+<div class="container">
+    <div class="top">
+        <a class="crumb" href="{{ path('site_blog_index', {lang: currentLocale}) }}">{{ ui.back_blog }}</a> |
+        <a class="crumb" href="{{ path('site_home', {lang: currentLocale}) }}">{{ ui.home }}</a>
+    </div>
+
+    <article class="post">
+        <h1>{{ postView.title }}</h1>
+        <div class="meta">
+            <span>{{ post.publishedAt ? post.publishedAt|date('d.m.Y H:i') : '-' }}</span>
+            <span>{{ post.viewCount }} {{ ui.reads }}</span>
+            <span>{{ comments|length }} {{ ui.comments_count }}</span>
+        </div>
+        <div class="body">{{ postView.body }}</div>
+    </article>
+
+    <section class="comments">
+        <h2>{{ ui.comments }}</h2>
+        <div class="comment-list">
+            {% for comment in comments %}
+                <article class="comment">
+                    <div class="comment-head">
+                        <strong>{{ comment.authorName }}</strong>
+                        <span>{{ comment.createdAt|date('d.m.Y H:i') }}</span>
+                    </div>
+                    <div>{{ comment.body }}</div>
+                </article>
+            {% else %}
+                <p>{{ ui.no_comments }}</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="comment-form">
+        <h2>{{ ui.add_comment }}</h2>
+
+        {% for message in app.flashes('success') %}
+            <div class="flash flash-success">{{ message }}</div>
+        {% endfor %}
+
+        {% for message in app.flashes('error') %}
+            <div class="flash flash-error">{{ message }}</div>
+        {% endfor %}
+
+        <form method="post" action="{{ path('site_blog_comment_create', {slug: post.slug, lang: currentLocale}) }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('blog_comment_' ~ post.id) }}">
+            <input type="hidden" name="lang" value="{{ currentLocale }}">
+
+            <label for="author_name">{{ ui.name }}</label>
+            <input id="author_name" name="author_name" maxlength="120" required>
+
+            <label for="body">{{ ui.your_comment }}</label>
+            <textarea id="body" name="body" maxlength="3000" required></textarea>
+
+            <button type="submit">{{ ui.send_comment }}</button>
+        </form>
+    </section>
+
+    <footer>
+        {{ cms.footerText }}
+    </footer>
+</div>
+{% endblock %}

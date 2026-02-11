@@ -1,0 +1,413 @@
+{% extends 'base.html.twig' %}
+
+{% set meta = {
+    tr: {
+        title: 'Altay QR Menu | Uyelik',
+        description: 'QR menu ve karekod menu sistemi icin restoran uyelik sayfasi. Plan secimi ile hizli kurulum baslatin.',
+        keywords: 'qr menu fiyatlari, qr menu uyelik, karekod menu paketleri',
+        og_description: 'Restoraniniz icin QR menu planini secin, dijital menu altyapisini hemen baslatin.',
+        twitter_description: 'QR menu plani secimi ve hizli uyelik olusturma sayfasi.'
+    },
+    en: {
+        title: 'Altay QR Menu | Subscription',
+        description: 'Restaurant subscription page for QR menu and QR code menu. Start fast setup by choosing a plan.',
+        keywords: 'qr menu pricing, qr menu subscription, qr code menu packages',
+        og_description: 'Choose a QR menu plan for your restaurant and start your digital menu infrastructure today.',
+        twitter_description: 'Plan selection and quick subscription setup for QR menus.'
+    },
+    ar: {
+        title: 'Altay QR Menu | الاشتراك',
+        description: 'صفحة اشتراك المطاعم لقائمة QR وقائمة رمز QR. ابدأ الإعداد بسرعة عبر اختيار الخطة.',
+        keywords: 'أسعار قائمة qr، اشتراك قائمة qr، باقات قائمة رمز qr',
+        og_description: 'اختر خطة قائمة QR لمطعمك وابدأ البنية الرقمية فورًا.',
+        twitter_description: 'اختيار خطة وإنشاء اشتراك سريع لقوائم QR.'
+    },
+    ru: {
+        title: 'Altay QR Menu | Подписка',
+        description: 'Страница подписки для QR-меню и меню с QR-кодом. Быстрый старт через выбор тарифа.',
+        keywords: 'цены qr меню, подписка qr меню, пакеты меню с qr кодом',
+        og_description: 'Выберите тариф QR-меню для ресторана и запустите цифровое меню.',
+        twitter_description: 'Выбор тарифа и быстрое оформление подписки для QR-меню.'
+    }
+}[currentLocale] ?? {
+    title: 'Altay QR Menu | Subscription',
+    description: 'Restaurant subscription page for QR menu and QR code menu. Start fast setup by choosing a plan.',
+    keywords: 'qr menu pricing, qr menu subscription, qr code menu packages',
+    og_description: 'Choose a QR menu plan for your restaurant and start your digital menu infrastructure today.',
+    twitter_description: 'Plan selection and quick subscription setup for QR menus.'
+} %}
+
+{% set ui = {
+    tr: {
+        features: 'Özellikler',
+        plans: 'Planlar',
+        blog: 'Blog',
+        contact: 'İletişim',
+        title: 'Plan Se ve Üyeliği Başlat',
+        choose_plan: 'Plan',
+        choose_plan_placeholder: 'Plan seçiniz',
+        account_name: 'Müşteri/İşletme Adı',
+        restaurant_name: 'Restoran Adı',
+        first_name: 'Ad',
+        last_name: 'Soyad',
+        email: 'E-posta',
+        password: 'Şifre',
+        create: 'Üyeliği Oluştur',
+        price_suffix: '/ yil'
+    },
+    en: {
+        features: 'Features',
+        plans: 'Plans',
+        blog: 'Blog',
+        contact: 'Contact',
+        title: 'Choose Plan and Start Subscription',
+        choose_plan: 'Plan',
+        choose_plan_placeholder: 'Select a plan',
+        account_name: 'Customer/Business Name',
+        restaurant_name: 'Restaurant Name',
+        first_name: 'First Name',
+        last_name: 'Last Name',
+        email: 'Email',
+        password: 'Password',
+        create: 'Create Subscription',
+        price_suffix: '/ year'
+    },
+    ar: {
+        features: 'الميزات',
+        plans: 'الخطط',
+        blog: 'المدونة',
+        contact: 'التواصل',
+        title: 'اختر الخطة وابدأ الاشتراك',
+        choose_plan: 'الخطة',
+        choose_plan_placeholder: 'اختر خطة',
+        account_name: 'اسم العميل/النشاط',
+        restaurant_name: 'اسم المطعم',
+        first_name: 'الاسم الأول',
+        last_name: 'اسم العائلة',
+        email: 'البريد الإلكتروني',
+        password: 'كلمة المرور',
+        create: 'إنشاء اشتراك',
+        price_suffix: '/ سنة'
+    },
+    ru: {
+        features: 'Функции',
+        plans: 'Тарифы',
+        blog: 'Блог',
+        contact: 'Контакты',
+        title: 'Выберите тариф и начните подписку',
+        choose_plan: 'Тариф',
+        choose_plan_placeholder: 'Выберите тариф',
+        account_name: 'Название клиента/бизнеса',
+        restaurant_name: 'Название ресторана',
+        first_name: 'Имя',
+        last_name: 'Фамилия',
+        email: 'Email',
+        password: 'Пароль',
+        create: 'Создать подписку',
+        price_suffix: '/ год'
+    }
+}[currentLocale] ?? {
+    features: 'Features',
+    plans: 'Plans',
+    blog: 'Blog',
+    contact: 'Contact',
+    title: 'Choose Plan and Start Subscription',
+    choose_plan: 'Plan',
+    choose_plan_placeholder: 'Select a plan',
+    account_name: 'Customer/Business Name',
+    restaurant_name: 'Restaurant Name',
+    first_name: 'First Name',
+    last_name: 'Last Name',
+    email: 'Email',
+    password: 'Password',
+    create: 'Create Subscription',
+    price_suffix: '/ year'
+} %}
+
+{% set planMeta = {
+    tr: {
+        duration_suffixes: { free: '/ 3 ay', starter: '/ 1 yil', branch10: '/ 1 yil', premium: '/ 1 yil' },
+        old_prices: { starter: '599', branch10: '2999' },
+        display_prices: { free: '0', starter: '0', branch10: '0', premium: '5000' }
+    },
+    en: {
+        duration_suffixes: { free: '/ 3 months', starter: '/ 1 year', branch10: '/ 1 year', premium: '/ 1 year' },
+        old_prices: { starter: '599', branch10: '2999' },
+        display_prices: { free: '0', starter: '0', branch10: '0', premium: '5000' }
+    }
+}[currentLocale] ?? {
+    duration_suffixes: { free: '/ 3 months', starter: '/ 1 year', branch10: '/ 1 year', premium: '/ 1 year' },
+    old_prices: { starter: '599', branch10: '2999' },
+    display_prices: { free: '0', starter: '0', branch10: '0', premium: '5000' }
+} %}
+
+{% block title %}{{ meta.title }}{% endblock %}
+{% block meta_description %}{{ meta.description }}{% endblock %}
+{% block meta_keywords %}{{ meta.keywords }}{% endblock %}
+{% block canonical_url %}{{ absolute_url(path('site_signup')) }}{% endblock %}
+{% block og_title %}{{ meta.title }}{% endblock %}
+{% block og_description %}{{ meta.og_description }}{% endblock %}
+{% block og_url %}{{ absolute_url(path('site_signup')) }}{% endblock %}
+{% block og_image %}{{ absolute_url('/assets/slider/banner-2.svg') }}{% endblock %}
+{% block twitter_title %}{{ meta.title }}{% endblock %}
+{% block twitter_description %}{{ meta.twitter_description }}{% endblock %}
+{% block twitter_image %}{{ absolute_url('/assets/slider/banner-2.svg') }}{% endblock %}
+
+{% block stylesheets %}
+<style>
+    body {
+        margin: 0;
+        font-family: "Work Sans", sans-serif;
+        background: linear-gradient(160deg, #ecfeff 0%, #f8fafc 45%, #ffffff 100%);
+        color: #0f172a;
+    }
+
+    .container {
+        width: min(1140px, 92vw);
+        margin: 0 auto;
+    }
+
+    .nav-wrap {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        backdrop-filter: blur(8px);
+        background: rgba(236, 254, 255, 0.76);
+        border-bottom: 1px solid #cbd5e1;
+    }
+
+    .nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 15px 0;
+    }
+
+    .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-family: "Space Grotesk", sans-serif;
+        font-weight: 700;
+        color: #0f172a;
+        text-decoration: none;
+    }
+
+    .brand-mark {
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        background: linear-gradient(140deg, #0f766e, #14b8a6);
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.82rem;
+        font-weight: 800;
+    }
+
+    .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+    }
+
+    .nav-links a {
+        text-decoration: none;
+        color: #334155;
+        font-weight: 600;
+    }
+
+    .nav-cta {
+        background: #0f766e;
+        color: #fff !important;
+        border-radius: 10px;
+        padding: 9px 12px;
+    }
+
+    .lang-flags {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 6px;
+        border-radius: 999px;
+        border: 1px solid #cbd5e1;
+        background: #fff;
+    }
+
+    .lang-flag {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        text-decoration: none;
+        font-size: 1rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .lang-flag.active {
+        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.18);
+        transform: translateY(-1px);
+    }
+
+    .wrap {
+        width: min(760px, 92vw);
+        margin: 36px auto;
+        background: #fff;
+        border: 1px solid #cbd5e1;
+        border-radius: 18px;
+        padding: 22px;
+    }
+
+    h1 {
+        font-family: "Space Grotesk", sans-serif;
+        margin: 0 0 16px;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    label {
+        font-weight: 600;
+        font-size: 0.92rem;
+        display: block;
+        margin-bottom: 6px;
+    }
+
+    input, select {
+        width: 100%;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        padding: 10px 12px;
+    }
+
+    .full { grid-column: 1 / -1; }
+    .btn {
+        border: 0;
+        background: #0f766e;
+        color: #fff;
+        border-radius: 10px;
+        padding: 11px 14px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .flash {
+        margin-bottom: 10px;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #fecaca;
+        background: #fef2f2;
+        color: #991b1b;
+    }
+
+    footer {
+        width: min(760px, 92vw);
+        margin: 0 auto 24px;
+        color: #475569;
+        border-top: 1px solid #cbd5e1;
+        padding-top: 14px;
+        font-size: 0.92rem;
+    }
+
+    @media (max-width: 760px) {
+        .grid { grid-template-columns: 1fr; }
+    }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+<div class="nav-wrap">
+    <div class="container">
+        <nav class="nav">
+            <a class="brand" href="{{ path('site_home', {lang: currentLocale}) }}">
+                <span class="brand-mark">AQ</span>
+                <span>{{ cms.headerBrand }}</span>
+            </a>
+            <div class="nav-links">
+                <a href="{{ path('site_home', {lang: currentLocale}) }}#ozellikler">{{ ui.features }}</a>
+                <a href="{{ path('site_home', {lang: currentLocale}) }}#plans">{{ ui.plans }}</a>
+                <a href="{{ path('site_blog_index', {lang: currentLocale}) }}">{{ ui.blog }}</a>
+                <a href="{{ path('site_home', {lang: currentLocale}) }}#contact">{{ ui.contact }}</a>
+                <div class="lang-flags" role="group" aria-label="Language">
+                    {% for localeCode, localeLabel in availableLocales %}
+                        <a class="lang-flag {{ localeCode == currentLocale ? 'active' : '' }}" href="{{ path('site_signup', {lang: localeCode}) }}" title="{{ localeLabel }}">
+                            {% if localeCode == 'tr' %}🇹🇷{% elseif localeCode == 'en' %}🇬🇧{% elseif localeCode == 'ar' %}🇸🇦{% elseif localeCode == 'ru' %}🇷🇺{% else %}🌐{% endif %}
+                        </a>
+                    {% endfor %}
+                </div>
+                <a href="{{ cms.headerCtaUrl }}" class="nav-cta">{{ cms.headerCtaText }}</a>
+            </div>
+        </nav>
+    </div>
+</div>
+
+<div class="wrap">
+    <h1>{{ ui.title }}</h1>
+    {% for message in app.flashes('error') %}
+        <div class="flash">{{ message }}</div>
+    {% endfor %}
+
+    <form method="post">
+        <input type="hidden" name="_token" value="{{ csrf_token('site_signup') }}">
+        <input type="hidden" name="lang" value="{{ currentLocale }}">
+        <div class="grid">
+            <div class="full">
+                <label>{{ ui.choose_plan }}</label>
+                <select name="plan_code" required>
+                    <option value="">{{ ui.choose_plan_placeholder }}</option>
+                    {% for plan in plans %}
+                        {% set planCode = plan.code|lower %}
+                        {% set planOldPrice = planMeta.old_prices[planCode] ?? null %}
+                        {% set planDisplayPrice = planMeta.display_prices[planCode] ?? plan.yearlyPrice %}
+                        {% set planDurationSuffix = planMeta.duration_suffixes[planCode] ?? ui.price_suffix %}
+                        <option value="{{ plan.code }}">
+                            {{ plan.name }} - {% if planOldPrice %}{{ planOldPrice }} TRY -> {% endif %}{{ planDisplayPrice }} TRY {{ planDurationSuffix }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label>{{ ui.account_name }}</label>
+                <input name="account_name" required>
+            </div>
+            <div>
+                <label>{{ ui.restaurant_name }}</label>
+                <input name="restaurant_name" required>
+            </div>
+            <div>
+                <label>{{ ui.first_name }}</label>
+                <input name="first_name" required>
+            </div>
+            <div>
+                <label>{{ ui.last_name }}</label>
+                <input name="last_name" required>
+            </div>
+            <div>
+                <label>{{ ui.email }}</label>
+                <input type="email" name="email" required>
+            </div>
+            <div>
+                <label>{{ ui.password }}</label>
+                <input type="password" name="password" minlength="8" required>
+            </div>
+            <div class="full">
+                <button class="btn">{{ ui.create }}</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<footer>
+    {{ cms.footerText }}
+</footer>
+{% endblock %}

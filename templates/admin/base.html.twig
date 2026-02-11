@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="{{ app.request ? (app.request.get('lang') ?: 'tr') : 'tr' }}" dir="{{ (app.request ? (app.request.get('lang') ?: 'tr') : 'tr') == 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -30,6 +30,8 @@
             background: radial-gradient(circle at top left, #eef2ff 0%, #f8fafc 40%, #ffffff 100%);
             color: var(--ink-900);
             min-height: 100vh;
+            font-size: 0.95rem;
+            line-height: 1.45;
         }
 
         h1, h2, h3, h4, h5, .brand-title {
@@ -43,36 +45,43 @@
         }
 
         .sidebar {
-            width: 260px;
+            width: 228px;
             background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
             color: #e2e8f0;
-            padding: 1.75rem 1.5rem;
+            padding: 1.1rem 0.9rem;
             position: sticky;
             top: 0;
             height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            flex-shrink: 0;
         }
 
         .sidebar .brand {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 2rem;
+            gap: 0.6rem;
+            margin-bottom: 1.25rem;
         }
 
         .brand-mark {
-            width: 44px;
-            height: 44px;
-            border-radius: 14px;
+            width: 36px;
+            height: 36px;
+            border-radius: 11px;
             background: linear-gradient(135deg, #2563eb, #22d3ee);
             display: grid;
             place-items: center;
             color: #fff;
-            font-size: 1.2rem;
+            font-size: 1rem;
+        }
+
+        .brand-title {
+            font-size: 1rem;
         }
 
         .nav-section {
-            margin-top: 1.5rem;
-            font-size: 0.75rem;
+            margin-top: 1rem;
+            font-size: 0.68rem;
             text-transform: uppercase;
             letter-spacing: 0.08em;
             color: rgba(226, 232, 240, 0.6);
@@ -82,14 +91,15 @@
             color: #e2e8f0;
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            padding: 0.6rem 0.8rem;
-            border-radius: 12px;
-            margin-top: 0.35rem;
+            gap: 0.6rem;
+            padding: 0.5rem 0.6rem;
+            border-radius: 10px;
+            margin-top: 0.2rem;
+            font-size: 0.9rem;
         }
 
         .nav-link i {
-            font-size: 1.1rem;
+            font-size: 0.95rem;
         }
 
         .nav-link.active,
@@ -100,7 +110,8 @@
 
         .content {
             flex: 1;
-            padding: 2rem 2.5rem 3rem;
+            min-width: 0;
+            padding: 1.5rem 1.75rem 2.25rem;
         }
 
         .topbar {
@@ -108,23 +119,51 @@
             align-items: center;
             justify-content: space-between;
             background: var(--surface-1);
-            border-radius: 20px;
-            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            padding: 0.9rem 1.1rem;
             box-shadow: var(--shadow-soft);
-            margin-bottom: 2rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .lang-flags {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 6px;
+            border-radius: 999px;
+            border: 1px solid var(--border-soft);
+            background: var(--surface-1);
+        }
+
+        .lang-flag {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 999px;
+            text-decoration: none;
+            font-size: 1rem;
+            background: var(--surface-2);
+            border: 0;
+        }
+
+        .lang-flag.active {
+            box-shadow: 0 6px 16px rgba(15, 23, 42, 0.16);
+            transform: translateY(-1px);
         }
 
         .topbar .pill {
             background: var(--surface-2);
-            padding: 0.45rem 0.9rem;
+            padding: 0.4rem 0.75rem;
             border-radius: 999px;
             color: var(--ink-700);
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
 
         .card {
             border: 1px solid var(--border-soft);
-            border-radius: 20px;
+            border-radius: 16px;
             box-shadow: var(--shadow-card);
         }
 
@@ -158,7 +197,7 @@
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
         }
 
         .page-title {
@@ -172,7 +211,7 @@
             color: var(--brand-500);
             border-radius: 999px;
             padding: 0.35rem 0.9rem;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 600;
         }
 
@@ -188,7 +227,7 @@
             }
 
             .content {
-                padding: 1.5rem;
+                padding: 1rem;
             }
 
             .topbar {
@@ -203,64 +242,266 @@
 <body>
 {% if app.user %}
     {% set currentRoute = app.request.attributes.get('_route') %}
+    {% set currentLocale = admin_current_locale() %}
+    {% set availableLocales = admin_available_locales() %}
+    {% set uiAdmin = {
+        tr: {
+            admin_console: 'Yönetim Konsolu',
+            nav: 'Navigasyon',
+            dashboard: 'Panel',
+            restaurant: 'Restoran',
+            categories: 'Kategoriler',
+            products: 'Ürünler',
+            qrcodes: 'QR Kodları',
+            media: 'Medya',
+            membership: 'Üyelik ve Ekip',
+            super_admin: 'Süper Admin',
+            plans: 'Planlar',
+            slider: 'Slider',
+            cms: 'CMS',
+            site_theme: 'Site Teması',
+            widgets: 'Widgetlar',
+            blog: 'Blog',
+            blog_comments: 'Blog Yorumları',
+            subscriptions: 'Abonelikler',
+            account: 'Hesap',
+            active_session: 'Aktif oturum',
+            logout: 'Çıkış',
+            welcome: 'Hoş geldiniz',
+            welcome_subtitle: 'Restoran yönetimini buradan takip edin.',
+            title_chip: 'MVP Admin'
+        },
+        en: {
+            admin_console: 'Admin Console',
+            nav: 'Navigation',
+            dashboard: 'Dashboard',
+            restaurant: 'Restaurant',
+            categories: 'Categories',
+            products: 'Products',
+            qrcodes: 'QR Codes',
+            media: 'Media',
+            membership: 'Membership & Team',
+            super_admin: 'Super Admin',
+            plans: 'Plans',
+            slider: 'Slider',
+            cms: 'CMS',
+            site_theme: 'Site Theme',
+            widgets: 'Widgets',
+            blog: 'Blog',
+            blog_comments: 'Blog Comments',
+            subscriptions: 'Subscriptions',
+            account: 'Account',
+            active_session: 'Active session',
+            logout: 'Logout',
+            welcome: 'Welcome',
+            welcome_subtitle: 'Manage restaurant operations from here.',
+            title_chip: 'MVP Admin'
+        },
+        ar: {
+            admin_console: 'لوحة الإدارة',
+            nav: 'التنقل',
+            dashboard: 'لوحة التحكم',
+            restaurant: 'المطعم',
+            categories: 'الفئات',
+            products: 'المنتجات',
+            qrcodes: 'رموز QR',
+            media: 'الوسائط',
+            membership: 'الاشتراك والفريق',
+            super_admin: 'المسؤول الفائق',
+            plans: 'الخطط',
+            slider: 'السلايدر',
+            cms: 'CMS',
+            site_theme: 'ثيم الموقع',
+            widgets: 'الودجات',
+            blog: 'المدونة',
+            blog_comments: 'تعليقات المدونة',
+            subscriptions: 'الاشتراكات',
+            account: 'الحساب',
+            active_session: 'جلسة نشطة',
+            logout: 'تسجيل الخروج',
+            welcome: 'مرحبًا',
+            welcome_subtitle: 'تابع إدارة المطعم من هنا.',
+            title_chip: 'لوحة MVP'
+        },
+        ru: {
+            admin_console: 'Консоль управления',
+            nav: 'Навигация',
+            dashboard: 'Панель',
+            restaurant: 'Ресторан',
+            categories: 'Категории',
+            products: 'Товары',
+            qrcodes: 'QR-коды',
+            media: 'Медиа',
+            membership: 'Подписка и команда',
+            super_admin: 'Супер админ',
+            plans: 'Тарифы',
+            slider: 'Слайдер',
+            cms: 'CMS',
+            site_theme: 'Тема сайта',
+            widgets: 'Виджеты',
+            blog: 'Блог',
+            blog_comments: 'Комментарии блога',
+            subscriptions: 'Подписки',
+            account: 'Аккаунт',
+            active_session: 'Активная сессия',
+            logout: 'Выйти',
+            welcome: 'Добро пожаловать',
+            welcome_subtitle: 'Управляйте рестораном отсюда.',
+            title_chip: 'MVP Админ'
+        }
+    }[currentLocale] ?? {
+        admin_console: 'Admin Console',
+        nav: 'Navigation',
+        dashboard: 'Dashboard',
+        restaurant: 'Restaurant',
+        categories: 'Categories',
+        products: 'Products',
+        qrcodes: 'QR Codes',
+        media: 'Media',
+        membership: 'Membership & Team',
+        super_admin: 'Super Admin',
+        plans: 'Plans',
+        slider: 'Slider',
+        cms: 'CMS',
+        site_theme: 'Site Temasi',
+        widgets: 'Widgetlar',
+        blog: 'Blog',
+        blog_comments: 'Blog Comments',
+        subscriptions: 'Subscriptions',
+        account: 'Account',
+        active_session: 'Active session',
+        logout: 'Logout',
+        welcome: 'Welcome',
+        welcome_subtitle: 'Manage restaurant operations from here.',
+        title_chip: 'MVP Admin'
+    } %}
     <div class="admin-shell">
         <aside class="sidebar">
             <div class="brand">
                 <div class="brand-mark"><i class="bi bi-qr-code-scan"></i></div>
                 <div>
                     <div class="brand-title fw-semibold">QR Menu</div>
-                    <div class="small text-white-50">Admin Console</div>
+                    <div class="small text-white-50">{{ uiAdmin.admin_console }}</div>
                 </div>
             </div>
 
-            <div class="nav-section">Navigasyon</div>
-            <a class="nav-link {{ currentRoute == 'admin_dashboard' ? 'active' : '' }}" href="{{ path('admin_dashboard') }}">
-                <i class="bi bi-grid-1x2"></i> Dashboard
+            <div class="nav-section">{{ uiAdmin.nav }}</div>
+            <a class="nav-link {{ currentRoute == 'admin_dashboard' ? 'active' : '' }}" href="{{ path('admin_dashboard', {lang: currentLocale}) }}">
+                <i class="bi bi-grid-1x2"></i> {{ uiAdmin.dashboard }}
             </a>
-            <a class="nav-link {{ currentRoute starts with 'admin_restaurant' ? 'active' : '' }}" href="{{ path('admin_restaurant_show') }}">
-                <i class="bi bi-shop-window"></i> Restoran
+            <a class="nav-link {{ currentRoute starts with 'admin_restaurant' ? 'active' : '' }}" href="{{ path('admin_restaurant_show', {lang: currentLocale}) }}">
+                <i class="bi bi-shop-window"></i> {{ uiAdmin.restaurant }}
             </a>
-            <a class="nav-link {{ currentRoute starts with 'admin_category' ? 'active' : '' }}" href="{{ path('admin_category_index') }}">
-                <i class="bi bi-tags"></i> Kategoriler
+            <a class="nav-link {{ currentRoute starts with 'admin_category' ? 'active' : '' }}" href="{{ path('admin_category_index', {lang: currentLocale}) }}">
+                <i class="bi bi-tags"></i> {{ uiAdmin.categories }}
             </a>
-            <a class="nav-link {{ currentRoute starts with 'admin_product_web' ? 'active' : '' }}" href="{{ path('admin_product_web_index') }}">
-                <i class="bi bi-box-seam"></i> Ürünler
+            <a class="nav-link {{ currentRoute starts with 'admin_product_web' ? 'active' : '' }}" href="{{ path('admin_product_web_index', {lang: currentLocale}) }}">
+                <i class="bi bi-box-seam"></i> {{ uiAdmin.products }}
             </a>
-            <a class="nav-link {{ currentRoute starts with 'admin_qrcode' ? 'active' : '' }}" href="{{ path('admin_qrcode_index') }}">
-                <i class="bi bi-qr-code"></i> QR Kodları
+            <a class="nav-link {{ currentRoute starts with 'admin_qrcode' ? 'active' : '' }}" href="{{ path('admin_qrcode_index', {lang: currentLocale}) }}">
+                <i class="bi bi-qr-code"></i> {{ uiAdmin.qrcodes }}
             </a>
-            <a class="nav-link {{ currentRoute starts with 'admin_media' ? 'active' : '' }}" href="{{ path('admin_media_index') }}">
-                <i class="bi bi-image"></i> Medya
+            <a class="nav-link {{ currentRoute starts with 'admin_media' ? 'active' : '' }}" href="{{ path('admin_media_index', {lang: currentLocale}) }}">
+                <i class="bi bi-image"></i> {{ uiAdmin.media }}
             </a>
+            {% if app.user.customerAccount %}
+                <a class="nav-link {{ currentRoute starts with 'admin_account_' ? 'active' : '' }}" href="{{ path('admin_account_index', {lang: currentLocale}) }}">
+                    <i class="bi bi-people"></i> {{ uiAdmin.membership }}
+                </a>
+            {% endif %}
 
-            <div class="nav-section mt-4">Hesap</div>
+            {% if is_granted('ROLE_SUPER_ADMIN') %}
+                <div class="nav-section">{{ uiAdmin.super_admin }}</div>
+                <a class="nav-link {{ currentRoute in ['admin_super_index', 'admin_super_plans'] ? 'active' : '' }}" href="{{ path('admin_super_plans', {lang: currentLocale}) }}">
+                    <i class="bi bi-card-checklist"></i> {{ uiAdmin.plans }}
+                </a>
+                <a class="nav-link {{ currentRoute == 'admin_super_slider' ? 'active' : '' }}" href="{{ path('admin_super_slider', {lang: currentLocale}) }}">
+                    <i class="bi bi-sliders"></i> {{ uiAdmin.slider }}
+                </a>
+                <a class="nav-link {{ currentRoute == 'admin_super_cms' ? 'active' : '' }}" href="{{ path('admin_super_cms', {lang: currentLocale}) }}">
+                    <i class="bi bi-window-stack"></i> {{ uiAdmin.cms }}
+                </a>
+                <a class="nav-link {{ currentRoute == 'admin_super_site_theme' ? 'active' : '' }}" href="{{ path('admin_super_site_theme', {lang: currentLocale}) }}">
+                    <i class="bi bi-palette2"></i> {{ uiAdmin.site_theme }}
+                </a>
+                <a class="nav-link {{ currentRoute == 'admin_super_widgets' ? 'active' : '' }}" href="{{ path('admin_super_widgets', {lang: currentLocale}) }}">
+                    <i class="bi bi-grid-3x3-gap"></i> {{ uiAdmin.widgets }}
+                </a>
+                <a class="nav-link {{ currentRoute starts with 'admin_super_blog' ? 'active' : '' }}" href="{{ path('admin_super_blog_index', {lang: currentLocale}) }}">
+                    <i class="bi bi-journal-richtext"></i> {{ uiAdmin.blog }}
+                </a>
+                <a class="nav-link {{ currentRoute starts with 'admin_super_blog_comment' ? 'active' : '' }}" href="{{ path('admin_super_blog_comments', {lang: currentLocale}) }}">
+                    <i class="bi bi-chat-left-text"></i> {{ uiAdmin.blog_comments }}
+                </a>
+                <a class="nav-link {{ currentRoute == 'admin_super_subscriptions' ? 'active' : '' }}" href="{{ path('admin_super_subscriptions', {lang: currentLocale}) }}">
+                    <i class="bi bi-calendar2-check"></i> {{ uiAdmin.subscriptions }}
+                </a>
+            {% endif %}
+
+            <div class="nav-section mt-4">{{ uiAdmin.account }}</div>
             <div class="d-flex align-items-center gap-2 mt-2 mb-3">
                 <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
                     <i class="bi bi-person"></i>
                 </div>
                 <div class="small">
                     <div class="fw-semibold text-white">{{ app.user.email }}</div>
-                    <div class="text-white-50">Aktif oturum</div>
+                    <div class="text-white-50">{{ uiAdmin.active_session }}</div>
                 </div>
             </div>
             <a class="nav-link" href="{{ path('admin_logout') }}">
-                <i class="bi bi-box-arrow-right"></i> Çıkış
+                <i class="bi bi-box-arrow-right"></i> {{ uiAdmin.logout }}
             </a>
         </aside>
 
         <div class="content">
             <div class="topbar">
                 <div class="page-title">
-                    <div class="title-chip">MVP Admin</div>
+                    <div class="title-chip">{{ uiAdmin.title_chip }}</div>
                     <div>
-                        <div class="fw-semibold">Hoş geldiniz</div>
-                        <div class="text-muted small">Restoran yönetimini buradan takip edin.</div>
+                        <div class="fw-semibold">{{ uiAdmin.welcome }}</div>
+                        <div class="text-muted small">{{ uiAdmin.welcome_subtitle }}</div>
                     </div>
                 </div>
-                <div class="pill">
-                    {{ "now"|date("d.m.Y H:i") }}
+                <div class="d-flex align-items-center gap-2">
+                    {% set currentRestaurant = admin_current_restaurant() %}
+                    {% set selectableRestaurants = admin_selectable_restaurants() %}
+                    {% if selectableRestaurants is not empty %}
+                        <form method="post" action="{{ path('admin_switch_restaurant') }}" class="d-flex align-items-center gap-2">
+                            <input type="hidden" name="_token" value="{{ csrf_token('admin_switch_restaurant') }}">
+                            <input type="hidden" name="lang" value="{{ currentLocale }}">
+                            <select class="form-select form-select-sm" name="restaurant_id" onchange="this.form.submit()" style="min-width: 220px;">
+                                {% for restaurantOption in selectableRestaurants %}
+                                    <option value="{{ restaurantOption.id }}" {{ currentRestaurant and currentRestaurant.id == restaurantOption.id ? 'selected' : '' }}>
+                                        {{ restaurantOption.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                    {% endif %}
+                    {% if availableLocales is not empty %}
+                        <form method="post" action="{{ path('admin_switch_language') }}" class="d-flex align-items-center gap-2">
+                            <input type="hidden" name="_token" value="{{ csrf_token('admin_switch_language') }}">
+                            <div class="lang-flags" role="group" aria-label="Language">
+                                {% for localeCode, localeLabel in availableLocales %}
+                                    <button class="lang-flag {{ localeCode == currentLocale ? 'active' : '' }}" type="submit" name="lang" value="{{ localeCode }}" title="{{ localeLabel }}">
+                                        {% if localeCode == 'tr' %}🇹🇷{% elseif localeCode == 'en' %}🇬🇧{% elseif localeCode == 'ar' %}🇸🇦{% elseif localeCode == 'ru' %}🇷🇺{% else %}🌐{% endif %}
+                                    </button>
+                                {% endfor %}
+                            </div>
+                        </form>
+                    {% endif %}
+                    <div class="pill">
+                        {{ "now"|date("d.m.Y H:i") }}
+                    </div>
                 </div>
             </div>
+
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% endfor %}
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger">{{ message }}</div>
+            {% endfor %}
 
             {{ block('body') }}
         </div>

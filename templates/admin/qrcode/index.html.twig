@@ -1,6 +1,143 @@
 {% extends 'admin/base.html.twig' %}
 
-{% block title %}QR Kodları{% endblock %}
+{% set ui = {
+    tr: {
+        title: 'QR Kodları',
+        count: 'QR kod',
+        create: 'QR Kod Oluştur',
+        preview: 'Önizleme',
+        type: 'Tip',
+        description: 'Açıklama',
+        url: 'URL',
+        date: 'Tarih',
+        download: 'İndir',
+        actions: 'Aksiyonlar',
+        restaurant: 'Restoran',
+        table: 'Masa',
+        table_prefix: 'Masa',
+        main_menu: 'Ana Menü',
+        download_png: 'PNG',
+        download_svg: 'SVG',
+        vector: 'Vektör (SVG)',
+        pdf_templates: 'PDF Tasarimlari',
+        delete: 'Sil',
+        empty_title: 'Henüz QR kod oluşturulmamış',
+        empty_body: 'Restoranınız veya masalarınız için QR kod oluşturun.',
+        delete_modal_title: 'QR Kodu Sil',
+        delete_modal_body: 'QR kodunu silmek istediğinize emin misiniz?',
+        delete_modal_note: 'Bu işlem geri alınamaz.',
+        cancel: 'İptal'
+    },
+    en: {
+        title: 'QR Codes',
+        count: 'QR codes',
+        create: 'Create QR Code',
+        preview: 'Preview',
+        type: 'Type',
+        description: 'Description',
+        url: 'URL',
+        date: 'Date',
+        download: 'Download',
+        actions: 'Actions',
+        restaurant: 'Restaurant',
+        table: 'Table',
+        table_prefix: 'Table',
+        main_menu: 'Main Menu',
+        download_png: 'PNG',
+        download_svg: 'SVG',
+        vector: 'Vector (SVG)',
+        pdf_templates: 'PDF Designs',
+        delete: 'Delete',
+        empty_title: 'No QR codes created yet',
+        empty_body: 'Create QR codes for your restaurant or tables.',
+        delete_modal_title: 'Delete QR Code',
+        delete_modal_body: 'Are you sure you want to delete this QR code?',
+        delete_modal_note: 'This action cannot be undone.',
+        cancel: 'Cancel'
+    },
+    ar: {
+        title: 'رموز QR',
+        count: 'رمز QR',
+        create: 'إنشاء رمز QR',
+        preview: 'المعاينة',
+        type: 'النوع',
+        description: 'الوصف',
+        url: 'الرابط',
+        date: 'التاريخ',
+        download: 'تحميل',
+        actions: 'الإجراءات',
+        restaurant: 'المطعم',
+        table: 'طاولة',
+        table_prefix: 'طاولة',
+        main_menu: 'القائمة الرئيسية',
+        download_png: 'PNG',
+        download_svg: 'SVG',
+        vector: 'متجه (SVG)',
+        pdf_templates: 'تصاميم PDF',
+        delete: 'حذف',
+        empty_title: 'لم يتم إنشاء رموز QR بعد',
+        empty_body: 'أنشئ رموز QR للمطعم أو للطاولات.',
+        delete_modal_title: 'حذف رمز QR',
+        delete_modal_body: 'هل أنت متأكد من حذف رمز QR؟',
+        delete_modal_note: 'لا يمكن التراجع عن هذا الإجراء.',
+        cancel: 'إلغاء'
+    },
+    ru: {
+        title: 'QR-коды',
+        count: 'QR-кодов',
+        create: 'Создать QR-код',
+        preview: 'Предпросмотр',
+        type: 'Тип',
+        description: 'Описание',
+        url: 'URL',
+        date: 'Дата',
+        download: 'Скачать',
+        actions: 'Действия',
+        restaurant: 'Ресторан',
+        table: 'Стол',
+        table_prefix: 'Стол',
+        main_menu: 'Главное меню',
+        download_png: 'PNG',
+        download_svg: 'SVG',
+        vector: 'Вектор (SVG)',
+        pdf_templates: 'PDF шаблоны',
+        delete: 'Удалить',
+        empty_title: 'QR-коды еще не созданы',
+        empty_body: 'Создайте QR-коды для ресторана или столов.',
+        delete_modal_title: 'Удалить QR-код',
+        delete_modal_body: 'Вы уверены, что хотите удалить этот QR-код?',
+        delete_modal_note: 'Это действие нельзя отменить.',
+        cancel: 'Отмена'
+    }
+}[currentLocale] ?? {
+    title: 'QR Codes',
+    count: 'QR codes',
+    create: 'Create QR Code',
+    preview: 'Preview',
+    type: 'Type',
+    description: 'Description',
+    url: 'URL',
+    date: 'Date',
+    download: 'Download',
+    actions: 'Actions',
+    restaurant: 'Restaurant',
+    table: 'Table',
+    table_prefix: 'Table',
+    main_menu: 'Main Menu',
+    download_png: 'PNG',
+    download_svg: 'SVG',
+    vector: 'Vector (SVG)',
+    pdf_templates: 'PDF Designs',
+    delete: 'Delete',
+    empty_title: 'No QR codes created yet',
+    empty_body: 'Create QR codes for your restaurant or tables.',
+    delete_modal_title: 'Delete QR Code',
+    delete_modal_body: 'Are you sure you want to delete this QR code?',
+    delete_modal_note: 'This action cannot be undone.',
+    cancel: 'Cancel'
+} %}
+
+{% block title %}{{ ui.title }}{% endblock %}
 
 {% block stylesheets %}
 <style>
@@ -55,11 +192,11 @@
     {# Header #}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="mb-1">QR Kodları</h2>
-            <small class="text-muted">{{ qrCodes|length }} QR kod</small>
+            <h2 class="mb-1">{{ ui.title }}</h2>
+            <small class="text-muted">{{ qrCodes|length }} {{ ui.count }}</small>
         </div>
         <a href="{{ path('admin_qrcode_create') }}" class="btn btn-primary">
-            <i class="bi bi-plus-lg"></i> QR Kod Oluştur
+            <i class="bi bi-plus-lg"></i> {{ ui.create }}
         </a>
     </div>
 
@@ -69,13 +206,13 @@
             <table class="table table-hover align-middle bg-white rounded shadow-sm">
                 <thead class="table-light">
                     <tr>
-                        <th style="width: 80px;">Önizleme</th>
-                        <th>Tip</th>
-                        <th>Açıklama</th>
-                        <th>URL</th>
-                        <th>Tarih</th>
-                        <th>İndir</th>
-                        <th style="width: 80px;">Aksiyonlar</th>
+                        <th style="width: 80px;">{{ ui.preview }}</th>
+                        <th>{{ ui.type }}</th>
+                        <th>{{ ui.description }}</th>
+                        <th>{{ ui.url }}</th>
+                        <th>{{ ui.date }}</th>
+                        <th>{{ ui.download }}</th>
+                        <th style="width: 80px;">{{ ui.actions }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -93,17 +230,17 @@
                             </td>
                             <td>
                                 {% if qr.type.value == 'restaurant' %}
-                                    <span class="badge bg-primary">Restoran</span>
+                                    <span class="badge bg-primary">{{ ui.restaurant }}</span>
                                 {% else %}
-                                    <span class="badge bg-info text-dark">Masa</span>
+                                    <span class="badge bg-info text-dark">{{ ui.table }}</span>
                                 {% endif %}
                             </td>
                             <td>
                                 {% if qr.type.value == 'table' %}
-                                    <strong>{{ qr.tableLabel ?? ('Masa ' ~ qr.tableNumber) }}</strong>
-                                    <br><small class="text-muted">Masa #{{ qr.tableNumber }}</small>
+                                    <strong>{{ qr.tableLabel ?? (ui.table_prefix ~ ' ' ~ qr.tableNumber) }}</strong>
+                                    <br><small class="text-muted">{{ ui.table_prefix }} #{{ qr.tableNumber }}</small>
                                 {% else %}
-                                    <strong>Ana Menü</strong>
+                                    <strong>{{ ui.main_menu }}</strong>
                                 {% endif %}
                             </td>
                             <td>
@@ -119,10 +256,20 @@
                                         <i class="bi bi-download"></i>
                                     </button>
                                     <ul class="dropdown-menu">
-                                        <li><h6 class="dropdown-header">PNG</h6></li>
+                                        <li><h6 class="dropdown-header">{{ ui.download_png }}</h6></li>
+                                        <li>
+                                            <a class="dropdown-item" href="{{ path('admin_qrcode_download', {uuid: qr.uuid, format: 'png', size: 128}) }}">
+                                                <i class="bi bi-file-image"></i> 128 × 128 px
+                                            </a>
+                                        </li>
                                         <li>
                                             <a class="dropdown-item" href="{{ path('admin_qrcode_download', {uuid: qr.uuid, format: 'png', size: 256}) }}">
                                                 <i class="bi bi-file-image"></i> 256 × 256 px
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="{{ path('admin_qrcode_download', {uuid: qr.uuid, format: 'png', size: 384}) }}">
+                                                <i class="bi bi-file-image"></i> 384 × 384 px
                                             </a>
                                         </li>
                                         <li>
@@ -131,15 +278,52 @@
                                             </a>
                                         </li>
                                         <li>
+                                            <a class="dropdown-item" href="{{ path('admin_qrcode_download', {uuid: qr.uuid, format: 'png', size: 768}) }}">
+                                                <i class="bi bi-file-image"></i> 768 × 768 px
+                                            </a>
+                                        </li>
+                                        <li>
                                             <a class="dropdown-item" href="{{ path('admin_qrcode_download', {uuid: qr.uuid, format: 'png', size: 1024}) }}">
                                                 <i class="bi bi-file-image"></i> 1024 × 1024 px
                                             </a>
                                         </li>
                                         <li><hr class="dropdown-divider"></li>
-                                        <li><h6 class="dropdown-header">SVG</h6></li>
+                                        <li><h6 class="dropdown-header">{{ ui.download_svg }}</h6></li>
                                         <li>
                                             <a class="dropdown-item" href="{{ path('admin_qrcode_download', {uuid: qr.uuid, format: 'svg', size: 512}) }}">
-                                                <i class="bi bi-filetype-svg"></i> Vektör (SVG)
+                                                <i class="bi bi-filetype-svg"></i> {{ ui.vector }}
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><h6 class="dropdown-header">{{ ui.pdf_templates }}</h6></li>
+                                        <li>
+                                            <a class="dropdown-item" href="{{ path('admin_qrcode_download_label_pdf', {uuid: qr.uuid, templateSlug: 'classic', primary: '#1f2937', background: '#ffffff'}) }}">
+                                                <i class="bi bi-file-earmark-pdf"></i> Classic Kare
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="{{ path('admin_qrcode_download_label_pdf', {uuid: qr.uuid, templateSlug: 'modern', primary: '#0f766e', background: '#f8fafc'}) }}">
+                                                <i class="bi bi-file-earmark-pdf"></i> Modern Kart
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="{{ path('admin_qrcode_download_label_pdf', {uuid: qr.uuid, templateSlug: 'elegant', primary: '#8b5e34', background: '#fffaf0'}) }}">
+                                                <i class="bi bi-file-earmark-pdf"></i> Elegant Gold
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="{{ path('admin_qrcode_download_label_pdf', {uuid: qr.uuid, templateSlug: 'minimal', primary: '#111827', background: '#ffffff'}) }}">
+                                                <i class="bi bi-file-earmark-pdf"></i> Minimal Temiz
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="{{ path('admin_qrcode_download_label_pdf', {uuid: qr.uuid, templateSlug: 'bistro', primary: '#7c2d12', background: '#fff7ed'}) }}">
+                                                <i class="bi bi-file-earmark-pdf"></i> Bistro Rounded
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="{{ path('admin_qrcode_download_label_pdf', {uuid: qr.uuid, templateSlug: 'rustic', primary: '#3f3f46', background: '#f5f5f4'}) }}">
+                                                <i class="bi bi-file-earmark-pdf"></i> Rustic Craft
                                             </a>
                                         </li>
                                     </ul>
@@ -148,9 +332,9 @@
                             <td>
                                 <button type="button" class="btn btn-sm btn-outline-danger delete-btn"
                                         data-uuid="{{ qr.uuid }}"
-                                        data-label="{{ qr.type.value == 'table' ? (qr.tableLabel ?? 'Masa ' ~ qr.tableNumber) : 'Ana Menü' }}"
+                                        data-label="{{ qr.type.value == 'table' ? (qr.tableLabel ?? (ui.table_prefix ~ ' ' ~ qr.tableNumber)) : ui.main_menu }}"
                                         data-token="{{ csrf_token('qrcode_delete_' ~ qr.uuid) }}"
-                                        title="Sil">
+                                        title="{{ ui.delete }}">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </td>
@@ -162,10 +346,10 @@
     {% else %}
         <div class="empty-state">
             <i class="bi bi-qr-code"></i>
-            <h5>Henüz QR kod oluşturulmamış</h5>
-            <p>Restoranınız veya masalarınız için QR kod oluşturun.</p>
+            <h5>{{ ui.empty_title }}</h5>
+            <p>{{ ui.empty_body }}</p>
             <a href="{{ path('admin_qrcode_create') }}" class="btn btn-primary mt-2">
-                <i class="bi bi-plus-lg"></i> QR Kod Oluştur
+                <i class="bi bi-plus-lg"></i> {{ ui.create }}
             </a>
         </div>
     {% endif %}
@@ -176,19 +360,19 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">QR Kodu Sil</h5>
+                <h5 class="modal-title">{{ ui.delete_modal_title }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p><strong id="deleteLabel"></strong> QR kodunu silmek istediğinize emin misiniz?</p>
-                <p class="text-muted mb-0">Bu işlem geri alınamaz.</p>
+                <p><strong id="deleteLabel"></strong> {{ ui.delete_modal_body }}</p>
+                <p class="text-muted mb-0">{{ ui.delete_modal_note }}</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ ui.cancel }}</button>
                 <form method="post" id="deleteForm" class="d-inline">
                     <input type="hidden" name="_token" id="deleteToken">
                     <button type="submit" class="btn btn-danger">
-                        <i class="bi bi-trash"></i> Sil
+                        <i class="bi bi-trash"></i> {{ ui.delete }}
                     </button>
                 </form>
             </div>

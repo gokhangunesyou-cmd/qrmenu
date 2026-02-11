@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">QR Menu Banner 3</title>
+  <desc id="desc">Dummy slider image for home banner area.</desc>
+  <defs>
+    <linearGradient id="bg3" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1f2937" />
+      <stop offset="100%" stop-color="#364152" />
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg3)" />
+  <rect x="96" y="96" width="1408" height="708" rx="36" fill="rgba(255,255,255,0.08)" />
+  <path d="M1050 160h420v420h-420z" fill="rgba(159,107,49,0.35)" />
+  <text x="156" y="360" fill="#ffffff" font-size="90" font-family="Arial, sans-serif" font-weight="700">Sube Bazli Yonetim</text>
+  <text x="156" y="440" fill="#dfe7f3" font-size="42" font-family="Arial, sans-serif">Merkez ve subeler ayni standartta</text>
+  <text x="156" y="690" fill="#f3f7ff" font-size="34" font-family="Arial, sans-serif">DUMMY BANNER 03</text>
+</svg>

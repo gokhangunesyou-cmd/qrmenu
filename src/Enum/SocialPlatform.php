@@ -9,4 +9,5 @@ enum SocialPlatform: string
     case TWITTER = 'twitter';
     case TIKTOK = 'tiktok';
     case WEBSITE = 'website';
+    case GOOGLE_MAPS = 'google_maps';
 }

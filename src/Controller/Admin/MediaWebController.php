@@ -9,6 +9,8 @@ use App\Entity\Restaurant;
 use App\Entity\User;
 use App\Infrastructure\Storage\StorageInterface;
 use App\Repository\MediaRepository;
+use App\Service\Image\ImagePipeline;
+use App\Service\Image\ProcessedImage;
 use App\Service\MediaService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -22,12 +24,16 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/admin/media')]
 class MediaWebController extends AbstractController
 {
+    private const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
+    private const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp'];
+
     public function __construct(
         private readonly MediaRepository $mediaRepository,
         private readonly MediaService $mediaService,
         private readonly StorageInterface $storage,
         private readonly EntityManagerInterface $em,
         private readonly LoggerInterface $logger,
+        private readonly ImagePipeline $imagePipeline,
     ) {
     }
 
@@ -64,37 +70,44 @@ class MediaWebController extends AbstractController
         /** @var UploadedFile|null $file */
         $file = $request->files->get('file');
 
-        if (!$file || !$file->isValid()) {
-            return new JsonResponse(['error' => 'Geçersiz dosya.'], 422);
+        if (!$file) {
+            return new JsonResponse(['error' => 'Dosya bulunamadı. Maksimum dosya boyutu 10MB.'], 422);
         }
 
-        $imageSize = @getimagesize($file->getPathname());
-        $mimeType = $imageSize['mime'] ?? $file->getClientMimeType() ?? '';
+        if (!$file->isValid()) {
+            return new JsonResponse(['error' => $this->resolveUploadError($file)], 422);
+        }
+
+        $mimeType = $this->resolveMimeType($file);
 
         // Validate mime type
-        $allowedMimes = ['image/jpeg', 'image/png', 'image/webp'];
-        if (!in_array($mimeType, $allowedMimes, true)) {
+        if (!in_array($mimeType, self::ALLOWED_MIMES, true)) {
             return new JsonResponse([
                 'error' => 'Sadece JPEG, PNG ve WebP dosyaları yüklenebilir.',
             ], 422);
         }
 
-        // Validate file size (5MB)
-        $maxSize = 5 * 1024 * 1024;
-        if ($file->getSize() > $maxSize) {
+        $fileSize = $this->resolveFileSize($file);
+
+        // Validate file size (10MB)
+        if ($fileSize > self::MAX_UPLOAD_BYTES) {
             return new JsonResponse([
-                'error' => 'Dosya boyutu 5MB\'dan büyük olamaz.',
+                'error' => 'Dosya boyutu 10MB\'dan büyük olamaz.',
             ], 422);
         }
 
         try {
             $media = $this->uploadAndCreateMedia($file, $restaurant, $mimeType);
+        } catch (\InvalidArgumentException $e) {
+            return new JsonResponse([
+                'error' => $e->getMessage(),
+            ], 422);
         } catch (\Throwable $e) {
-            $this->logger->error('Media upload failed', [
+            $this->logger->error(sprintf('Media upload failed [%s]: %s', $e::class, $e->getMessage()), [
                 'exception' => $e,
                 'filename' => $file->getClientOriginalName(),
                 'mimeType' => $mimeType,
-                'size' => $file->getSize(),
+                'size' => $fileSize,
             ]);
 
             return new JsonResponse([
@@ -177,34 +190,25 @@ class MediaWebController extends AbstractController
         $mediaUuid = \Ramsey\Uuid\Uuid::uuid7()->toString();
         $storagePath = sprintf('media/%s/%s.%s', $restaurant->getUuid()->toString(), $mediaUuid, $extension);
 
-        $fileContent = (string) file_get_contents($file->getPathname());
+        $processedOriginal = $this->imagePipeline->processUploadedFile($file, $mimeType, ImagePipeline::PROFILE_CATALOG);
 
-        // Upload original to storage
-        $this->storage->put($storagePath, $fileContent, $mimeType);
+        // Upload optimized original to storage
+        $this->storage->put($storagePath, $processedOriginal->getContents(), $processedOriginal->getMimeType());
 
-        // Get image dimensions
-        $imageSize = @getimagesize($file->getPathname());
-        $width = $imageSize ? $imageSize[0] : null;
-        $height = $imageSize ? $imageSize[1] : null;
-
-        // Create thumbnail
-        $this->createThumbnail($file, $restaurant->getUuid()->toString(), $mediaUuid, $extension, $mimeType);
+        // Create thumbnail from optimized source
+        $this->createThumbnail($processedOriginal, $restaurant->getUuid()->toString(), $mediaUuid, $extension);
 
         // Create media entity
         $media = new Media(
             $file->getClientOriginalName(),
             $storagePath,
-            $mimeType,
-            $file->getSize(),
+            $processedOriginal->getMimeType(),
+            $processedOriginal->getSize(),
             $restaurant,
         );
 
-        if ($width !== null) {
-            $media->setWidth($width);
-        }
-        if ($height !== null) {
-            $media->setHeight($height);
-        }
+        $media->setWidth($processedOriginal->getWidth());
+        $media->setHeight($processedOriginal->getHeight());
 
         $this->em->persist($media);
         $this->em->flush();
@@ -213,73 +217,50 @@ class MediaWebController extends AbstractController
     }
 
     private function createThumbnail(
-        UploadedFile $file,
+        ProcessedImage $source,
         string $restaurantUuid,
         string $mediaUuid,
         string $extension,
-        string $mimeType,
     ): void {
-        $maxThumbWidth = 300;
-        $maxThumbHeight = 300;
+        $thumb = $this->imagePipeline->processBinary(
+            $source->getContents(),
+            $source->getMimeType(),
+            ImagePipeline::PROFILE_THUMB,
+        );
 
+        $thumbPath = sprintf('media/%s/thumbs/%s.%s', $restaurantUuid, $mediaUuid, $extension);
+        $this->storage->put($thumbPath, $thumb->getContents(), $thumb->getMimeType());
+    }
+
+    private function resolveMimeType(UploadedFile $file): string
+    {
         $imageSize = @getimagesize($file->getPathname());
-        if (!$imageSize) {
-            return;
+        if (is_array($imageSize) && isset($imageSize['mime']) && is_string($imageSize['mime'])) {
+            return $imageSize['mime'];
         }
 
-        [$origWidth, $origHeight] = $imageSize;
+        return $file->getClientMimeType();
+    }
 
-        // Calculate thumbnail dimensions maintaining aspect ratio
-        $ratio = min($maxThumbWidth / $origWidth, $maxThumbHeight / $origHeight);
-        if ($ratio >= 1.0) {
-            // Image is already small enough, use original as thumbnail
-            $thumbContent = (string) file_get_contents($file->getPathname());
-        } else {
-            if (!function_exists('imagecreatetruecolor')) {
-                return;
-            }
-            $newWidth = (int) round($origWidth * $ratio);
-            $newHeight = (int) round($origHeight * $ratio);
-
-            $source = match ($mimeType) {
-                'image/jpeg' => function_exists('imagecreatefromjpeg') ? @imagecreatefromjpeg($file->getPathname()) : false,
-                'image/png' => function_exists('imagecreatefrompng') ? @imagecreatefrompng($file->getPathname()) : false,
-                'image/webp' => function_exists('imagecreatefromwebp') ? @imagecreatefromwebp($file->getPathname()) : false,
-                default => false,
-            };
-
-            if (!$source) {
-                return;
-            }
-
-            $thumb = imagecreatetruecolor($newWidth, $newHeight);
-
-            // Preserve transparency for PNG and WebP
-            if (in_array($mimeType, ['image/png', 'image/webp'], true)) {
-                imagealphablending($thumb, false);
-                imagesavealpha($thumb, true);
-            }
-
-            imagecopyresampled($thumb, $source, 0, 0, 0, 0, $newWidth, $newHeight, $origWidth, $origHeight);
-
-            ob_start();
-            if ($mimeType === 'image/jpeg' && function_exists('imagejpeg')) {
-                imagejpeg($thumb, null, 80);
-            } elseif ($mimeType === 'image/png' && function_exists('imagepng')) {
-                imagepng($thumb, null, 6);
-            } elseif ($mimeType === 'image/webp' && function_exists('imagewebp')) {
-                imagewebp($thumb, null, 80);
-            }
-            $thumbContent = ob_get_clean();
-
-            imagedestroy($source);
-            imagedestroy($thumb);
+    private function resolveFileSize(UploadedFile $file): int
+    {
+        $size = @filesize($file->getPathname());
+        if (!is_int($size) || $size < 0) {
+            throw new \InvalidArgumentException('Dosya boyutu okunamadı.');
         }
 
-        if (!empty($thumbContent)) {
-            $thumbPath = sprintf('media/%s/thumbs/%s.%s', $restaurantUuid, $mediaUuid, $extension);
-            $this->storage->put($thumbPath, $thumbContent, $mimeType);
-        }
+        return $size;
+    }
+
+    private function resolveUploadError(UploadedFile $file): string
+    {
+        return match ($file->getError()) {
+            \UPLOAD_ERR_INI_SIZE, \UPLOAD_ERR_FORM_SIZE => 'Dosya boyutu sunucu limitini aşıyor. Maksimum 10MB.',
+            \UPLOAD_ERR_PARTIAL => 'Dosya eksik yüklendi. Lütfen tekrar deneyin.',
+            \UPLOAD_ERR_NO_FILE => 'Yüklenecek dosya bulunamadı.',
+            \UPLOAD_ERR_NO_TMP_DIR, \UPLOAD_ERR_CANT_WRITE, \UPLOAD_ERR_EXTENSION => 'Sunucu dosyayı işleyemedi. Lütfen daha sonra tekrar deneyin.',
+            default => 'Geçersiz dosya.',
+        };
     }
 
     private function getRestaurantOrThrow(): Restaurant

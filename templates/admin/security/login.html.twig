@@ -1,6 +1,50 @@
 {% extends 'admin/base.html.twig' %}
 
-{% block title %}Giriş{% endblock %}
+{% set currentLocale = app.request.get('lang') ?: 'tr' %}
+{% set availableLocales = admin_available_locales() %}
+{% set ui = {
+    tr: {
+        title: 'Giriş',
+        panel_title: 'QR Menu Admin',
+        subtitle: 'MVP yönetim paneline giriş',
+        email: 'E-posta',
+        password: 'Şifre',
+        login: 'Giriş Yap'
+    },
+    en: {
+        title: 'Login',
+        panel_title: 'QR Menu Admin',
+        subtitle: 'Sign in to the MVP admin panel',
+        email: 'Email',
+        password: 'Password',
+        login: 'Sign In'
+    },
+    ar: {
+        title: 'تسجيل الدخول',
+        panel_title: 'لوحة QR Menu',
+        subtitle: 'تسجيل الدخول إلى لوحة إدارة MVP',
+        email: 'البريد الإلكتروني',
+        password: 'كلمة المرور',
+        login: 'تسجيل الدخول'
+    },
+    ru: {
+        title: 'Вход',
+        panel_title: 'QR Menu Admin',
+        subtitle: 'Вход в админ-панель MVP',
+        email: 'Email',
+        password: 'Пароль',
+        login: 'Войти'
+    }
+}[currentLocale] ?? {
+    title: 'Login',
+    panel_title: 'QR Menu Admin',
+    subtitle: 'Sign in to the MVP admin panel',
+    email: 'Email',
+    password: 'Password',
+    login: 'Sign In'
+} %}
+
+{% block title %}{{ ui.title }}{% endblock %}
 
 {% block body %}
 <div class="container py-5">
@@ -8,12 +52,23 @@
         <div class="col-md-7 col-lg-5">
             <div class="card border-0 shadow-lg">
                 <div class="card-body p-5">
+                    {% if availableLocales is not empty %}
+                        <div class="d-flex justify-content-center mb-3">
+                            <div class="lang-flags" role="group" aria-label="Language">
+                                {% for localeCode, localeLabel in availableLocales %}
+                                    <a class="lang-flag {{ localeCode == currentLocale ? 'active' : '' }}" href="{{ path('admin_login', {lang: localeCode}) }}" title="{{ localeLabel }}">
+                                        {% if localeCode == 'tr' %}🇹🇷{% elseif localeCode == 'en' %}🇬🇧{% elseif localeCode == 'ar' %}🇸🇦{% elseif localeCode == 'ru' %}🇷🇺{% else %}🌐{% endif %}
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
                     <div class="text-center mb-4">
                         <div class="brand-mark mx-auto mb-3" style="width: 52px; height: 52px;">
                             <i class="bi bi-qr-code"></i>
                         </div>
-                        <h3 class="mb-1">QR Menu Admin</h3>
-                        <p class="text-muted mb-0">MVP yönetim paneline giriş</p>
+                        <h3 class="mb-1">{{ ui.panel_title }}</h3>
+                        <p class="text-muted mb-0">{{ ui.subtitle }}</p>
                     </div>
 
                     {% if error %}
@@ -26,17 +81,17 @@
                         <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
                         <div class="mb-3">
-                            <label for="email" class="form-label">E-posta</label>
+                            <label for="email" class="form-label">{{ ui.email }}</label>
                             <input type="email" id="email" name="_username" class="form-control"
                                    value="{{ last_username }}" required autofocus>
                         </div>
 
                         <div class="mb-4">
-                            <label for="password" class="form-label">Şifre</label>
+                            <label for="password" class="form-label">{{ ui.password }}</label>
                             <input type="password" id="password" name="_password" class="form-control" required>
                         </div>
 
-                        <button type="submit" class="btn btn-primary btn-lg w-100">Giriş Yap</button>
+                        <button type="submit" class="btn btn-primary btn-lg w-100">{{ ui.login }}</button>
                     </form>
                 </div>
             </div>

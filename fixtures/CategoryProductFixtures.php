@@ -7,6 +7,7 @@ use App\Entity\Media;
 use App\Entity\Product;
 use App\Entity\ProductImage;
 use App\Entity\Restaurant;
+use App\Entity\Translation;
 use App\Enum\ProductStatus;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
@@ -15,40 +16,17 @@ use Ramsey\Uuid\Uuid;
 
 class CategoryProductFixtures extends Fixture implements DependentFixtureInterface
 {
-    private const PRODUCT_IMAGE_KEYWORDS = [
-        'Serpme Kahvaltı' => 'turkish breakfast',
-        'Menemen' => 'menemen eggs',
-        'Sucuklu Yumurta' => 'sausage eggs',
-        'Beyaz Peynir Tabağı' => 'cheese plate',
-        'Mercimek Çorbası' => 'lentil soup',
-        'Ezogelin Çorbası' => 'tomato soup',
-        'Tavuk Suyu Çorba' => 'chicken soup',
-        'Humus' => 'hummus',
-        'Haydari' => 'yogurt dip',
-        'Acılı Ezme' => 'spicy dip',
-        'Şakşuka' => 'eggplant appetizer',
-        'Çoban Salata' => 'shepherd salad',
-        'Mevsim Salata' => 'green salad',
-        'Gavurdağı Salata' => 'walnut salad',
-        'Etli Güveç' => 'beef stew',
-        'Kuru Fasulye & Pilav' => 'beans rice',
-        'Tavuk Sote' => 'chicken saute',
-        'Tavuk Şiş' => 'chicken skewer',
-        'Köfte' => 'meatballs',
-        'Izgara Antrikot' => 'grilled steak',
-        'Kıymalı Pide' => 'turkish pide minced meat',
-        'Kuşbaşılı Pide' => 'turkish pide meat',
-        'Kaşarlı Pide' => 'turkish pide cheese',
-        'Adana Kebap' => 'adana kebab',
-        'Urfa Kebap' => 'urfa kebab',
-        'Beyti Sarma' => 'beyti kebab',
-        'Künefe' => 'kunefe dessert',
-        'Fırın Sütlaç' => 'rice pudding',
-        'Baklava' => 'baklava dessert',
-        'Ayran' => 'ayran drink',
-        'Çay' => 'turkish tea',
-        'Türk Kahvesi' => 'turkish coffee',
-        'Gazlı İçecek' => 'soft drink',
+    private const CATEGORY_COLORS = [
+        'Kahvaltı' => ['#F59E0B', '#F97316'],
+        'Çorbalar' => ['#FB7185', '#EF4444'],
+        'Mezeler' => ['#14B8A6', '#0EA5E9'],
+        'Salatalar' => ['#22C55E', '#16A34A'],
+        'Ana Yemekler' => ['#A855F7', '#7C3AED'],
+        'Izgaralar' => ['#F97316', '#DC2626'],
+        'Pideler' => ['#F59E0B', '#EA580C'],
+        'Kebaplar' => ['#EF4444', '#B91C1C'],
+        'Tatlılar' => ['#EC4899', '#DB2777'],
+        'İçecekler' => ['#0EA5E9', '#2563EB'],
     ];
 
     public function load(ObjectManager $manager): void
@@ -168,6 +146,21 @@ class CategoryProductFixtures extends Fixture implements DependentFixtureInterfa
         }
 
         $manager->flush();
+
+        foreach ($categoryMap as $category) {
+            $this->seedNameTranslations($manager, 'category', (int) $category->getId(), $category->getName());
+        }
+
+        $allProducts = $manager->getRepository(Product::class)->findBy(['restaurant' => $restaurant]);
+        foreach ($allProducts as $product) {
+            if (!$product instanceof Product) {
+                continue;
+            }
+
+            $this->seedNameTranslations($manager, 'product', (int) $product->getId(), $product->getName());
+        }
+
+        $manager->flush();
     }
 
     public function getDependencies(): array
@@ -188,18 +181,10 @@ class CategoryProductFixtures extends Fixture implements DependentFixtureInterfa
             return;
         }
 
-        $content = $this->downloadImage($categoryName, $productName);
-        if ($content === null) {
-            return;
-        }
-
-        $imageSize = @getimagesizefromstring($content);
-        $mimeType = is_array($imageSize) ? ($imageSize['mime'] ?? 'image/jpeg') : 'image/jpeg';
-        $extension = match ($mimeType) {
-            'image/png' => 'png',
-            'image/webp' => 'webp',
-            default => 'jpg',
-        };
+        $generated = $this->generateProductImage($categoryName, $productName);
+        $content = $generated['content'];
+        $mimeType = $generated['mime'];
+        $extension = $generated['extension'];
 
         $mediaUuid = Uuid::uuid7()->toString();
         $restaurantUuid = $restaurant->getUuid()->toString();
@@ -227,10 +212,8 @@ class CategoryProductFixtures extends Fixture implements DependentFixtureInterfa
             strlen($content),
             $restaurant,
         );
-        if (is_array($imageSize)) {
-            $media->setWidth($imageSize[0] ?? null);
-            $media->setHeight($imageSize[1] ?? null);
-        }
+        $media->setWidth($generated['width']);
+        $media->setHeight($generated['height']);
         $media->setAltText($productName);
         $manager->persist($media);
 
@@ -239,43 +222,40 @@ class CategoryProductFixtures extends Fixture implements DependentFixtureInterfa
         $manager->persist($productImage);
     }
 
-    private function downloadImage(string $categoryName, string $productName): ?string
+    /**
+     * @return array{content: string, mime: string, extension: string, width: int, height: int}
+     */
+    private function generateProductImage(string $categoryName, string $productName): array
     {
-        $keyword = self::PRODUCT_IMAGE_KEYWORDS[$productName] ?? strtolower($categoryName . ' food');
-        $seed = $this->slugify($categoryName . '-' . $productName);
+        $width = 1200;
+        $height = 800;
+        [$startColor, $endColor] = self::CATEGORY_COLORS[$categoryName] ?? ['#334155', '#0F172A'];
+        $title = $this->escapeSvgText($productName);
+        $subtitle = $this->escapeSvgText($categoryName);
 
-        $urls = [
-            sprintf('https://loremflickr.com/1200/800/food,%s', rawurlencode($keyword)),
-            sprintf('https://picsum.photos/seed/%s/1200/800', rawurlencode($seed)),
+        $svg = <<<SVG
+<svg xmlns="http://www.w3.org/2000/svg" width="{$width}" height="{$height}" viewBox="0 0 {$width} {$height}">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="{$startColor}" />
+      <stop offset="100%" stop-color="{$endColor}" />
+    </linearGradient>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#bg)" />
+  <rect x="64" y="64" width="1072" height="672" rx="36" fill="rgba(15,23,42,0.28)" />
+  <text x="96" y="370" fill="#FFFFFF" font-size="78" font-family="Arial, sans-serif" font-weight="700">{$title}</text>
+  <text x="96" y="440" fill="#E2E8F0" font-size="40" font-family="Arial, sans-serif">{$subtitle}</text>
+  <text x="96" y="700" fill="#F8FAFC" font-size="28" font-family="Arial, sans-serif">QR MENU DEMO</text>
+</svg>
+SVG;
+
+        return [
+            'content' => $svg,
+            'mime' => 'image/svg+xml',
+            'extension' => 'svg',
+            'width' => $width,
+            'height' => $height,
         ];
-
-        $context = stream_context_create([
-            'http' => [
-                'timeout' => 12,
-                'follow_location' => 1,
-                'user_agent' => 'qrmenu-fixtures/1.0',
-            ],
-            'ssl' => [
-                'verify_peer' => true,
-                'verify_peer_name' => true,
-            ],
-        ]);
-
-        foreach ($urls as $url) {
-            $content = @file_get_contents($url, false, $context);
-            if ($content === false || $content === '') {
-                continue;
-            }
-
-            $size = @getimagesizefromstring($content);
-            if ($size === false) {
-                continue;
-            }
-
-            return $content;
-        }
-
-        return null;
     }
 
     private function slugify(string $value): string
@@ -300,5 +280,33 @@ class CategoryProductFixtures extends Fixture implements DependentFixtureInterfa
         $normalized = trim($normalized, '-');
 
         return $normalized !== '' ? $normalized : 'product';
+    }
+
+    private function escapeSvgText(string $value): string
+    {
+        return htmlspecialchars($value, ENT_QUOTES | ENT_XML1, 'UTF-8');
+    }
+
+    private function seedNameTranslations(ObjectManager $manager, string $entityType, int $entityId, string $name): void
+    {
+        if ($entityId <= 0) {
+            return;
+        }
+
+        foreach (['en', 'es', 'ar', 'hi', 'zh'] as $locale) {
+            $existing = $manager->getRepository(Translation::class)->findOneBy([
+                'entityType' => $entityType,
+                'entityId' => $entityId,
+                'locale' => $locale,
+                'field' => 'name',
+            ]);
+
+            if ($existing instanceof Translation) {
+                $existing->setValue($name);
+                continue;
+            }
+
+            $manager->persist(new Translation($entityType, $entityId, $locale, 'name', $name));
+        }
     }
 }

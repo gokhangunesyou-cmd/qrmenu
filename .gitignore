@@ -12,6 +12,11 @@
 
 /.php-cs-fixer.cache
 
+# Node / Playwright
+/node_modules/
+/playwright-report/
+/test-results/
+
 ###> symfony/framework-bundle ###
 /.env.local
 /.env.local.php

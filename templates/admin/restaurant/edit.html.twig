@@ -1,16 +1,144 @@
 {% extends 'admin/base.html.twig' %}
 
-{% block title %}Restoran Bilgilerini Düzenle{% endblock %}
+{% set currentLocale = admin_current_locale() %}
+{% set ui = {
+    tr: {
+        title: 'Restoran Bilgilerini Düzenle',
+        subtitle: 'MVP için temel profil ve görseller.',
+        back: 'Geri',
+        general: 'Genel Bilgiler',
+        social: 'Sosyal Medya ve Harita',
+        languages: 'Yayın Dilleri',
+        language_hint: 'Panel ve menüde sadece seçtiğiniz diller görünür.',
+        logo: 'Logo',
+        logo_current: 'Mevcut logo',
+        logo_preview: 'Logo Önizleme',
+        logo_alt: 'Mevcut Logo',
+        logo_max: 'Maks. 10MB (JPEG, PNG, WebP)',
+        cover: 'Kapak Fotoğrafı',
+        cover_current: 'Mevcut kapak',
+        cover_preview: 'Kapak Önizleme',
+        cover_alt: 'Mevcut Kapak',
+        cover_max: 'Maks. 10MB (JPEG, PNG, WebP)',
+        design: 'Menü Tasarımı',
+        template_hint: 'Son kullanıcı menüsü için iki premium şablondan birini seçin.',
+        color_hint: 'Renkleri panelden seçerek menü görünümünü markanıza göre anında özelleştirin.',
+        template_showcase: 'Showcase Spotlight',
+        template_editorial: 'Editorial Slate',
+        save: 'Kaydet'
+    },
+    en: {
+        title: 'Edit Restaurant Information',
+        subtitle: 'Basic profile and visuals for MVP.',
+        back: 'Back',
+        general: 'General Information',
+        social: 'Social Media and Map',
+        languages: 'Published Languages',
+        language_hint: 'Only selected languages are shown in panel and menu.',
+        logo: 'Logo',
+        logo_current: 'Current logo',
+        logo_preview: 'Logo Preview',
+        logo_alt: 'Current Logo',
+        logo_max: 'Max 10MB (JPEG, PNG, WebP)',
+        cover: 'Cover Photo',
+        cover_current: 'Current cover',
+        cover_preview: 'Cover Preview',
+        cover_alt: 'Current Cover',
+        cover_max: 'Max 10MB (JPEG, PNG, WebP)',
+        design: 'Menu Design',
+        template_hint: 'Pick one of two premium templates for the guest-facing menu.',
+        color_hint: 'Choose colors from the panel to instantly match your brand style.',
+        template_showcase: 'Showcase Spotlight',
+        template_editorial: 'Editorial Slate',
+        save: 'Save'
+    },
+    ar: {
+        title: 'تعديل معلومات المطعم',
+        subtitle: 'الملف الأساسي والصور لنسخة MVP.',
+        back: 'رجوع',
+        general: 'معلومات عامة',
+        social: 'وسائل التواصل والخريطة',
+        languages: 'لغات النشر',
+        language_hint: 'ستظهر اللغات المحددة فقط في لوحة التحكم والقائمة.',
+        logo: 'الشعار',
+        logo_current: 'الشعار الحالي',
+        logo_preview: 'معاينة الشعار',
+        logo_alt: 'الشعار الحالي',
+        logo_max: 'الحد الأقصى 10MB (JPEG, PNG, WebP)',
+        cover: 'صورة الغلاف',
+        cover_current: 'الغلاف الحالي',
+        cover_preview: 'معاينة الغلاف',
+        cover_alt: 'الغلاف الحالي',
+        cover_max: 'الحد الأقصى 10MB (JPEG, PNG, WebP)',
+        design: 'تصميم القائمة',
+        template_hint: 'اختر أحد قالبين مميزين لقائمة العملاء.',
+        color_hint: 'خصّص الألوان من لوحة التحكم لتطابق هوية علامتك.',
+        template_showcase: 'Showcase Spotlight',
+        template_editorial: 'Editorial Slate',
+        save: 'حفظ'
+    },
+    ru: {
+        title: 'Редактировать данные ресторана',
+        subtitle: 'Базовый профиль и изображения для MVP.',
+        back: 'Назад',
+        general: 'Общая информация',
+        social: 'Соцсети и карта',
+        languages: 'Языки публикации',
+        language_hint: 'В панели и в меню будут видны только выбранные языки.',
+        logo: 'Логотип',
+        logo_current: 'Текущий логотип',
+        logo_preview: 'Предпросмотр логотипа',
+        logo_alt: 'Текущий логотип',
+        logo_max: 'Макс 10MB (JPEG, PNG, WebP)',
+        cover: 'Обложка',
+        cover_current: 'Текущая обложка',
+        cover_preview: 'Предпросмотр обложки',
+        cover_alt: 'Текущая обложка',
+        cover_max: 'Макс 10MB (JPEG, PNG, WebP)',
+        design: 'Дизайн меню',
+        template_hint: 'Выберите один из двух премиальных шаблонов для гостевого меню.',
+        color_hint: 'Настройте цвета из панели под фирменный стиль.',
+        template_showcase: 'Showcase Spotlight',
+        template_editorial: 'Editorial Slate',
+        save: 'Сохранить'
+    }
+}[currentLocale] ?? {
+    title: 'Edit Restaurant Information',
+    subtitle: 'Basic profile and visuals for MVP.',
+    back: 'Back',
+    general: 'General Information',
+    social: 'Social Media and Map',
+    languages: 'Published Languages',
+    language_hint: 'Only selected languages are shown in panel and menu.',
+    logo: 'Logo',
+    logo_current: 'Current logo',
+    logo_preview: 'Logo Preview',
+    logo_alt: 'Current Logo',
+    logo_max: 'Max 10MB (JPEG, PNG, WebP)',
+    cover: 'Cover Photo',
+    cover_current: 'Current cover',
+    cover_preview: 'Cover Preview',
+    cover_alt: 'Current Cover',
+    cover_max: 'Max 10MB (JPEG, PNG, WebP)',
+    design: 'Menu Design',
+    template_hint: 'Pick one of two premium templates for the guest-facing menu.',
+    color_hint: 'Choose colors from the panel to instantly match your brand style.',
+    template_showcase: 'Showcase Spotlight',
+    template_editorial: 'Editorial Slate',
+    save: 'Save'
+} %}
+
+{% block title %}{{ ui.title }}{% endblock %}
 
 {% block body %}
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="mb-1">Restoran Bilgilerini Düzenle</h2>
-            <div class="text-muted">MVP için temel profil ve görseller.</div>
+            <h2 class="mb-1">{{ ui.title }}</h2>
+            <div class="text-muted">{{ ui.subtitle }}</div>
         </div>
         <a href="{{ path('admin_restaurant_show') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> Geri
+            <i class="bi bi-arrow-left"></i> {{ ui.back }}
         </a>
     </div>
 
@@ -27,7 +155,7 @@
         <div class="col-md-8">
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5 class="mb-0">Genel Bilgiler</h5>
+                    <h5 class="mb-0">{{ ui.general }}</h5>
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
@@ -66,6 +194,121 @@
                         {{ form_widget(form.city) }}
                         {{ form_errors(form.city) }}
                     </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            {{ form_label(form.countryCode) }}
+                            {{ form_widget(form.countryCode) }}
+                            {{ form_errors(form.countryCode) }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form_label(form.latitude) }}
+                            {{ form_widget(form.latitude) }}
+                            {{ form_errors(form.latitude) }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form_label(form.longitude) }}
+                            {{ form_widget(form.longitude) }}
+                            {{ form_errors(form.longitude) }}
+                        </div>
+                    </div>
+
+                    <hr>
+                    <h6 class="mb-3">{{ ui.social }}</h6>
+                    <div class="mb-3">
+                        {{ form_label(form.instagramUrl) }}
+                        {{ form_widget(form.instagramUrl) }}
+                        {{ form_errors(form.instagramUrl) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_label(form.facebookUrl) }}
+                        {{ form_widget(form.facebookUrl) }}
+                        {{ form_errors(form.facebookUrl) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_label(form.twitterUrl) }}
+                        {{ form_widget(form.twitterUrl) }}
+                        {{ form_errors(form.twitterUrl) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_label(form.tiktokUrl) }}
+                        {{ form_widget(form.tiktokUrl) }}
+                        {{ form_errors(form.tiktokUrl) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_label(form.websiteUrl) }}
+                        {{ form_widget(form.websiteUrl) }}
+                        {{ form_errors(form.websiteUrl) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_label(form.googleMapsUrl) }}
+                        {{ form_widget(form.googleMapsUrl) }}
+                        {{ form_errors(form.googleMapsUrl) }}
+                    </div>
+
+                    <hr>
+                    <h6 class="mb-3">{{ ui.languages }}</h6>
+                    <div class="mb-3">
+                        {{ form_label(form.enabledLocales) }}
+                        <div class="d-flex flex-wrap gap-3 mt-2">
+                            {% for localeChoice in form.enabledLocales %}
+                                <div class="form-check">
+                                    {{ form_widget(localeChoice, {'attr': {'class': 'form-check-input'}}) }}
+                                    {{ form_label(localeChoice, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {{ form_errors(form.enabledLocales) }}
+                        <small class="text-muted d-block mt-2">{{ ui.language_hint }}</small>
+                    </div>
+
+                    <hr>
+                    <h6 class="mb-3">{{ ui.design }}</h6>
+                    <div class="mb-3">
+                        {{ form_label(form.menuTemplate) }}
+                        {{ form_widget(form.menuTemplate, {'attr': {'id': 'menu-template-select', 'class': 'form-select'}}) }}
+                        {{ form_errors(form.menuTemplate) }}
+                        <small class="text-muted d-block mt-2">{{ ui.template_hint }}</small>
+                    </div>
+                    <div class="template-choices mb-3">
+                        <div class="template-choice" data-template="showcase">
+                            <div class="template-chip">{{ ui.template_showcase }}</div>
+                            <div class="template-preview showcase-preview"></div>
+                        </div>
+                        <div class="template-choice" data-template="editorial">
+                            <div class="template-chip">{{ ui.template_editorial }}</div>
+                            <div class="template-preview editorial-preview"></div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            {{ form_label(form.themePrimaryColor) }}
+                            {{ form_widget(form.themePrimaryColor) }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form_label(form.themeSecondaryColor) }}
+                            {{ form_widget(form.themeSecondaryColor) }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form_label(form.themeAccentColor) }}
+                            {{ form_widget(form.themeAccentColor) }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            {{ form_label(form.themeBackgroundColor) }}
+                            {{ form_widget(form.themeBackgroundColor) }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form_label(form.themeSurfaceColor) }}
+                            {{ form_widget(form.themeSurfaceColor) }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form_label(form.themeTextColor) }}
+                            {{ form_widget(form.themeTextColor) }}
+                        </div>
+                    </div>
+                    <small class="text-muted">{{ ui.color_hint }}</small>
                 </div>
             </div>
         </div>
@@ -73,51 +316,51 @@
         <div class="col-md-4">
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5 class="mb-0">Logo</h5>
+                    <h5 class="mb-0">{{ ui.logo }}</h5>
                 </div>
                 <div class="card-body">
                     {% if restaurant.logoMedia %}
                         <div class="mb-3 text-center">
-                            <img src="{{ media_url(restaurant.logoMedia.storagePath) }}" alt="Mevcut Logo" class="img-fluid rounded mb-2" style="max-height: 100px;" id="logo-preview">
-                            <p class="text-muted small">Mevcut logo</p>
+                            <img src="{{ media_url(restaurant.logoMedia.storagePath) }}" alt="{{ ui.logo_alt }}" class="img-fluid rounded mb-2" style="max-height: 100px;" id="logo-preview">
+                            <p class="text-muted small">{{ ui.logo_current }}</p>
                         </div>
                     {% else %}
                         <div class="mb-3 text-center">
-                            <img src="" alt="Logo Önizleme" class="img-fluid rounded mb-2" style="max-height: 100px; display: none;" id="logo-preview">
+                            <img src="" alt="{{ ui.logo_preview }}" class="img-fluid rounded mb-2" style="max-height: 100px; display: none;" id="logo-preview">
                         </div>
                     {% endif %}
                     {{ form_label(form.logoFile) }}
                     {{ form_widget(form.logoFile, {'attr': {'onchange': 'previewImage(this, \"logo-preview\")'}}) }}
                     {{ form_errors(form.logoFile) }}
-                    <small class="text-muted">Maks. 2MB (JPEG, PNG, WebP)</small>
+                    <small class="text-muted">{{ ui.logo_max }}</small>
                 </div>
             </div>
 
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5 class="mb-0">Kapak Fotoğrafı</h5>
+                    <h5 class="mb-0">{{ ui.cover }}</h5>
                 </div>
                 <div class="card-body">
                     {% if restaurant.coverMedia %}
                         <div class="mb-3 text-center">
-                            <img src="{{ media_url(restaurant.coverMedia.storagePath) }}" alt="Mevcut Kapak" class="img-fluid rounded mb-2" id="cover-preview">
-                            <p class="text-muted small">Mevcut kapak</p>
+                            <img src="{{ media_url(restaurant.coverMedia.storagePath) }}" alt="{{ ui.cover_alt }}" class="img-fluid rounded mb-2" id="cover-preview">
+                            <p class="text-muted small">{{ ui.cover_current }}</p>
                         </div>
                     {% else %}
                         <div class="mb-3 text-center">
-                            <img src="" alt="Kapak Önizleme" class="img-fluid rounded mb-2" style="display: none;" id="cover-preview">
+                            <img src="" alt="{{ ui.cover_preview }}" class="img-fluid rounded mb-2" style="display: none;" id="cover-preview">
                         </div>
                     {% endif %}
                     {{ form_label(form.coverFile) }}
                     {{ form_widget(form.coverFile, {'attr': {'onchange': 'previewImage(this, \"cover-preview\")'}}) }}
                     {{ form_errors(form.coverFile) }}
-                    <small class="text-muted">Maks. 5MB (JPEG, PNG, WebP)</small>
+                    <small class="text-muted">{{ ui.cover_max }}</small>
                 </div>
             </div>
 
             <div class="d-grid">
                 <button type="submit" class="btn btn-primary btn-lg">
-                    <i class="bi bi-check-lg"></i> Kaydet
+                    <i class="bi bi-check-lg"></i> {{ ui.save }}
                 </button>
             </div>
         </div>
@@ -125,6 +368,63 @@
 
     {{ form_end(form) }}
 </div>
+{% endblock %}
+
+{% block stylesheets %}
+<style>
+.template-choices {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem;
+}
+
+.template-choice {
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    border-radius: 14px;
+    padding: 0.65rem;
+    background: #ffffff;
+    cursor: pointer;
+    transition: 180ms ease;
+}
+
+.template-choice.active {
+    border-color: #2563eb;
+    box-shadow: 0 8px 22px rgba(37, 99, 235, 0.18);
+    transform: translateY(-1px);
+}
+
+.template-chip {
+    font-size: 0.76rem;
+    color: #334155;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.template-preview {
+    border-radius: 10px;
+    height: 82px;
+}
+
+.showcase-preview {
+    background:
+        radial-gradient(circle at 18% 18%, rgba(245, 158, 11, 0.3) 0, transparent 42%),
+        linear-gradient(135deg, #fff7ed 0%, #fef3c7 55%, #dcfce7 100%);
+}
+
+.editorial-preview {
+    background:
+        linear-gradient(120deg, #0f172a 0 36%, #f8fafc 36% 100%);
+    position: relative;
+}
+
+.editorial-preview::after {
+    content: '';
+    position: absolute;
+    inset: 14px;
+    border-radius: 7px;
+    border: 1px solid rgba(148, 163, 184, 0.45);
+}
+</style>
 {% endblock %}
 
 {% block javascripts %}
@@ -140,5 +440,31 @@ function previewImage(input, previewId) {
         reader.readAsDataURL(input.files[0]);
     }
 }
+
+function syncTemplatePreviewCards() {
+    const select = document.getElementById('menu-template-select');
+    const cards = document.querySelectorAll('.template-choice');
+    if (!select || cards.length === 0) {
+        return;
+    }
+
+    const apply = () => {
+        cards.forEach((card) => {
+            card.classList.toggle('active', card.dataset.template === select.value);
+        });
+    };
+
+    cards.forEach((card) => {
+        card.addEventListener('click', () => {
+            select.value = card.dataset.template;
+            apply();
+        });
+    });
+
+    select.addEventListener('change', apply);
+    apply();
+}
+
+document.addEventListener('DOMContentLoaded', syncTemplatePreviewCards);
 </script>
 {% endblock %}

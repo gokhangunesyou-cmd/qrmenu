@@ -1,14 +1,31 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{ currentLocale|default('tr') }}" dir="{{ (currentLocale|default('tr')) == 'ar' ? 'rtl' : 'ltr' }}">
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>{% block title %}Welcome!{% endblock %}</title>
+        <meta name="description" content="{% block meta_description %}QR menu, karekod menu ve restoran dijital menu yonetimi icin modern cozumler.{% endblock %}">
+        <meta name="keywords" content="{% block meta_keywords %}qr menu, karekod menu, dijital menu, restoran menu sistemi{% endblock %}">
+        <meta name="robots" content="{% block meta_robots %}index,follow{% endblock %}">
+        <link rel="canonical" href="{% block canonical_url %}{{ app.request ? app.request.uri : '' }}{% endblock %}">
+        <meta property="og:locale" content="{{ (currentLocale|default('tr') ~ '_' ~ (currentLocale|default('tr')|upper)) }}">
+        <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+        <meta property="og:site_name" content="Altay QR Menu">
+        <meta property="og:title" content="{% block og_title %}{{ block('title') }}{% endblock %}">
+        <meta property="og:description" content="{% block og_description %}{{ block('meta_description') }}{% endblock %}">
+        <meta property="og:url" content="{% block og_url %}{{ app.request ? app.request.uri : '' }}{% endblock %}">
+        <meta property="og:image" content="{% block og_image %}/assets/slider/banner-1.svg{% endblock %}">
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="{% block twitter_title %}{{ block('title') }}{% endblock %}">
+        <meta name="twitter:description" content="{% block twitter_description %}{{ block('meta_description') }}{% endblock %}">
+        <meta name="twitter:image" content="{% block twitter_image %}/assets/slider/banner-1.svg{% endblock %}">
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
         {% block stylesheets %}
         {% endblock %}
 
         {% block javascripts %}
         {% endblock %}
+        {% block structured_data %}{% endblock %}
     </head>
     <body>
         {% block body %}{% endblock %}

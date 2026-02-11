@@ -1,0 +1,194 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Super Admin{% endblock %}
+
+{% block body %}
+<div class="row g-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header"><h4 class="mb-0">Super Admin Merkezi</h4></div>
+            <div class="card-body">
+                <div class="text-muted">Plan, restoran, blog ve site icerik yonetimi.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header"><strong>Yeni Plan</strong></div>
+            <div class="card-body">
+                <form method="post" action="{{ path('admin_super_plan_create') }}" class="row g-2">
+                    <input type="hidden" name="_token" value="{{ csrf_token('super_plan_create') }}">
+                    <div class="col-md-6"><input class="form-control" name="code" placeholder="Kod (free/premium)" required></div>
+                    <div class="col-md-6"><input class="form-control" name="name" placeholder="Plan adi" required></div>
+                    <div class="col-12"><input class="form-control" name="description" placeholder="Aciklama"></div>
+                    <div class="col-md-4"><input class="form-control" type="number" min="1" name="max_restaurants" value="1" required></div>
+                    <div class="col-md-4"><input class="form-control" type="number" min="1" name="max_users" value="2" required></div>
+                    <div class="col-md-4"><input class="form-control" name="yearly_price" value="0.00" required></div>
+                    <div class="col-12 form-check ms-2">
+                        <input class="form-check-input" type="checkbox" id="plan_active" name="is_active" checked>
+                        <label class="form-check-label" for="plan_active">Aktif</label>
+                    </div>
+                    <div class="col-12"><button class="btn btn-primary">Plani Olustur</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header"><strong>Yeni Restoran</strong></div>
+            <div class="card-body">
+                <form method="post" action="{{ path('admin_super_restaurant_create') }}" class="row g-2">
+                    <input type="hidden" name="_token" value="{{ csrf_token('super_restaurant_create') }}">
+                    <div class="col-md-6"><input class="form-control" name="name" placeholder="Restoran adi" required></div>
+                    <div class="col-md-6"><input class="form-control" type="email" name="email" placeholder="E-posta"></div>
+                    <div class="col-md-6">
+                        <select class="form-select" name="customer_account_id">
+                            <option value="">Musteri sec (opsiyonel)</option>
+                            {% for account in accounts %}
+                                <option value="{{ account.id }}">{{ account.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6"><input class="form-control" name="customer_account_name" placeholder="Yeni musteri adi"></div>
+                    <div class="col-md-6"><input class="form-control" type="email" name="customer_account_email" placeholder="Yeni musteri e-posta"></div>
+                    <div class="col-12 form-check ms-2">
+                        <input class="form-check-input" type="checkbox" id="restaurant_active" name="is_active" checked>
+                        <label class="form-check-label" for="restaurant_active">Aktif</label>
+                    </div>
+                    <div class="col-12"><button class="btn btn-primary">Restoran Ekle</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header"><strong>Planlar</strong></div>
+            <div class="card-body table-responsive">
+                <table class="table align-middle">
+                    <thead><tr><th>Plan</th><th>Limitler</th><th>Fiyat</th><th>Durum</th><th>Islem</th></tr></thead>
+                    <tbody>
+                    {% for plan in plans %}
+                        <tr>
+                            <td>{{ plan.name }} <small class="text-muted">({{ plan.code }})</small></td>
+                            <td>{{ plan.maxRestaurants }} restoran / {{ plan.maxUsers }} kullanici</td>
+                            <td>{{ plan.yearlyPrice }} TRY/yil</td>
+                            <td>{{ plan.isActive ? 'Aktif' : 'Pasif' }}</td>
+                            <td>
+                                <form method="post" action="{{ path('admin_super_plan_delete', {id: plan.id}) }}" class="d-inline">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('super_plan_delete_' ~ plan.id) }}">
+                                    <button class="btn btn-sm btn-outline-danger">Sil</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="5" class="text-muted">Plan bulunamadi.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header"><strong>Restoranlar</strong></div>
+            <div class="card-body table-responsive">
+                <table class="table align-middle">
+                    <thead><tr><th>Ad</th><th>Slug</th><th>Musteri</th><th>Durum</th><th>Islem</th></tr></thead>
+                    <tbody>
+                    {% for restaurant in restaurants %}
+                        <tr>
+                            <td>{{ restaurant.name }}</td>
+                            <td>{{ restaurant.slug }}</td>
+                            <td>{{ restaurant.customerAccount ? restaurant.customerAccount.name : '-' }}</td>
+                            <td>{{ restaurant.isActive ? 'Aktif' : 'Pasif' }}</td>
+                            <td>
+                                <form method="post" action="{{ path('admin_super_restaurant_delete', {id: restaurant.id}) }}" class="d-inline">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('super_restaurant_delete_' ~ restaurant.id) }}">
+                                    <button class="btn btn-sm btn-outline-danger">Sil</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="5" class="text-muted">Restoran bulunamadi.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header"><strong>Blog Icerigi</strong></div>
+            <div class="card-body">
+                <form method="post" action="{{ path('admin_super_blog_create') }}" class="row g-2 mb-3">
+                    <input type="hidden" name="_token" value="{{ csrf_token('super_blog_create') }}">
+                    <div class="col-12"><input class="form-control" name="title" placeholder="Baslik" required></div>
+                    <div class="col-12"><textarea class="form-control" rows="4" name="body" placeholder="Icerik" required></textarea></div>
+                    <div class="col-md-6"><input class="form-control" name="meta_title" placeholder="Meta title"></div>
+                    <div class="col-md-6"><input class="form-control" name="meta_description" placeholder="Meta description"></div>
+                    <div class="col-12 form-check ms-2">
+                        <input class="form-check-input" type="checkbox" id="blog_published" name="is_published" checked>
+                        <label class="form-check-label" for="blog_published">Yayinla</label>
+                    </div>
+                    <div class="col-12"><button class="btn btn-primary">Yazi Ekle</button></div>
+                </form>
+
+                <div class="small text-muted mb-2">Son yazilar</div>
+                {% for post in posts|slice(0, 5) %}
+                    <div class="d-flex justify-content-between align-items-center border rounded p-2 mb-2">
+                        <div>
+                            <strong>{{ post.title }}</strong>
+                            <div class="small text-muted">{{ post.slug }}</div>
+                        </div>
+                        <form method="post" action="{{ path('admin_super_blog_delete', {id: post.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('super_blog_delete_' ~ post.id) }}">
+                            <button class="btn btn-sm btn-outline-danger">Sil</button>
+                        </form>
+                    </div>
+                {% else %}
+                    <div class="text-muted">Blog yazisi yok.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header"><strong>Site Icerikleri</strong></div>
+            <div class="card-body">
+                <form method="post" action="{{ path('admin_super_content_create') }}" class="row g-2 mb-3">
+                    <input type="hidden" name="_token" value="{{ csrf_token('super_content_create') }}">
+                    <div class="col-md-4"><input class="form-control" name="key_name" placeholder="Key (about)" required></div>
+                    <div class="col-md-8"><input class="form-control" name="title" placeholder="Baslik" required></div>
+                    <div class="col-12"><textarea class="form-control" rows="3" name="body" placeholder="Icerik" required></textarea></div>
+                    <div class="col-12 form-check ms-2">
+                        <input class="form-check-input" type="checkbox" id="content_published" name="is_published" checked>
+                        <label class="form-check-label" for="content_published">Yayinda</label>
+                    </div>
+                    <div class="col-12"><button class="btn btn-primary">Icerik Ekle</button></div>
+                </form>
+
+                {% for content in contents %}
+                    <div class="d-flex justify-content-between align-items-center border rounded p-2 mb-2">
+                        <div>
+                            <strong>{{ content.title }}</strong>
+                            <div class="small text-muted">{{ content.keyName }}</div>
+                        </div>
+                        <form method="post" action="{{ path('admin_super_content_delete', {id: content.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('super_content_delete_' ~ content.id) }}">
+                            <button class="btn btn-sm btn-outline-danger">Sil</button>
+                        </form>
+                    </div>
+                {% else %}
+                    <div class="text-muted">Icerik yok.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

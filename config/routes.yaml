@@ -1,5 +1,17 @@
+site:
+    resource: ../src/Controller/Site/
+    type: attribute
+
 admin_security:
     resource: ../src/Controller/Admin/SecurityController.php
+    type: attribute
+
+admin_super_web:
+    resource: ../src/Controller/Admin/SuperAdminWebController.php
+    type: attribute
+
+admin_restaurant_context:
+    resource: ../src/Controller/Admin/RestaurantContextController.php
     type: attribute
 
 admin_restaurant_web:
@@ -20,4 +32,8 @@ admin_category_web:
 
 admin_qrcode_web:
     resource: ../src/Controller/Admin/QrCodeWebController.php
+    type: attribute
+
+admin_account_web:
+    resource: ../src/Controller/Admin/AccountWebController.php
     type: attribute

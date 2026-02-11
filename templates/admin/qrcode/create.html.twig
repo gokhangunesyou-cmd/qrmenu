@@ -1,13 +1,307 @@
 {% extends 'admin/base.html.twig' %}
 
-{% block title %}QR Kod Oluştur{% endblock %}
+{% set ui = {
+    tr: {
+        title: 'QR Kod Oluştur',
+        back: 'Geri',
+        mode: 'Mod',
+        qr_generation: 'QR Üretim Şekli',
+        single_option: '1. Tek QR (her masaya aynı PDF)',
+        table_option: '2. Masa numaralı QR (toplam masa kadar)',
+        start_table: 'Başlangıç Masa No',
+        total_tables: 'Toplam Masa',
+        total_tables_hint: 'Ornek: 40 girersen 40 satir onizleme + PDF linki hazirlanir.',
+        table_label_prefix: 'Masa Etiket Prefix',
+        main_menu: 'Ana Menu',
+        single_label: 'Tek QR Etiketi',
+        target_url: 'Hedef URL',
+        customization: 'QR Özelleştirme',
+        foreground: 'Ön Plan',
+        background: 'Arka Plan',
+        qr_size: 'QR Boyutu',
+        border_radius: 'Kenar Yuvarlaklığı',
+        logo: 'Logo',
+        table_design: 'Masa Numarası Tasarımı',
+        text: 'Yazı',
+        border: 'Border',
+        border_width: 'Border Kalınlığı',
+        border_radius_label: 'Border Radius',
+        x_pos: 'X Konumu',
+        y_pos: 'Y Konumu',
+        drag_hint: 'Masa numarasını önizleme kartında sürükleyerek de konumlandırabilirsiniz.',
+        pdf_card: 'PDF Kart',
+        pdf_template: 'PDF Şablonu',
+        primary_color: 'Ana Renk',
+        bg_color: 'Arka Plan',
+        bg_image: 'Kart Arka Plan Görseli',
+        create: 'Oluştur',
+        create_pdf_after: 'Önizleme Sonrası PDF Oluştur',
+        cancel: 'İptal',
+        preview_qr: 'QR Önizleme',
+        preview_text: 'QR kod önizlemesi',
+        refresh: 'Yenile',
+        preview_pdf: 'PDF Kart Önizleme',
+        restaurant_card: 'Restoran Kartı',
+        scan_phone: 'Telefonunuzla okutun',
+        table_menu_access: 'Masaya ozel menu erisimi',
+        table_card: 'Masa Numaralı Kart',
+        single_card: 'Tek QR Kartı',
+        drag_hint_pdf: 'Masa numarası sürükle-bırak veya X/Y slider ile değiştirilebilir.',
+        pdf_download_list: 'PDF İndirme Listesi',
+        items: 'adet',
+        preview: 'Önizleme',
+        table: 'Masa',
+        download: 'İndirme',
+        pdf_download: 'PDF İndir',
+        table_label: 'Masa Etiketi',
+        pdf_preview_confirm: 'PDF Önizleme Onayı',
+        pdf_preview_body: 'PDF oluşturmadan önce son görünüm:',
+        back_to_edit: 'Düzenlemeye Dön',
+        confirm_pdf_create: 'PDF Oluştur',
+        preview_failed: 'Önizleme başarısız'
+    },
+    en: {
+        title: 'Create QR Code',
+        back: 'Back',
+        mode: 'Mode',
+        qr_generation: 'QR Generation Mode',
+        single_option: '1. Single QR (same PDF for every table)',
+        table_option: '2. Table-numbered QR (one per table)',
+        start_table: 'Starting Table No',
+        total_tables: 'Total Tables',
+        total_tables_hint: 'Example: enter 40 to prepare 40 rows of preview + PDF links.',
+        table_label_prefix: 'Table Label Prefix',
+        main_menu: 'Main Menu',
+        single_label: 'Single QR Label',
+        target_url: 'Target URL',
+        customization: 'QR Customization',
+        foreground: 'Foreground',
+        background: 'Background',
+        qr_size: 'QR Size',
+        border_radius: 'Corner Radius',
+        logo: 'Logo',
+        table_design: 'Table Number Design',
+        text: 'Text',
+        border: 'Border',
+        border_width: 'Border Width',
+        border_radius_label: 'Border Radius',
+        x_pos: 'X Position',
+        y_pos: 'Y Position',
+        drag_hint: 'You can also drag the table number on the preview card to position it.',
+        pdf_card: 'PDF Card',
+        pdf_template: 'PDF Template',
+        primary_color: 'Primary Color',
+        bg_color: 'Background',
+        bg_image: 'Card Background Image',
+        create: 'Create',
+        create_pdf_after: 'Create PDF After Preview',
+        cancel: 'Cancel',
+        preview_qr: 'QR Preview',
+        preview_text: 'QR preview',
+        refresh: 'Refresh',
+        preview_pdf: 'PDF Card Preview',
+        restaurant_card: 'Restaurant Card',
+        scan_phone: 'Scan with your phone',
+        table_menu_access: 'Table-specific menu access',
+        table_card: 'Table Numbered Card',
+        single_card: 'Single QR Card',
+        drag_hint_pdf: 'Table number can be adjusted by drag-and-drop or X/Y sliders.',
+        pdf_download_list: 'PDF Download List',
+        items: 'items',
+        preview: 'Preview',
+        table: 'Table',
+        download: 'Download',
+        pdf_download: 'Download PDF',
+        table_label: 'Table Label',
+        pdf_preview_confirm: 'PDF Preview Confirmation',
+        pdf_preview_body: 'Final look before creating the PDF:',
+        back_to_edit: 'Back to Edit',
+        confirm_pdf_create: 'Create PDF',
+        preview_failed: 'Preview failed'
+    },
+    ar: {
+        title: 'إنشاء رمز QR',
+        back: 'رجوع',
+        mode: 'الوضع',
+        qr_generation: 'طريقة إنشاء QR',
+        single_option: '1. رمز QR واحد (نفس PDF لكل طاولة)',
+        table_option: '2. QR برقم الطاولة (بعدد الطاولات)',
+        start_table: 'رقم بداية الطاولة',
+        total_tables: 'إجمالي الطاولات',
+        total_tables_hint: 'مثال: أدخل 40 لإنشاء 40 صف معاينة + روابط PDF.',
+        table_label_prefix: 'بادئة تسمية الطاولة',
+        main_menu: 'القائمة الرئيسية',
+        single_label: 'تسمية QR واحدة',
+        target_url: 'الرابط المستهدف',
+        customization: 'تخصيص QR',
+        foreground: 'المقدمة',
+        background: 'الخلفية',
+        qr_size: 'حجم QR',
+        border_radius: 'استدارة الزوايا',
+        logo: 'الشعار',
+        table_design: 'تصميم رقم الطاولة',
+        text: 'النص',
+        border: 'الحدود',
+        border_width: 'سماكة الحدود',
+        border_radius_label: 'استدارة الحدود',
+        x_pos: 'موضع X',
+        y_pos: 'موضع Y',
+        drag_hint: 'يمكنك أيضًا سحب رقم الطاولة على بطاقة المعاينة لتحديد موقعه.',
+        pdf_card: 'بطاقة PDF',
+        pdf_template: 'قالب PDF',
+        primary_color: 'اللون الأساسي',
+        bg_color: 'الخلفية',
+        bg_image: 'صورة خلفية البطاقة',
+        create: 'إنشاء',
+        create_pdf_after: 'إنشاء PDF بعد المعاينة',
+        cancel: 'إلغاء',
+        preview_qr: 'معاينة QR',
+        preview_text: 'معاينة رمز QR',
+        refresh: 'تحديث',
+        preview_pdf: 'معاينة بطاقة PDF',
+        restaurant_card: 'بطاقة المطعم',
+        scan_phone: 'امسح بهاتفك',
+        table_menu_access: 'وصول لقائمة خاصة بالطاولة',
+        table_card: 'بطاقة برقم الطاولة',
+        single_card: 'بطاقة QR واحدة',
+        drag_hint_pdf: 'يمكن تعديل رقم الطاولة بالسحب والإفلات أو منزلقات X/Y.',
+        pdf_download_list: 'قائمة تنزيل PDF',
+        items: 'عنصر',
+        preview: 'المعاينة',
+        table: 'طاولة',
+        download: 'تنزيل',
+        pdf_download: 'تنزيل PDF',
+        table_label: 'تسمية الطاولة',
+        pdf_preview_confirm: 'تأكيد معاينة PDF',
+        pdf_preview_body: 'المظهر النهائي قبل إنشاء PDF:',
+        back_to_edit: 'عودة للتعديل',
+        confirm_pdf_create: 'إنشاء PDF',
+        preview_failed: 'فشلت المعاينة'
+    },
+    ru: {
+        title: 'Создать QR-код',
+        back: 'Назад',
+        mode: 'Режим',
+        qr_generation: 'Способ генерации QR',
+        single_option: '1. Один QR (один PDF для всех столов)',
+        table_option: '2. QR с номером стола (по числу столов)',
+        start_table: 'Начальный номер стола',
+        total_tables: 'Всего столов',
+        total_tables_hint: 'Пример: введите 40, чтобы создать 40 строк предпросмотра и PDF-ссылок.',
+        table_label_prefix: 'Префикс метки стола',
+        main_menu: 'Главное меню',
+        single_label: 'Метка одного QR',
+        target_url: 'Целевой URL',
+        customization: 'Настройка QR',
+        foreground: 'Передний план',
+        background: 'Фон',
+        qr_size: 'Размер QR',
+        border_radius: 'Скругление',
+        logo: 'Логотип',
+        table_design: 'Дизайн номера стола',
+        text: 'Текст',
+        border: 'Граница',
+        border_width: 'Толщина границы',
+        border_radius_label: 'Радиус границы',
+        x_pos: 'Позиция X',
+        y_pos: 'Позиция Y',
+        drag_hint: 'Вы также можете перетащить номер стола на карточке предпросмотра.',
+        pdf_card: 'PDF карточка',
+        pdf_template: 'Шаблон PDF',
+        primary_color: 'Основной цвет',
+        bg_color: 'Фон',
+        bg_image: 'Фоновое изображение карточки',
+        create: 'Создать',
+        create_pdf_after: 'Создать PDF после предпросмотра',
+        cancel: 'Отмена',
+        preview_qr: 'Предпросмотр QR',
+        preview_text: 'Предпросмотр QR',
+        refresh: 'Обновить',
+        preview_pdf: 'Предпросмотр PDF карточки',
+        restaurant_card: 'Карточка ресторана',
+        scan_phone: 'Сканируйте телефоном',
+        table_menu_access: 'Доступ к меню для конкретного стола',
+        table_card: 'Карточка с номером стола',
+        single_card: 'Одна QR карточка',
+        drag_hint_pdf: 'Номер стола можно менять перетаскиванием или ползунками X/Y.',
+        pdf_download_list: 'Список скачивания PDF',
+        items: 'шт.',
+        preview: 'Предпросмотр',
+        table: 'Стол',
+        download: 'Скачать',
+        pdf_download: 'Скачать PDF',
+        table_label: 'Метка стола',
+        pdf_preview_confirm: 'Подтверждение предпросмотра PDF',
+        pdf_preview_body: 'Итоговый вид перед созданием PDF:',
+        back_to_edit: 'Вернуться к редактированию',
+        confirm_pdf_create: 'Создать PDF',
+        preview_failed: 'Не удалось создать предпросмотр'
+    }
+}[currentLocale] ?? {
+    title: 'Create QR Code',
+    back: 'Back',
+    mode: 'Mode',
+    qr_generation: 'QR Generation Mode',
+    single_option: '1. Single QR (same PDF for every table)',
+    table_option: '2. Table-numbered QR (one per table)',
+    start_table: 'Starting Table No',
+    total_tables: 'Total Tables',
+    total_tables_hint: 'Example: enter 40 to prepare 40 rows of preview + PDF links.',
+    table_label_prefix: 'Table Label Prefix',
+    main_menu: 'Main Menu',
+    single_label: 'Single QR Label',
+    target_url: 'Target URL',
+    customization: 'QR Customization',
+    foreground: 'Foreground',
+    background: 'Background',
+    qr_size: 'QR Size',
+    border_radius: 'Corner Radius',
+    logo: 'Logo',
+    table_design: 'Table Number Design',
+    text: 'Text',
+    border: 'Border',
+    border_width: 'Border Width',
+    border_radius_label: 'Border Radius',
+    x_pos: 'X Position',
+    y_pos: 'Y Position',
+    drag_hint: 'You can also drag the table number on the preview card to position it.',
+    pdf_card: 'PDF Card',
+    pdf_template: 'PDF Template',
+    primary_color: 'Primary Color',
+    bg_color: 'Background',
+    bg_image: 'Card Background Image',
+    create: 'Create',
+    create_pdf_after: 'Create PDF After Preview',
+    cancel: 'Cancel',
+    preview_qr: 'QR Preview',
+    preview_text: 'QR preview',
+    refresh: 'Refresh',
+    preview_pdf: 'PDF Card Preview',
+    restaurant_card: 'Restaurant Card',
+    scan_phone: 'Scan with your phone',
+    table_menu_access: 'Table-specific menu access',
+    table_card: 'Table Numbered Card',
+    single_card: 'Single QR Card',
+    drag_hint_pdf: 'Table number can be adjusted by drag-and-drop or X/Y sliders.',
+    pdf_download_list: 'PDF Download List',
+    items: 'items',
+    preview: 'Preview',
+    table: 'Table',
+    download: 'Download',
+    pdf_download: 'Download PDF',
+    table_label: 'Table Label',
+    pdf_preview_confirm: 'PDF Preview Confirmation',
+    pdf_preview_body: 'Final look before creating the PDF:',
+    back_to_edit: 'Back to Edit',
+    confirm_pdf_create: 'Create PDF',
+    preview_failed: 'Preview failed'
+} %}
+
+{% block title %}{{ ui.title }}{% endblock %}
 
 {% block stylesheets %}
 <style>
-    .preview-card {
-        position: sticky;
-        top: 1rem;
-    }
+    .preview-card { position: sticky; top: 1rem; }
     .qr-preview-wrapper {
         text-align: center;
         padding: 1.5rem;
@@ -18,34 +312,89 @@
         align-items: center;
         justify-content: center;
     }
-    .qr-preview-wrapper img {
-        max-width: 256px;
-        max-height: 256px;
-        border-radius: 4px;
+    .qr-preview-wrapper img { max-width: 256px; max-height: 256px; border-radius: 4px; }
+    .qr-preview-placeholder { color: #adb5bd; text-align: center; }
+    .qr-preview-placeholder i { font-size: 4rem; display: block; margin-bottom: 0.5rem; }
+
+    .pdf-preview-card {
+        width: 100%;
+        max-width: 320px;
+        min-height: 420px;
+        margin: 0 auto;
+        border-radius: 18px;
+        border: 1px solid #dbe2ea;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+        overflow: hidden;
+        background: #fff;
+        background-size: cover;
+        background-position: center;
+        position: relative;
     }
-    .qr-preview-placeholder {
-        color: #adb5bd;
+    .pdf-preview-top {
+        height: 84px;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
         text-align: center;
+        font-weight: 700;
     }
-    .qr-preview-placeholder i {
-        font-size: 4rem;
-        display: block;
-        margin-bottom: 0.5rem;
+    .pdf-preview-body {
+        padding: 1rem;
+        text-align: center;
+        background: rgba(255, 255, 255, 0.92);
+        min-height: 334px;
     }
-    .color-preview {
-        width: 32px;
-        height: 32px;
-        border-radius: 4px;
-        border: 1px solid #dee2e6;
-        display: inline-block;
-        vertical-align: middle;
+    .pdf-preview-qr-wrap {
+        width: 190px;
+        height: 190px;
+        margin: 0 auto;
+        border: 1px solid #dbe2ea;
+        border-radius: 12px;
+        background: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+    .pdf-preview-qr-wrap img { width: 86%; height: 86%; object-fit: contain; }
+    .pdf-preview-label { font-size: 0.85rem; color: #495057; margin-top: 0.55rem; }
+
+    .table-badge-preview {
+        position: absolute;
+        left: 50%;
+        top: 73%;
+        transform: translate(-50%, -50%);
+        padding: 6px 14px;
+        font-size: 18px;
+        font-weight: 700;
+        border: 1px solid #1f2937;
+        border-radius: 12px;
+        background: #ffffff;
+        color: #111827;
+        cursor: move;
+        user-select: none;
+        z-index: 30;
+        max-width: 80%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .result-thumb {
+        width: 82px;
+        height: 82px;
+        object-fit: cover;
+        border: 1px solid #dbe2ea;
+        border-radius: 8px;
+        background: #fff;
     }
 </style>
 {% endblock %}
 
 {% block body %}
 <div class="container">
-    {# Flash messages #}
     {% for type in ['success', 'error'] %}
         {% for message in app.flashes(type) %}
             <div class="alert alert-{{ type == 'error' ? 'danger' : type }} alert-dismissible fade show" role="alert">
@@ -56,256 +405,548 @@
     {% endfor %}
 
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>QR Kod Oluştur</h2>
-        <a href="{{ path('admin_qrcode_index') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> Geri
-        </a>
+        <h2>{{ ui.title }}</h2>
+        <a href="{{ path('admin_qrcode_index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> {{ ui.back }}</a>
     </div>
 
     <form method="post" action="{{ path('admin_qrcode_create') }}" enctype="multipart/form-data" id="qrForm">
         <input type="hidden" name="_token" value="{{ csrf_token('qrcode_create') }}">
+        <input type="hidden" name="action" id="actionInput" value="create">
+
+        <input type="hidden" name="table_pos_x" id="table_pos_x" value="{{ formData.table_pos_x ?? '50' }}">
+        <input type="hidden" name="table_pos_y" id="table_pos_y" value="{{ formData.table_pos_y ?? '73' }}">
 
         <div class="row">
-            {# Form #}
-            <div class="col-md-7">
+            <div class="col-lg-7">
                 <div class="card shadow-sm mb-4">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="bi bi-gear"></i> Ayarlar</h5>
-                    </div>
+                    <div class="card-header"><h5 class="mb-0"><i class="bi bi-ui-checks-grid"></i> {{ ui.mode }}</h5></div>
                     <div class="card-body">
-                        {# Type #}
                         <div class="mb-3">
-                            <label for="type" class="form-label">QR Kod Tipi <span class="text-danger">*</span></label>
-                            <select class="form-select" id="type" name="type" required>
-                                <option value="restaurant" {{ (formData.type ?? 'restaurant') == 'restaurant' ? 'selected' : '' }}>
-                                    Restoran (Ana Menü)
-                                </option>
-                                <option value="table" {{ (formData.type ?? '') == 'table' ? 'selected' : '' }}>
-                                    Masa
-                                </option>
+                            <label for="batch_mode" class="form-label">{{ ui.qr_generation }}</label>
+                            {% set selectedBatchMode = formData.batch_mode ?? 'table' %}
+                            <select class="form-select" id="batch_mode" name="batch_mode">
+                                <option value="single" {{ selectedBatchMode == 'single' ? 'selected' : '' }}>{{ ui.single_option }}</option>
+                                <option value="table" {{ selectedBatchMode == 'table' ? 'selected' : '' }}>{{ ui.table_option }}</option>
                             </select>
                         </div>
 
-                        {# Table fields (conditional) #}
-                        <div id="tableFields" style="display: {{ (formData.type ?? 'restaurant') == 'table' ? 'block' : 'none' }};">
+                        <input type="hidden" id="type" name="type" value="{{ (formData.type ?? 'restaurant') }}">
+
+                        <div id="tableBatchFields" style="display: {{ selectedBatchMode == 'table' ? 'block' : 'none' }};">
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="table_number" class="form-label">Masa Numarası</label>
-                                    <input type="number" class="form-control" id="table_number" name="table_number"
-                                           min="1" value="{{ formData.table_number ?? '' }}" placeholder="Örn: 1">
+                                    <label for="table_start_number" class="form-label">{{ ui.start_table }}</label>
+                                    <input type="number" class="form-control" id="table_start_number" name="table_start_number" min="1" value="{{ formData.table_start_number ?? '1' }}">
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label for="table_label" class="form-label">Masa Etiketi</label>
-                                    <input type="text" class="form-control" id="table_label" name="table_label"
-                                           value="{{ formData.table_label ?? '' }}" placeholder="Örn: Bahçe Masa 1">
+                                    <label for="batch_count" class="form-label">{{ ui.total_tables }}</label>
+                                    <input type="number" class="form-control" id="batch_count" name="batch_count" min="1" max="500" value="{{ formData.batch_count ?? '20' }}">
+                                    <small class="text-muted">{{ ui.total_tables_hint }}</small>
                                 </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="table_label_prefix" class="form-label">{{ ui.table_label_prefix }}</label>
+                                <input type="text" class="form-control" id="table_label_prefix" name="table_label_prefix" value="{{ formData.table_label_prefix ?? ui.table }}" placeholder="{{ ui.table }}">
                             </div>
                         </div>
 
-                        {# Encoded URL preview #}
-                        <div class="mb-3">
-                            <label class="form-label">Hedef URL</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-link-45deg"></i></span>
-                                <input type="text" class="form-control bg-light" id="urlPreview" readonly
-                                       value="{{ publicMenuUrl }}/{{ restaurantSlug }}">
+                        <div id="singleFields" style="display: {{ selectedBatchMode == 'single' ? 'block' : 'none' }};">
+                            <div class="mb-3">
+                                <label for="single_label" class="form-label">{{ ui.single_label }}</label>
+                                <input type="text" class="form-control" id="single_label" name="single_label" value="{{ formData.single_label ?? ui.main_menu }}">
                             </div>
-                            <small class="text-muted">QR kod bu URL'ye yönlendirecek</small>
+                        </div>
+
+                        <div class="mb-1">
+                            <label class="form-label">{{ ui.target_url }}</label>
+                            <input type="text" class="form-control bg-light" id="urlPreview" readonly value="{{ menuBaseUrl }}">
                         </div>
                     </div>
                 </div>
 
                 <div class="card shadow-sm mb-4">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="bi bi-palette"></i> Özelleştirme</h5>
-                    </div>
+                    <div class="card-header"><h5 class="mb-0"><i class="bi bi-palette"></i> {{ ui.customization }}</h5></div>
                     <div class="card-body">
                         <div class="row">
-                            {# Foreground color #}
                             <div class="col-md-6 mb-3">
-                                <label for="foreground_color" class="form-label">Ön Plan Rengi</label>
-                                <div class="d-flex align-items-center gap-2">
-                                    <input type="color" class="form-control form-control-color" id="foreground_color"
-                                           name="foreground_color" value="{{ formData.foreground_color ?? '#000000' }}">
-                                    <input type="text" class="form-control" id="fg_hex" maxlength="7"
-                                           value="{{ formData.foreground_color ?? '#000000' }}" style="max-width: 100px;">
+                                <label for="foreground_color" class="form-label">{{ ui.foreground }}</label>
+                                <div class="d-flex gap-2">
+                                    <input type="color" class="form-control form-control-color" id="foreground_color" name="foreground_color" value="{{ formData.foreground_color ?? '#000000' }}">
+                                    <input type="text" class="form-control" id="fg_hex" maxlength="7" value="{{ formData.foreground_color ?? '#000000' }}">
                                 </div>
                             </div>
-
-                            {# Background color #}
                             <div class="col-md-6 mb-3">
-                                <label for="background_color" class="form-label">Arka Plan Rengi</label>
-                                <div class="d-flex align-items-center gap-2">
-                                    <input type="color" class="form-control form-control-color" id="background_color"
-                                           name="background_color" value="{{ formData.background_color ?? '#ffffff' }}">
-                                    <input type="text" class="form-control" id="bg_hex" maxlength="7"
-                                           value="{{ formData.background_color ?? '#ffffff' }}" style="max-width: 100px;">
+                                <label for="background_color" class="form-label">{{ ui.background }}</label>
+                                <div class="d-flex gap-2">
+                                    <input type="color" class="form-control form-control-color" id="background_color" name="background_color" value="{{ formData.background_color ?? '#ffffff' }}">
+                                    <input type="text" class="form-control" id="bg_hex" maxlength="7" value="{{ formData.background_color ?? '#ffffff' }}">
                                 </div>
                             </div>
                         </div>
-
-                        {# Border radius #}
                         <div class="mb-3">
-                            <label for="border_radius" class="form-label">Kenar Yuvarlaklığı</label>
+                            <label for="qr_size" class="form-label">{{ ui.qr_size }}</label>
+                            {% set selectedQrSize = formData.qr_size ?? '512' %}
+                            <select class="form-select" id="qr_size" name="qr_size">
+                                <option value="128" {{ selectedQrSize == '128' ? 'selected' : '' }}>128 x 128</option>
+                                <option value="256" {{ selectedQrSize == '256' ? 'selected' : '' }}>256 x 256</option>
+                                <option value="384" {{ selectedQrSize == '384' ? 'selected' : '' }}>384 x 384</option>
+                                <option value="512" {{ selectedQrSize == '512' ? 'selected' : '' }}>512 x 512</option>
+                                <option value="768" {{ selectedQrSize == '768' ? 'selected' : '' }}>768 x 768</option>
+                                <option value="1024" {{ selectedQrSize == '1024' ? 'selected' : '' }}>1024 x 1024</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="border_radius" class="form-label">{{ ui.border_radius }}</label>
                             <div class="d-flex align-items-center gap-3">
-                                <input type="range" class="form-range flex-grow-1" id="border_radius"
-                                       name="border_radius" min="0" max="50" step="1"
-                                       value="{{ formData.border_radius ?? '0' }}">
+                                <input type="range" class="form-range flex-grow-1" id="border_radius" name="border_radius" min="0" max="50" step="1" value="{{ formData.border_radius ?? '0' }}">
                                 <span class="badge bg-secondary" id="radiusValue">{{ formData.border_radius ?? '0' }}%</span>
                             </div>
                         </div>
-
-                        {# Logo #}
                         <div class="mb-3">
-                            <label for="logo" class="form-label">Logo (ortaya yerleştirilir)</label>
-                            <input type="file" class="form-control" id="logo" name="logo"
-                                   accept="image/jpeg,image/png,image/webp">
-                            <small class="text-muted">Opsiyonel. JPEG, PNG, WebP — Maks. 2MB</small>
+                            <label for="logo" class="form-label">{{ ui.logo }}</label>
+                            <input type="file" class="form-control" id="logo" name="logo" accept="image/jpeg,image/png,image/webp">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header"><h5 class="mb-0"><i class="bi bi-type"></i> {{ ui.table_design }}</h5></div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="table_text_color" class="form-label">{{ ui.text }}</label>
+                                <input type="color" id="table_text_color" name="table_text_color" class="form-control form-control-color" value="{{ formData.table_text_color ?? '#111827' }}">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="table_bg_color" class="form-label">{{ ui.background }}</label>
+                                <input type="color" id="table_bg_color" name="table_bg_color" class="form-control form-control-color" value="{{ formData.table_bg_color ?? '#ffffff' }}">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="table_border_color" class="form-label">{{ ui.border }}</label>
+                                <input type="color" id="table_border_color" name="table_border_color" class="form-control form-control-color" value="{{ formData.table_border_color ?? '#1f2937' }}">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="table_border_width" class="form-label">{{ ui.border_width }}</label>
+                                <input type="range" id="table_border_width" name="table_border_width" class="form-range" min="0" max="8" value="{{ formData.table_border_width ?? '1' }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="table_border_radius" class="form-label">{{ ui.border_radius_label }}</label>
+                                <input type="range" id="table_border_radius" name="table_border_radius" class="form-range" min="0" max="40" value="{{ formData.table_border_radius ?? '12' }}">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="table_pos_x_range" class="form-label">{{ ui.x_pos }}</label>
+                                <input type="range" id="table_pos_x_range" class="form-range" min="0" max="100" value="{{ formData.table_pos_x ?? '50' }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="table_pos_y_range" class="form-label">{{ ui.y_pos }}</label>
+                                <input type="range" id="table_pos_y_range" class="form-range" min="0" max="100" value="{{ formData.table_pos_y ?? '73' }}">
+                            </div>
+                        </div>
+                        <small class="text-muted">{{ ui.drag_hint }}</small>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header"><h5 class="mb-0"><i class="bi bi-file-earmark-pdf"></i> {{ ui.pdf_card }}</h5></div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="label_template" class="form-label">{{ ui.pdf_template }}</label>
+                            {% set selectedTemplate = formData.label_template ?? 'classic' %}
+                            <select class="form-select" id="label_template" name="label_template">
+                                {% for pdfTemplate in templates %}
+                                    <option value="{{ pdfTemplate.slug }}" {{ selectedTemplate == pdfTemplate.slug ? 'selected' : '' }}>{{ pdfTemplate.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="template_primary_color" class="form-label">{{ ui.primary_color }}</label>
+                                <input type="color" class="form-control form-control-color" id="template_primary_color" name="template_primary_color" value="{{ formData.template_primary_color ?? '#1f2937' }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="template_background_color" class="form-label">{{ ui.bg_color }}</label>
+                                <input type="color" class="form-control form-control-color" id="template_background_color" name="template_background_color" value="{{ formData.template_background_color ?? '#ffffff' }}">
+                            </div>
+                        </div>
+                        <div class="mb-1">
+                            <label for="label_background_image" class="form-label">{{ ui.bg_image }}</label>
+                            <input type="file" class="form-control" id="label_background_image" name="label_background_image" accept="image/jpeg,image/png,image/webp">
                         </div>
                     </div>
                 </div>
 
                 <div class="d-flex gap-2 mb-4">
-                    <button type="submit" class="btn btn-primary btn-lg">
-                        <i class="bi bi-qr-code"></i> Oluştur
-                    </button>
-                    <a href="{{ path('admin_qrcode_index') }}" class="btn btn-outline-secondary btn-lg">İptal</a>
+                    <button type="button" id="createBtn" class="btn btn-primary btn-lg"><i class="bi bi-qr-code"></i> {{ ui.create }}</button>
+                    <button type="button" id="createPdfBtn" class="btn btn-success btn-lg"><i class="bi bi-file-earmark-pdf"></i> {{ ui.create_pdf_after }}</button>
+                    <a href="{{ path('admin_qrcode_index') }}" class="btn btn-outline-secondary btn-lg">{{ ui.cancel }}</a>
                 </div>
             </div>
 
-            {# Preview #}
-            <div class="col-md-5">
-                <div class="card shadow-sm preview-card">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="bi bi-eye"></i> Önizleme</h5>
-                    </div>
+            <div class="col-lg-5">
+                <div class="card shadow-sm preview-card mb-3">
+                    <div class="card-header"><h5 class="mb-0"><i class="bi bi-eye"></i> {{ ui.preview_qr }}</h5></div>
                     <div class="card-body">
                         <div class="qr-preview-wrapper" id="previewWrapper">
                             <div class="qr-preview-placeholder" id="previewPlaceholder">
                                 <i class="bi bi-qr-code"></i>
-                                <p>QR kod önizlemesi</p>
-                                <small>Ayarları değiştirdiğinizde otomatik güncellenir</small>
+                                <p>{{ ui.preview_text }}</p>
                             </div>
-                            <img src="" alt="QR Önizleme" id="previewImage" style="display: none;">
+                            <img src="" alt="QR Önizleme" id="previewImage" style="display:none;">
                         </div>
                         <div class="text-center mt-3">
-                            <button type="button" class="btn btn-sm btn-outline-primary" id="refreshPreview">
-                                <i class="bi bi-arrow-clockwise"></i> Önizlemeyi Yenile
-                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="refreshPreview"><i class="bi bi-arrow-clockwise"></i> {{ ui.refresh }}</button>
                         </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm preview-card">
+                    <div class="card-header"><h5 class="mb-0"><i class="bi bi-file-earmark-richtext"></i> {{ ui.preview_pdf }}</h5></div>
+                    <div class="card-body">
+                        <div class="pdf-preview-card" id="pdfPreviewCard">
+                            <div class="pdf-preview-top" id="pdfPreviewTop">{{ ui.restaurant_card }}</div>
+                            <div class="pdf-preview-body">
+                                <div class="pdf-preview-qr-wrap">
+                                    <img src="" alt="QR" id="pdfPreviewQr">
+                                </div>
+                                <div class="pdf-preview-label" id="pdfPreviewLabel">{{ ui.scan_phone }}</div>
+                            </div>
+                            <div id="tableBadgePreview" class="table-badge-preview">{{ ui.table }} 1</div>
+                        </div>
+                        <small class="text-muted d-block mt-2">{{ ui.drag_hint_pdf }}</small>
                     </div>
                 </div>
             </div>
         </div>
     </form>
+
+    {% if batchResults is defined and batchResults|length > 0 %}
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-table"></i> {{ ui.pdf_download_list }} ({{ batchResults|length }} {{ ui.items }})</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover mb-0 align-middle">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>{{ ui.preview }}</th>
+                                <th>{{ ui.table }}</th>
+                                <th>{{ ui.download }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for row in batchResults %}
+                            <tr>
+                                <td>{{ row.row }}</td>
+                                <td><img src="{{ row.previewUrl }}" alt="QR" class="result-thumb"></td>
+                                <td>{{ row.tableNumber ? (ui.table ~ ' ' ~ row.tableNumber) : ui.table_label }}</td>
+                                <td><a href="{{ row.downloadUrl }}" class="btn btn-sm btn-success"><i class="bi bi-download"></i> {{ ui.pdf_download }}</a></td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<div class="modal fade" id="pdfPreviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ ui.pdf_preview_confirm }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted">{{ ui.pdf_preview_body }}</p>
+                <div id="pdfPreviewModalContainer"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{{ ui.back_to_edit }}</button>
+                <button type="button" class="btn btn-success" id="confirmPdfCreate"><i class="bi bi-file-earmark-pdf"></i> {{ ui.confirm_pdf_create }}</button>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
 {% block javascripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
+    var form = document.getElementById('qrForm');
+    var actionInput = document.getElementById('actionInput');
+    var createBtn = document.getElementById('createBtn');
+    var createPdfBtn = document.getElementById('createPdfBtn');
+    var confirmPdfCreate = document.getElementById('confirmPdfCreate');
+    var pdfPreviewModal = new bootstrap.Modal(document.getElementById('pdfPreviewModal'));
+    var pdfPreviewModalContainer = document.getElementById('pdfPreviewModalContainer');
+
+    var batchMode = document.getElementById('batch_mode');
     var typeSelect = document.getElementById('type');
-    var tableFields = document.getElementById('tableFields');
-    var tableNumber = document.getElementById('table_number');
+    var tableBatchFields = document.getElementById('tableBatchFields');
+    var singleFields = document.getElementById('singleFields');
+    var tableStartNumber = document.getElementById('table_start_number');
+    var tableLabelPrefix = document.getElementById('table_label_prefix');
+    var singleLabel = document.getElementById('single_label');
     var urlPreview = document.getElementById('urlPreview');
+
+    var qrSize = document.getElementById('qr_size');
     var fgColor = document.getElementById('foreground_color');
     var bgColor = document.getElementById('background_color');
     var fgHex = document.getElementById('fg_hex');
     var bgHex = document.getElementById('bg_hex');
     var borderRadius = document.getElementById('border_radius');
     var radiusValue = document.getElementById('radiusValue');
+    var logoInput = document.getElementById('logo');
+
+    var templatePrimary = document.getElementById('template_primary_color');
+    var templateBackground = document.getElementById('template_background_color');
+    var labelTemplate = document.getElementById('label_template');
+    var labelBackgroundImage = document.getElementById('label_background_image');
+
+    var tableTextColor = document.getElementById('table_text_color');
+    var tableBgColor = document.getElementById('table_bg_color');
+    var tableBorderColor = document.getElementById('table_border_color');
+    var tableBorderWidth = document.getElementById('table_border_width');
+    var tableBorderRadius = document.getElementById('table_border_radius');
+    var tablePosX = document.getElementById('table_pos_x');
+    var tablePosY = document.getElementById('table_pos_y');
+    var tablePosXRange = document.getElementById('table_pos_x_range');
+    var tablePosYRange = document.getElementById('table_pos_y_range');
+
     var previewImage = document.getElementById('previewImage');
     var previewPlaceholder = document.getElementById('previewPlaceholder');
     var refreshBtn = document.getElementById('refreshPreview');
 
-    var baseUrl = '{{ publicMenuUrl }}/{{ restaurantSlug }}';
+    var pdfPreviewCard = document.getElementById('pdfPreviewCard');
+    var pdfPreviewTop = document.getElementById('pdfPreviewTop');
+    var pdfPreviewQr = document.getElementById('pdfPreviewQr');
+    var pdfPreviewLabel = document.getElementById('pdfPreviewLabel');
+    var tableBadgePreview = document.getElementById('tableBadgePreview');
+
+    var baseUrl = '{{ menuBaseUrl }}';
     var previewTimeout = null;
+    var lastPreviewUrl = null;
+    var labelBackgroundObjectUrl = null;
 
-    // Type change
-    typeSelect.addEventListener('change', function() {
-        tableFields.style.display = this.value === 'table' ? 'block' : 'none';
+    function currentDisplayTableNumber() {
+        return parseInt(tableStartNumber.value || '1', 10);
+    }
+
+    function syncBatchModeUI() {
+        var isTableBatch = batchMode.value === 'table';
+        tableBatchFields.style.display = isTableBatch ? 'block' : 'none';
+        singleFields.style.display = isTableBatch ? 'none' : 'block';
+        typeSelect.value = isTableBatch ? 'table' : 'restaurant';
         updateUrl();
-        schedulePreview();
-    });
-
-    // Table number change
-    tableNumber.addEventListener('input', function() {
-        updateUrl();
-        schedulePreview();
-    });
-
-    // Color sync
-    fgColor.addEventListener('input', function() {
-        fgHex.value = this.value;
-        schedulePreview();
-    });
-    fgHex.addEventListener('input', function() {
-        if (/^#[0-9a-fA-F]{6}$/.test(this.value)) {
-            fgColor.value = this.value;
-            schedulePreview();
-        }
-    });
-    bgColor.addEventListener('input', function() {
-        bgHex.value = this.value;
-        schedulePreview();
-    });
-    bgHex.addEventListener('input', function() {
-        if (/^#[0-9a-fA-F]{6}$/.test(this.value)) {
-            bgColor.value = this.value;
-            schedulePreview();
-        }
-    });
-
-    // Border radius
-    borderRadius.addEventListener('input', function() {
-        radiusValue.textContent = this.value + '%';
-    });
-
-    // Refresh button
-    refreshBtn.addEventListener('click', function() {
-        generatePreview();
-    });
+        updatePdfPreview();
+    }
 
     function updateUrl() {
         var url = baseUrl;
-        if (typeSelect.value === 'table' && tableNumber.value && parseInt(tableNumber.value) > 0) {
-            url += '?table=' + tableNumber.value;
+        if (batchMode.value === 'table') {
+            url += '?table=' + currentDisplayTableNumber();
         }
         urlPreview.value = url;
     }
 
     function schedulePreview() {
-        if (previewTimeout) clearTimeout(previewTimeout);
-        previewTimeout = setTimeout(generatePreview, 500);
+        if (previewTimeout) {
+            clearTimeout(previewTimeout);
+        }
+        previewTimeout = setTimeout(generatePreview, 400);
     }
 
     function generatePreview() {
         var formData = new FormData();
         formData.append('type', typeSelect.value);
-        formData.append('table_number', tableNumber.value || '0');
+        formData.append('table_number', batchMode.value === 'table' ? String(currentDisplayTableNumber()) : '0');
         formData.append('foreground_color', fgColor.value);
         formData.append('background_color', bgColor.value);
+        formData.append('border_radius', borderRadius.value || '0');
+        formData.append('qr_size', qrSize.value || '512');
+        if (logoInput.files && logoInput.files[0]) {
+            formData.append('logo', logoInput.files[0]);
+        }
 
-        fetch('{{ path("admin_qrcode_preview_generate") }}', {
-            method: 'POST',
-            body: formData
-        })
-        .then(function(response) {
-            if (!response.ok) throw new Error('Preview failed');
-            return response.blob();
-        })
-        .then(function(blob) {
-            var url = URL.createObjectURL(blob);
-            previewImage.src = url;
-            previewImage.style.display = 'block';
-            previewPlaceholder.style.display = 'none';
-        })
-        .catch(function() {
-            // Silently fail preview
+        fetch('{{ path("admin_qrcode_preview_generate") }}', { method: 'POST', body: formData })
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error('{{ ui.preview_failed }}');
+                }
+                return response.blob();
+            })
+            .then(function (blob) {
+                if (lastPreviewUrl) {
+                    URL.revokeObjectURL(lastPreviewUrl);
+                }
+                lastPreviewUrl = URL.createObjectURL(blob);
+                previewImage.src = lastPreviewUrl;
+                previewImage.style.display = 'block';
+                previewPlaceholder.style.display = 'none';
+                pdfPreviewQr.src = lastPreviewUrl;
+            })
+            .catch(function () {});
+    }
+
+    function applyTableBadgeStyles() {
+        tableBadgePreview.style.color = tableTextColor.value;
+        tableBadgePreview.style.backgroundColor = tableBgColor.value;
+        tableBadgePreview.style.borderColor = tableBorderColor.value;
+        tableBadgePreview.style.borderWidth = tableBorderWidth.value + 'px';
+        tableBadgePreview.style.borderStyle = 'solid';
+        tableBadgePreview.style.borderRadius = tableBorderRadius.value + 'px';
+        tableBadgePreview.style.left = tablePosX.value + '%';
+        tableBadgePreview.style.top = tablePosY.value + '%';
+    }
+
+    function updatePdfPreview() {
+        pdfPreviewTop.style.background = templatePrimary.value;
+        pdfPreviewCard.style.backgroundColor = templateBackground.value;
+        if (labelBackgroundObjectUrl) {
+            pdfPreviewCard.style.backgroundImage = 'url("' + labelBackgroundObjectUrl + '")';
+        } else {
+            pdfPreviewCard.style.backgroundImage = 'none';
+        }
+
+        if (batchMode.value === 'table') {
+            var number = currentDisplayTableNumber();
+            tableBadgePreview.textContent = (tableLabelPrefix.value || '{{ ui.table }}') + ' ' + number;
+            pdfPreviewLabel.textContent = '{{ ui.table_menu_access }}';
+            pdfPreviewTop.textContent = '{{ ui.table_card }}';
+        } else {
+            tableBadgePreview.textContent = singleLabel.value || '{{ ui.main_menu }}';
+            pdfPreviewLabel.textContent = '{{ ui.scan_phone }}';
+            pdfPreviewTop.textContent = '{{ ui.single_card }}';
+        }
+
+        if (labelTemplate && labelTemplate.selectedOptions.length > 0) {
+            pdfPreviewTop.textContent += ' • ' + labelTemplate.selectedOptions[0].textContent.trim();
+        }
+
+        applyTableBadgeStyles();
+    }
+
+    function bindHex(colorEl, hexEl) {
+        colorEl.addEventListener('input', function () {
+            hexEl.value = colorEl.value;
+            schedulePreview();
+        });
+        hexEl.addEventListener('input', function () {
+            if (/^#[0-9a-fA-F]{6}$/.test(hexEl.value)) {
+                colorEl.value = hexEl.value;
+                schedulePreview();
+            }
         });
     }
 
-    // Initial preview
+    function syncBadgePositionFromSlider() {
+        tablePosX.value = tablePosXRange.value;
+        tablePosY.value = tablePosYRange.value;
+        applyTableBadgeStyles();
+    }
+
+    function enableDragBadge() {
+        var dragging = false;
+
+        function updateByPointer(clientX, clientY) {
+            var rect = pdfPreviewCard.getBoundingClientRect();
+            var x = ((clientX - rect.left) / rect.width) * 100;
+            var y = ((clientY - rect.top) / rect.height) * 100;
+            x = Math.max(0, Math.min(100, x));
+            y = Math.max(0, Math.min(100, y));
+            tablePosX.value = String(Math.round(x));
+            tablePosY.value = String(Math.round(y));
+            tablePosXRange.value = tablePosX.value;
+            tablePosYRange.value = tablePosY.value;
+            applyTableBadgeStyles();
+        }
+
+        tableBadgePreview.addEventListener('pointerdown', function (event) {
+            dragging = true;
+            tableBadgePreview.setPointerCapture(event.pointerId);
+            updateByPointer(event.clientX, event.clientY);
+        });
+
+        tableBadgePreview.addEventListener('pointermove', function (event) {
+            if (!dragging) {
+                return;
+            }
+            updateByPointer(event.clientX, event.clientY);
+        });
+
+        tableBadgePreview.addEventListener('pointerup', function () { dragging = false; });
+        tableBadgePreview.addEventListener('pointercancel', function () { dragging = false; });
+    }
+
+    batchMode.addEventListener('change', function () {
+        syncBatchModeUI();
+        schedulePreview();
+    });
+    tableStartNumber.addEventListener('input', function () { updateUrl(); updatePdfPreview(); schedulePreview(); });
+    tableLabelPrefix.addEventListener('input', updatePdfPreview);
+    singleLabel.addEventListener('input', updatePdfPreview);
+
+    qrSize.addEventListener('change', schedulePreview);
+    borderRadius.addEventListener('input', function () {
+        radiusValue.textContent = borderRadius.value + '%';
+        schedulePreview();
+    });
+
+    bindHex(fgColor, fgHex);
+    bindHex(bgColor, bgHex);
+
+    logoInput.addEventListener('change', schedulePreview);
+    refreshBtn.addEventListener('click', generatePreview);
+
+    templatePrimary.addEventListener('input', updatePdfPreview);
+    templateBackground.addEventListener('input', updatePdfPreview);
+    labelTemplate.addEventListener('change', updatePdfPreview);
+
+    [tableTextColor, tableBgColor, tableBorderColor, tableBorderWidth, tableBorderRadius].forEach(function (el) {
+        el.addEventListener('input', updatePdfPreview);
+    });
+    tablePosXRange.addEventListener('input', syncBadgePositionFromSlider);
+    tablePosYRange.addEventListener('input', syncBadgePositionFromSlider);
+
+    labelBackgroundImage.addEventListener('change', function () {
+        if (labelBackgroundObjectUrl) {
+            URL.revokeObjectURL(labelBackgroundObjectUrl);
+            labelBackgroundObjectUrl = null;
+        }
+        if (labelBackgroundImage.files && labelBackgroundImage.files[0]) {
+            labelBackgroundObjectUrl = URL.createObjectURL(labelBackgroundImage.files[0]);
+        }
+        updatePdfPreview();
+    });
+
+    createBtn.addEventListener('click', function () {
+        actionInput.value = 'create';
+        form.submit();
+    });
+
+    createPdfBtn.addEventListener('click', function () {
+        updatePdfPreview();
+        pdfPreviewModalContainer.innerHTML = '';
+        pdfPreviewModalContainer.appendChild(pdfPreviewCard.cloneNode(true));
+        pdfPreviewModal.show();
+    });
+
+    confirmPdfCreate.addEventListener('click', function () {
+        actionInput.value = 'create_pdf';
+        form.submit();
+    });
+
+    syncBatchModeUI();
+    syncBadgePositionFromSlider();
+    enableDragBadge();
+    updatePdfPreview();
     generatePreview();
 });
 </script>

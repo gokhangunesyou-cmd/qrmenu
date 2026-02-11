@@ -1,0 +1,135 @@
+{% extends 'admin/base.html.twig' %}
+
+{% set ui = {
+    tr: {
+        title: 'Abonelik Yenile',
+        header: 'Abonelik Yenileme',
+        last_subscription: 'Son aboneliginiz',
+        end_date: 'bitis tarihi',
+        note: 'Free plan 3 ay, diger planlar 1 yillik yenilenir. Kampanyali fiyatlar plana gore gosterilir.',
+        plan_select: 'Plan Secimi',
+        select_plan: 'Plan seciniz',
+        per_year: '/ yil',
+        restaurant_short: 'restoran',
+        user_short: 'kullanici',
+        renew_button: 'Aboneligi Yenile'
+    },
+    en: {
+        title: 'Renew Subscription',
+        header: 'Subscription Renewal',
+        last_subscription: 'Your last subscription',
+        end_date: 'end date',
+        note: 'Free plan renews for 3 months, other plans renew for 1 year. Campaign prices are plan-based.',
+        plan_select: 'Plan Selection',
+        select_plan: 'Select a plan',
+        per_year: '/ year',
+        restaurant_short: 'restaurants',
+        user_short: 'users',
+        renew_button: 'Renew Subscription'
+    },
+    ar: {
+        title: 'تجديد الاشتراك',
+        header: 'تجديد الاشتراك',
+        last_subscription: 'آخر اشتراك لديك',
+        end_date: 'تاريخ الانتهاء',
+        note: 'الخطة المجانية 3 أشهر، وباقي الخطط سنة واحدة عند التجديد.',
+        plan_select: 'اختيار الخطة',
+        select_plan: 'اختر خطة',
+        per_year: '/ سنة',
+        restaurant_short: 'مطاعم',
+        user_short: 'مستخدمين',
+        renew_button: 'تجديد الاشتراك'
+    },
+    ru: {
+        title: 'Продление подписки',
+        header: 'Продление подписки',
+        last_subscription: 'Ваша последняя подписка',
+        end_date: 'дата окончания',
+        note: 'Free-план продлевается на 3 месяца, остальные планы на 1 год.',
+        plan_select: 'Выбор плана',
+        select_plan: 'Выберите план',
+        per_year: '/ год',
+        restaurant_short: 'ресторанов',
+        user_short: 'пользователей',
+        renew_button: 'Продлить подписку'
+    }
+}[currentLocale] ?? {
+    title: 'Renew Subscription',
+    header: 'Subscription Renewal',
+    last_subscription: 'Your last subscription',
+    end_date: 'end date',
+    note: 'Free plan renews for 3 months, other plans renew for 1 year. Campaign prices are plan-based.',
+    plan_select: 'Plan Selection',
+    select_plan: 'Select a plan',
+    per_year: '/ year',
+    restaurant_short: 'restaurants',
+    user_short: 'users',
+    renew_button: 'Renew Subscription'
+} %}
+
+{% set planMeta = {
+    tr: {
+        duration_suffixes: { free: '/ 3 ay', starter: '/ 1 yil', branch10: '/ 1 yil', premium: '/ 1 yil' },
+        old_prices: { starter: '599', branch10: '2999' },
+        display_prices: { free: '0', starter: '0', branch10: '0', premium: '5000' }
+    },
+    en: {
+        duration_suffixes: { free: '/ 3 months', starter: '/ 1 year', branch10: '/ 1 year', premium: '/ 1 year' },
+        old_prices: { starter: '599', branch10: '2999' },
+        display_prices: { free: '0', starter: '0', branch10: '0', premium: '5000' }
+    }
+}[currentLocale] ?? {
+    duration_suffixes: { free: '/ 3 months', starter: '/ 1 year', branch10: '/ 1 year', premium: '/ 1 year' },
+    old_prices: { starter: '599', branch10: '2999' },
+    display_prices: { free: '0', starter: '0', branch10: '0', premium: '5000' }
+} %}
+
+{% block title %}{{ ui.title }}{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header"><strong>{{ ui.header }}</strong></div>
+            <div class="card-body">
+                {% if latestSubscription %}
+                    <div class="alert alert-warning">
+                        {{ ui.last_subscription }}:
+                        <strong>{{ latestSubscription.plan.name }}</strong>,
+                        {{ ui.end_date }}: <strong>{{ latestSubscription.endsAt|date('d.m.Y') }}</strong>.
+                    </div>
+                {% endif %}
+
+                <p class="text-muted mb-3">{{ ui.note }}</p>
+
+                <form method="post" action="{{ path('admin_account_subscription_renew_submit') }}" class="row g-3">
+                    <input type="hidden" name="_token" value="{{ csrf_token('account_subscription_renew') }}">
+                    <div class="col-12">
+                        <label class="form-label">{{ ui.plan_select }}</label>
+                        <select class="form-select" name="plan_id" required>
+                            <option value="">{{ ui.select_plan }}</option>
+                            {% for plan in plans %}
+                                {% set planCode = plan.code|lower %}
+                                {% set planOldPrice = planMeta.old_prices[planCode] ?? null %}
+                                {% set planDisplayPrice = planMeta.display_prices[planCode] ?? plan.yearlyPrice %}
+                                {% set planDurationSuffix = planMeta.duration_suffixes[planCode] ?? ui.per_year %}
+                                <option
+                                    value="{{ plan.id }}"
+                                    {{ latestSubscription and latestSubscription.plan.id == plan.id ? 'selected' : '' }}
+                                >
+                                    {{ plan.name }} -
+                                    {% if planOldPrice %}{{ planOldPrice }} TRY -> {% endif %}
+                                    {{ planDisplayPrice }} TRY {{ planDurationSuffix }} ({{ plan.maxRestaurants }} {{ ui.restaurant_short }} / {{ plan.maxUsers }} {{ ui.user_short }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <button class="btn btn-primary">{{ ui.renew_button }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

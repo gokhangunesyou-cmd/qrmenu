@@ -8,6 +8,8 @@ use App\Entity\Category;
 use App\Entity\Restaurant;
 use App\Entity\User;
 use App\Repository\CategoryRepository;
+use App\Service\LanguageContext;
+use App\Service\TranslationService;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -22,18 +24,34 @@ class CategoryWebController extends AbstractController
     public function __construct(
         private readonly CategoryRepository $categoryRepository,
         private readonly EntityManagerInterface $em,
+        private readonly TranslationService $translationService,
+        private readonly LanguageContext $languageContext,
     ) {
     }
 
     #[Route('', name: 'admin_category_index', methods: ['GET'])]
-    public function index(): Response
+    public function index(Request $request): Response
     {
         $restaurant = $this->getRestaurantOrThrow();
+        $locale = $this->languageContext->resolveAdminLocale($request, $restaurant->getDefaultLocale(), $restaurant->getEnabledLocales());
 
         $categories = $this->categoryRepository->findByRestaurant($restaurant);
+        $categoryIds = array_values(array_map(static fn (Category $category): int => (int) $category->getId(), $categories));
+        $translations = $this->translationService->getFieldMap('category', $categoryIds, $locale);
+
+        $categoryView = [];
+        foreach ($categories as $category) {
+            $categoryId = (int) $category->getId();
+            $categoryView[$categoryId] = [
+                'name' => $this->translationService->resolve($translations, $categoryId, 'name', $category->getName()) ?? $category->getName(),
+                'description' => $this->translationService->resolve($translations, $categoryId, 'description', $category->getDescription()),
+            ];
+        }
 
         return $this->render('admin/category/index.html.twig', [
             'categories' => $categories,
+            'categoryView' => $categoryView,
+            'currentLocale' => $locale,
         ]);
     }
 
@@ -41,11 +59,12 @@ class CategoryWebController extends AbstractController
     public function create(Request $request): Response
     {
         $restaurant = $this->getRestaurantOrThrow();
+        $locale = $this->languageContext->resolveAdminLocale($request, $restaurant->getDefaultLocale(), $restaurant->getEnabledLocales());
 
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('category_create', $request->request->getString('_token'))) {
                 $this->addFlash('error', 'Geçersiz CSRF token.');
-                return $this->redirectToRoute('admin_category_create');
+                return $this->redirectToRoute('admin_category_create', ['lang' => $locale]);
             }
 
             $name = trim($request->request->getString('name'));
@@ -54,6 +73,7 @@ class CategoryWebController extends AbstractController
                 return $this->render('admin/category/form.html.twig', [
                     'category' => null,
                     'formData' => $request->request->all(),
+                    'currentLocale' => $locale,
                 ]);
             }
 
@@ -66,9 +86,15 @@ class CategoryWebController extends AbstractController
 
                 $this->em->persist($category);
                 $this->em->flush();
+                $categoryId = (int) $category->getId();
+                if ($categoryId > 0) {
+                    $this->translationService->upsert('category', $categoryId, $locale, 'name', $name);
+                    $this->translationService->upsert('category', $categoryId, $locale, 'description', trim($request->request->getString('description')) ?: null);
+                    $this->em->flush();
+                }
 
                 $this->addFlash('success', 'Kategori başarıyla oluşturuldu.');
-                return $this->redirectToRoute('admin_category_index');
+                return $this->redirectToRoute('admin_category_index', ['lang' => $locale]);
             } catch (UniqueConstraintViolationException) {
                 $this->addFlash('error', 'Bu isimde bir kategori zaten mevcut.');
             } catch (\Exception $e) {
@@ -78,12 +104,14 @@ class CategoryWebController extends AbstractController
             return $this->render('admin/category/form.html.twig', [
                 'category' => null,
                 'formData' => $request->request->all(),
+                'currentLocale' => $locale,
             ]);
         }
 
         return $this->render('admin/category/form.html.twig', [
             'category' => null,
             'formData' => [],
+            'currentLocale' => $locale,
         ]);
     }
 
@@ -91,17 +119,19 @@ class CategoryWebController extends AbstractController
     public function edit(string $uuid, Request $request): Response
     {
         $restaurant = $this->getRestaurantOrThrow();
+        $locale = $this->languageContext->resolveAdminLocale($request, $restaurant->getDefaultLocale(), $restaurant->getEnabledLocales());
 
         $category = $this->categoryRepository->findOneByUuidAndRestaurant($uuid, $restaurant);
         if ($category === null) {
             $this->addFlash('error', 'Kategori bulunamadı.');
-            return $this->redirectToRoute('admin_category_index');
+            return $this->redirectToRoute('admin_category_index', ['lang' => $locale]);
         }
+        $translationMap = $this->translationService->getFieldMap('category', [(int) $category->getId()], $locale);
 
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('category_edit_' . $uuid, $request->request->getString('_token'))) {
                 $this->addFlash('error', 'Geçersiz CSRF token.');
-                return $this->redirectToRoute('admin_category_edit', ['uuid' => $uuid]);
+                return $this->redirectToRoute('admin_category_edit', ['uuid' => $uuid, 'lang' => $locale]);
             }
 
             $name = trim($request->request->getString('name'));
@@ -110,20 +140,29 @@ class CategoryWebController extends AbstractController
                 return $this->render('admin/category/form.html.twig', [
                     'category' => $category,
                     'formData' => $request->request->all(),
+                    'currentLocale' => $locale,
                 ]);
             }
 
             try {
-                $category->setName($name);
-                $category->setDescription(trim($request->request->getString('description')) ?: null);
+                $isDefaultLocale = $locale === $restaurant->getDefaultLocale();
+                if ($isDefaultLocale) {
+                    $category->setName($name);
+                    $category->setDescription(trim($request->request->getString('description')) ?: null);
+                }
                 $category->setIcon(trim($request->request->getString('icon')) ?: null);
                 $category->setSortOrder($request->request->getInt('sort_order', 0));
                 $category->setIsActive($request->request->getBoolean('is_active'));
+                $categoryId = (int) $category->getId();
+                if ($categoryId > 0) {
+                    $this->translationService->upsert('category', $categoryId, $locale, 'name', $name);
+                    $this->translationService->upsert('category', $categoryId, $locale, 'description', trim($request->request->getString('description')) ?: null);
+                }
 
                 $this->em->flush();
 
                 $this->addFlash('success', 'Kategori başarıyla güncellendi.');
-                return $this->redirectToRoute('admin_category_index');
+                return $this->redirectToRoute('admin_category_index', ['lang' => $locale]);
             } catch (UniqueConstraintViolationException) {
                 $this->addFlash('error', 'Bu isimde bir kategori zaten mevcut.');
             } catch (\Exception $e) {
@@ -134,6 +173,9 @@ class CategoryWebController extends AbstractController
         return $this->render('admin/category/form.html.twig', [
             'category' => $category,
             'formData' => [],
+            'localizedName' => $this->translationService->resolve($translationMap, (int) $category->getId(), 'name', $category->getName()),
+            'localizedDescription' => $this->translationService->resolve($translationMap, (int) $category->getId(), 'description', $category->getDescription()),
+            'currentLocale' => $locale,
         ]);
     }
 
@@ -141,21 +183,22 @@ class CategoryWebController extends AbstractController
     public function delete(string $uuid, Request $request): Response
     {
         $restaurant = $this->getRestaurantOrThrow();
+        $locale = $this->languageContext->resolveAdminLocale($request, $restaurant->getDefaultLocale(), $restaurant->getEnabledLocales());
 
         if (!$this->isCsrfTokenValid('category_delete_' . $uuid, $request->request->getString('_token'))) {
             $this->addFlash('error', 'Geçersiz CSRF token.');
-            return $this->redirectToRoute('admin_category_index');
+            return $this->redirectToRoute('admin_category_index', ['lang' => $locale]);
         }
 
         $category = $this->categoryRepository->findOneByUuidAndRestaurant($uuid, $restaurant);
         if ($category === null) {
             $this->addFlash('error', 'Kategori bulunamadı.');
-            return $this->redirectToRoute('admin_category_index');
+            return $this->redirectToRoute('admin_category_index', ['lang' => $locale]);
         }
 
         if ($category->getProducts()->count() > 0) {
             $this->addFlash('error', 'Bu kategoriye bağlı ürünler olduğu için silinemez.');
-            return $this->redirectToRoute('admin_category_index');
+            return $this->redirectToRoute('admin_category_index', ['lang' => $locale]);
         }
 
         try {
@@ -166,7 +209,7 @@ class CategoryWebController extends AbstractController
             $this->addFlash('error', 'Bir hata oluştu: ' . $e->getMessage());
         }
 
-        return $this->redirectToRoute('admin_category_index');
+        return $this->redirectToRoute('admin_category_index', ['lang' => $locale]);
     }
 
     #[Route('/{uuid}/toggle-active', name: 'admin_category_toggle_active', methods: ['POST'])]

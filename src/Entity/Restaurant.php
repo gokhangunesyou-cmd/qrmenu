@@ -11,6 +11,7 @@ use Ramsey\Uuid\UuidInterface;
 
 #[ORM\Entity(repositoryClass: RestaurantRepository::class)]
 #[ORM\Table(name: 'restaurants')]
+#[ORM\Index(columns: ['customer_account_id'], name: 'idx_restaurants_customer_account')]
 class Restaurant
 {
     #[ORM\Id]
@@ -20,6 +21,10 @@ class Restaurant
 
     #[ORM\Column(type: 'uuid', unique: true)]
     private UuidInterface $uuid;
+
+    #[ORM\ManyToOne(targetEntity: CustomerAccount::class, inversedBy: 'restaurants')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?CustomerAccount $customerAccount = null;
 
     #[ORM\Column(length: 150)]
     private string $name;
@@ -63,8 +68,14 @@ class Restaurant
     #[ORM\JoinColumn(nullable: false)]
     private Theme $theme;
 
+    #[ORM\Column(length: 30, options: ['default' => 'showcase'])]
+    private string $menuTemplate = 'showcase';
+
     #[ORM\Column(length: 5)]
     private string $defaultLocale = 'tr';
+
+    #[ORM\Column(type: 'json')]
+    private array $enabledLocales = ['tr'];
 
     #[ORM\Column(length: 3)]
     private string $currencyCode = 'TRY';
@@ -113,6 +124,10 @@ class Restaurant
     #[ORM\OneToMany(targetEntity: QrCode::class, mappedBy: 'restaurant', cascade: ['persist', 'remove'])]
     private Collection $qrCodes;
 
+    /** @var Collection<int, User> */
+    #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'restaurants')]
+    private Collection $users;
+
     public function __construct(string $name, string $slug, Theme $theme)
     {
         $this->uuid = Uuid::uuid7();
@@ -126,6 +141,7 @@ class Restaurant
         $this->socialLinks = new ArrayCollection();
         $this->pages = new ArrayCollection();
         $this->qrCodes = new ArrayCollection();
+        $this->users = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -136,6 +152,16 @@ class Restaurant
     public function getUuid(): UuidInterface
     {
         return $this->uuid;
+    }
+
+    public function getCustomerAccount(): ?CustomerAccount
+    {
+        return $this->customerAccount;
+    }
+
+    public function setCustomerAccount(?CustomerAccount $customerAccount): void
+    {
+        $this->customerAccount = $customerAccount;
     }
 
     public function getName(): string
@@ -268,6 +294,16 @@ class Restaurant
         $this->theme = $theme;
     }
 
+    public function getMenuTemplate(): string
+    {
+        return $this->menuTemplate;
+    }
+
+    public function setMenuTemplate(string $menuTemplate): void
+    {
+        $this->menuTemplate = $menuTemplate;
+    }
+
     public function getDefaultLocale(): string
     {
         return $this->defaultLocale;
@@ -275,7 +311,39 @@ class Restaurant
 
     public function setDefaultLocale(string $defaultLocale): void
     {
-        $this->defaultLocale = $defaultLocale;
+        $normalizedLocale = strtolower(trim($defaultLocale));
+        $this->defaultLocale = $normalizedLocale !== '' ? $normalizedLocale : 'tr';
+
+        if (!in_array($this->defaultLocale, $this->enabledLocales, true)) {
+            $this->enabledLocales[] = $this->defaultLocale;
+        }
+
+        $this->enabledLocales = $this->normalizeLocaleList($this->enabledLocales);
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getEnabledLocales(): array
+    {
+        return $this->enabledLocales;
+    }
+
+    /**
+     * @param string[] $enabledLocales
+     */
+    public function setEnabledLocales(array $enabledLocales): void
+    {
+        $normalizedLocales = $this->normalizeLocaleList($enabledLocales);
+        if ($normalizedLocales === []) {
+            $normalizedLocales = ['tr'];
+        }
+
+        if (!in_array($this->defaultLocale, $normalizedLocales, true)) {
+            $this->defaultLocale = $normalizedLocales[0];
+        }
+
+        $this->enabledLocales = $normalizedLocales;
     }
 
     public function getCurrencyCode(): string
@@ -396,5 +464,35 @@ class Restaurant
     public function getQrCodes(): Collection
     {
         return $this->qrCodes;
+    }
+
+    /** @return Collection<int, User> */
+    public function getUsers(): Collection
+    {
+        return $this->users;
+    }
+
+    /**
+     * @param string[] $locales
+     *
+     * @return string[]
+     */
+    private function normalizeLocaleList(array $locales): array
+    {
+        $normalized = [];
+        foreach ($locales as $locale) {
+            if (!is_string($locale)) {
+                continue;
+            }
+
+            $code = strtolower(trim($locale));
+            if ($code === '' || isset($normalized[$code])) {
+                continue;
+            }
+
+            $normalized[$code] = $code;
+        }
+
+        return array_values($normalized);
     }
 }

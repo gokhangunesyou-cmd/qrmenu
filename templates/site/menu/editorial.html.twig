@@ -1,0 +1,498 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ restaurant.metaTitle ?: (restaurant.name ~ ' | Menu') }}{% endblock %}
+{% block meta_description %}{{ restaurant.metaDescription ?: (restaurant.description ?: 'Restaurant menu') }}{% endblock %}
+{% block og_title %}{{ block('title') }}{% endblock %}
+{% block og_description %}{{ block('meta_description') }}{% endblock %}
+
+{% block stylesheets %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: {{ theme.primary }};
+    --secondary: {{ theme.secondary }};
+    --background: {{ theme.background }};
+    --surface: {{ theme.surface }};
+    --text: {{ theme.text }};
+    --accent: {{ theme.accent }};
+    --muted: {{ theme.muted }};
+    --border: {{ theme.border }};
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: 'Space Grotesk', sans-serif;
+    color: var(--text);
+    background:
+        linear-gradient(175deg, color-mix(in srgb, var(--primary) 10%, #fff) 0%, var(--background) 60%),
+        var(--background);
+}
+
+.shell {
+    max-width: 1200px;
+    margin: 24px auto 36px;
+    padding: 0 16px;
+}
+
+.top {
+    border-radius: 26px;
+    border: 1px solid color-mix(in srgb, var(--primary) 18%, transparent);
+    overflow: hidden;
+    box-shadow: 0 22px 54px rgba(2, 6, 23, 0.14);
+    background: var(--surface);
+}
+
+.top-cover {
+    padding: 32px 28px;
+    min-height: 240px;
+    display: flex;
+    align-items: flex-end;
+    background:
+        linear-gradient(120deg, rgba(2, 6, 23, 0.8) 0%, rgba(2, 6, 23, 0.55) 46%, rgba(2, 6, 23, 0.2) 100%),
+        {% if restaurant.coverMedia %}url('{{ media_url(restaurant.coverMedia.storagePath) }}'){% else %}linear-gradient(130deg, var(--primary), var(--secondary)){% endif %};
+    background-size: cover;
+    background-position: center;
+}
+
+.top-cover h1 {
+    margin: 0;
+    color: #fff;
+    font-family: 'Fraunces', serif;
+    font-size: clamp(34px, 4.8vw, 56px);
+    line-height: 1.05;
+}
+
+.top-meta {
+    padding: 16px 22px 22px;
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.top-logo {
+    width: 66px;
+    height: 66px;
+    border-radius: 17px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    font-family: 'Fraunces', serif;
+    font-size: 24px;
+}
+
+.top-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.top-text {
+    flex: 1;
+    min-width: 220px;
+}
+
+.top-text p {
+    margin: 6px 0 0;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.top-tag {
+    border: 1px solid color-mix(in srgb, var(--accent) 60%, transparent);
+    color: #9a3412;
+    background: color-mix(in srgb, var(--accent) 14%, #fff);
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 8px 12px;
+}
+
+.layout {
+    margin-top: 18px;
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    gap: 16px;
+}
+
+.side {
+    position: sticky;
+    top: 16px;
+    align-self: start;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: var(--surface);
+    padding: 14px;
+}
+
+.side h2 {
+    margin: 0 0 10px;
+    font-family: 'Fraunces', serif;
+    font-size: 24px;
+}
+
+.side a {
+    display: block;
+    text-decoration: none;
+    color: var(--text);
+    font-size: 14px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    margin-top: 3px;
+    border: 1px solid transparent;
+}
+
+.side a:hover {
+    border-color: color-mix(in srgb, var(--primary) 26%, transparent);
+    background: color-mix(in srgb, var(--primary) 8%, transparent);
+}
+
+.side-section {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px dashed color-mix(in srgb, var(--border) 82%, #fff);
+}
+
+.side-section h3 {
+    margin: 0 0 8px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+}
+
+.lang-switch {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.lang-switch a {
+    text-decoration: none;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: 700;
+    background: #fff;
+}
+
+.lang-switch a.active {
+    background: color-mix(in srgb, var(--primary) 88%, #fff);
+    color: #fff;
+    border-color: transparent;
+}
+
+.contact-list {
+    display: grid;
+    gap: 7px;
+}
+
+.contact-item {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.35;
+}
+
+.contact-item b {
+    color: var(--muted);
+}
+
+.contact-item a {
+    color: inherit;
+}
+
+.content {
+    display: grid;
+    gap: 14px;
+}
+
+.category {
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: var(--surface);
+    padding: 16px;
+}
+
+.category-head {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.category-head h3 {
+    margin: 0;
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+}
+
+.category-head p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.category-media {
+    width: 58px;
+    height: 58px;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #f1f5f9;
+}
+
+.category-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.product {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    padding: 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    background: #fff;
+    margin-top: 8px;
+}
+
+.product-main {
+    display: grid;
+    grid-template-columns: 74px 1fr;
+    gap: 10px;
+}
+
+.product-media {
+    width: 74px;
+    height: 74px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #f8fafc;
+}
+
+.product-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.product h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.product p {
+    margin: 6px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.product-meta {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.pill {
+    border: 1px solid #dbeafe;
+    background: #eff6ff;
+    color: #1d4ed8;
+    border-radius: 999px;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.price {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    color: color-mix(in srgb, var(--primary) 86%, #000);
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.empty {
+    text-align: center;
+    border: 1px dashed var(--border);
+    border-radius: 16px;
+    color: var(--muted);
+    background: var(--surface);
+    padding: 28px 12px;
+}
+
+@media (max-width: 980px) {
+    .layout {
+        grid-template-columns: 1fr;
+    }
+
+    .side {
+        position: static;
+    }
+}
+
+@media (max-width: 560px) {
+    .product {
+        grid-template-columns: 1fr;
+    }
+
+    .price {
+        font-size: 24px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="shell">
+    <section class="top">
+        <div class="top-cover">
+            <h1>{{ restaurant.name }}</h1>
+        </div>
+        <div class="top-meta">
+            <div class="top-logo">
+                {% if restaurant.logoMedia %}
+                    <img src="{{ media_url(restaurant.logoMedia.storagePath) }}" alt="{{ restaurant.name }}">
+                {% else %}
+                    {{ restaurant.name|slice(0, 1)|upper }}
+                {% endif %}
+            </div>
+            <div class="top-text">
+                <strong>{{ restaurant.name }}</strong>
+                <p>
+                    {% if restaurant.description %}
+                        {{ restaurant.description }}
+                    {% else %}
+                        House menu curated for a premium dine-in flow.
+                    {% endif %}
+                </p>
+            </div>
+            {% if tableNumber %}
+                <span class="top-tag">{{ ui.table }} {{ tableNumber }}</span>
+            {% endif %}
+            {% if restaurant.city %}
+                <span class="top-tag">{{ restaurant.city }}</span>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="layout">
+        <aside class="side">
+            <h2>{{ ui.menu }}</h2>
+            {% for category in categories %}
+                {% set categoryName = localizedCategoryNames[category.id] ?? category.name %}
+                <a href="#category-{{ category.uuid }}">{{ categoryName }}</a>
+            {% endfor %}
+            {% if availableLocales|length > 1 %}
+                <div class="side-section">
+                    <h3>{{ ui.language }}</h3>
+                    <div class="lang-switch">
+                        {% for localeCode, localeLabel in availableLocales %}
+                            {% set localeRouteParams = {slug: restaurant.slug, id: restaurant.id, lang: localeCode} %}
+                            {% if tableNumber %}
+                                {% set localeRouteParams = localeRouteParams|merge({table: tableNumber}) %}
+                            {% endif %}
+                            <a href="{{ path('site_menu_show', localeRouteParams) }}" class="{{ localeCode == currentLocale ? 'active' : '' }}" title="{{ localeLabel }}">{{ localeCode|upper }}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+            <div class="side-section">
+                <h3>{{ ui.contact }}</h3>
+                {% set hasContactInfo = restaurant.phone or restaurant.email or restaurant.city or restaurant.address %}
+                {% if hasContactInfo %}
+                    <div class="contact-list">
+                        {% if restaurant.phone %}
+                            <div class="contact-item"><b>{{ ui.phone }}:</b> <a href="tel:{{ restaurant.phone|replace({' ': ''}) }}">{{ restaurant.phone }}</a></div>
+                        {% endif %}
+                        {% if restaurant.email %}
+                            <div class="contact-item"><b>{{ ui.email }}:</b> <a href="mailto:{{ restaurant.email }}">{{ restaurant.email }}</a></div>
+                        {% endif %}
+                        {% if restaurant.city %}
+                            <div class="contact-item"><b>{{ ui.city }}:</b> {{ restaurant.city }}</div>
+                        {% endif %}
+                        {% if restaurant.address %}
+                            <div class="contact-item"><b>{{ ui.address }}:</b> {{ restaurant.address }}</div>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="contact-item">{{ ui.no_contact }}</div>
+                {% endif %}
+            </div>
+            {% if socialLinks is not empty %}
+                <div class="side-section">
+                    <h3>{{ ui.social }}</h3>
+                    {% for link in socialLinks %}
+                        <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer">{{ socialPlatformLabels[link.platform.value] ?? link.platform.value|replace({'_': ' '})|title }}</a>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </aside>
+        <div class="content">
+            {% if categories is empty %}
+                <div class="empty">{{ ui.empty }}</div>
+            {% endif %}
+            {% for category in categories %}
+                {% set categoryName = localizedCategoryNames[category.id] ?? category.name %}
+                {% set categoryDescription = localizedCategoryDescriptions[category.id] ?? category.description %}
+                <section class="category" id="category-{{ category.uuid }}">
+                    <header class="category-head">
+                        {% if category.imageMedia %}
+                            <div class="category-media">
+                                <img src="{{ media_url(category.imageMedia.storagePath) }}" alt="{{ categoryName }}">
+                            </div>
+                        {% endif %}
+                        <div>
+                            <h3>{{ categoryName }}</h3>
+                            {% if categoryDescription %}
+                                <p>{{ categoryDescription }}</p>
+                            {% endif %}
+                        </div>
+                    </header>
+                    {% for product in category.products %}
+                        {% set productName = localizedProductNames[product.id] ?? product.name %}
+                        {% set productDescription = localizedProductDescriptions[product.id] ?? product.description %}
+                        {% set productImage = product.images|length > 0 ? product.images|first : null %}
+                        <article class="product">
+                            <div class="product-main">
+                                <div class="product-media">
+                                    {% if productImage and productImage.media %}
+                                        <img src="{{ media_thumb_url(productImage.media.storagePath) }}" alt="{{ productName }}">
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <h4>{{ productName }}</h4>
+                                    {% if productDescription %}
+                                        <p>{{ productDescription }}</p>
+                                    {% endif %}
+                                    <div class="product-meta">
+                                        {% if product.isFeatured %}
+                                            <span class="pill">{{ ui.featured }}</span>
+                                        {% endif %}
+                                        {% if product.calories %}
+                                            <span class="pill">{{ product.calories }} kcal</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="price">{{ currencySymbol }} {{ product.price|number_format(2, '.', ',') }}</div>
+                        </article>
+                    {% endfor %}
+                </section>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}

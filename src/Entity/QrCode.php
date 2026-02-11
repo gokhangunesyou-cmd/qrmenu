@@ -52,6 +52,12 @@ class QrCode
     #[ORM\Column(length: 500, nullable: true)]
     private ?string $logoStoragePath = null;
 
+    #[ORM\Column(type: 'smallint')]
+    private int $qrSize = 512;
+
+    #[ORM\Column(length: 500, nullable: true)]
+    private ?string $labelBackgroundStoragePath = null;
+
     #[ORM\Column]
     private bool $isActive = true;
 
@@ -164,6 +170,26 @@ class QrCode
     public function setLogoStoragePath(?string $logoStoragePath): void
     {
         $this->logoStoragePath = $logoStoragePath;
+    }
+
+    public function getQrSize(): int
+    {
+        return $this->qrSize;
+    }
+
+    public function setQrSize(int $qrSize): void
+    {
+        $this->qrSize = $qrSize;
+    }
+
+    public function getLabelBackgroundStoragePath(): ?string
+    {
+        return $this->labelBackgroundStoragePath;
+    }
+
+    public function setLabelBackgroundStoragePath(?string $labelBackgroundStoragePath): void
+    {
+        $this->labelBackgroundStoragePath = $labelBackgroundStoragePath;
     }
 
     public function isActive(): bool

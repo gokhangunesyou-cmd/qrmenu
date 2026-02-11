@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page { margin: 10mm; }
+        body { margin: 0; font-family: Helvetica, Arial, sans-serif; background: {{ theme.background }}; }
+        .grid { font-size: 0; }
+        .label {
+            display: inline-block;
+            vertical-align: top;
+            width: 61mm;
+            height: 91mm;
+            margin: 2mm;
+            border-radius: 8mm;
+            box-sizing: border-box;
+            padding: 4mm;
+            page-break-inside: avoid;
+            background: {{ theme.primaryLight }};
+            border: 0.9mm solid {{ theme.primary }};
+            text-align: center;
+            position: relative;
+        }
+        .badge {
+            display: inline-block;
+            background: {{ theme.primary }};
+            color: #fff;
+            font-size: 7.5pt;
+            padding: 1mm 3mm;
+            border-radius: 99mm;
+            letter-spacing: 0.3mm;
+            margin-bottom: 2mm;
+        }
+        .logo { width: 10mm; height: 10mm; object-fit: contain; display: block; margin: 0 auto 1.5mm; }
+        .name { font-size: 9pt; color: {{ theme.primaryDark }}; font-weight: 700; margin-bottom: 2mm; }
+        .qr-wrap {
+            width: 38mm;
+            height: 38mm;
+            margin: 0 auto;
+            padding: 1.5mm;
+            border-radius: 4mm;
+            background: #fff;
+            border: 0.8mm solid {{ theme.divider }};
+            box-sizing: border-box;
+        }
+        .qr { width: 100%; height: 100%; display: block; }
+        .table {
+            position: absolute;
+            left: {{ theme.tableBadge.posX }}%;
+            top: {{ theme.tableBadge.posY }}%;
+            transform: translate(-50%, -50%);
+            margin: 0;
+            font-size: 12pt;
+            font-weight: 700;
+            color: {{ theme.tableBadge.textColor }};
+            background: {{ theme.tableBadge.bgColor }};
+            border: {{ theme.tableBadge.borderWidth }}px solid {{ theme.tableBadge.borderColor }};
+            border-radius: {{ theme.tableBadge.borderRadius }}px;
+            padding: 2mm 4mm;
+        }
+        .small { margin-top: 1mm; font-size: 7.8pt; color: {{ theme.text }}; }
+    </style>
+</head>
+<body>
+<div class="grid">
+    {% for qr in qrCodes %}
+        <div class="label" {% if labelBackgroundDataMap[qr.uuid.toString] ?? null %}style="background-image:url('{{ labelBackgroundDataMap[qr.uuid.toString] }}');background-size:cover;background-position:center;"{% endif %}>
+            <div class="badge">DIGITAL MENU</div>
+            {% if restaurantLogoDataUri %}
+                <img class="logo" src="{{ restaurantLogoDataUri }}" alt="Logo">
+            {% endif %}
+            <div class="name">{{ restaurant.name }}</div>
+            <div class="qr-wrap"><img class="qr" src="{{ qrImageDataMap[qr.uuid.toString] ?? '' }}" alt="QR"></div>
+            <div class="table">{{ qr.tableNumber ? 'Masa ' ~ qr.tableNumber : 'Restoran Menusu' }}</div>
+            <div class="small">{{ qr.tableLabel ?? 'QR okut, menuyu ac' }}</div>
+        </div>
+    {% endfor %}
+</div>
+</body>
+</html>
