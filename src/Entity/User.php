@@ -14,6 +14,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: 'users')]
 #[ORM\Index(columns: ['restaurant_id'], name: 'idx_users_restaurant')]
+#[ORM\Index(columns: ['customer_account_id'], name: 'idx_users_customer_account')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -40,6 +41,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Restaurant $restaurant = null;
 
+    #[ORM\ManyToOne(targetEntity: CustomerAccount::class, inversedBy: 'users')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?CustomerAccount $customerAccount = null;
+
     #[ORM\Column]
     private bool $isActive = true;
 
@@ -60,6 +65,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\JoinTable(name: 'user_roles')]
     private Collection $userRoles;
 
+    /** @var Collection<int, Restaurant> */
+    #[ORM\ManyToMany(targetEntity: Restaurant::class, inversedBy: 'users')]
+    #[ORM\JoinTable(name: 'user_restaurants')]
+    private Collection $restaurants;
+
     public function __construct(string $email, string $passwordHash, string $firstName, string $lastName)
     {
         $this->uuid = Uuid::uuid7();
@@ -70,6 +80,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
         $this->userRoles = new ArrayCollection();
+        $this->restaurants = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -130,6 +141,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setRestaurant(?Restaurant $restaurant): void
     {
         $this->restaurant = $restaurant;
+    }
+
+    public function getCustomerAccount(): ?CustomerAccount
+    {
+        return $this->customerAccount;
+    }
+
+    public function setCustomerAccount(?CustomerAccount $customerAccount): void
+    {
+        $this->customerAccount = $customerAccount;
     }
 
     public function isActive(): bool
@@ -198,6 +219,56 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getUserRoles(): Collection
     {
         return $this->userRoles;
+    }
+
+    /** @return Collection<int, Restaurant> */
+    public function getRestaurants(): Collection
+    {
+        return $this->restaurants;
+    }
+
+    public function addRestaurant(Restaurant $restaurant): void
+    {
+        if (!$this->restaurants->contains($restaurant)) {
+            $this->restaurants->add($restaurant);
+        }
+
+        if ($this->restaurant === null) {
+            $this->restaurant = $restaurant;
+        }
+    }
+
+    public function removeRestaurant(Restaurant $restaurant): void
+    {
+        $this->restaurants->removeElement($restaurant);
+
+        if ($this->restaurant?->getId() === $restaurant->getId()) {
+            $next = $this->restaurants->first();
+            $this->restaurant = $next instanceof Restaurant ? $next : null;
+        }
+    }
+
+    /**
+     * @return int[]
+     */
+    public function getAccessibleRestaurantIds(): array
+    {
+        $ids = [];
+
+        foreach ($this->restaurants as $restaurant) {
+            if ($restaurant->getId() !== null) {
+                $ids[] = $restaurant->getId();
+            }
+        }
+
+        if ($this->restaurant?->getId() !== null) {
+            $ids[] = $this->restaurant->getId();
+        }
+
+        $ids = array_values(array_unique($ids));
+        sort($ids);
+
+        return $ids;
     }
 
     /** @return string[] */

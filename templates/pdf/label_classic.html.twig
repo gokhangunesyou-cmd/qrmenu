@@ -3,39 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <style>
-        body { font-family: Helvetica, Arial, sans-serif; margin: 0; padding: 20px; }
-        .grid { display: flex; flex-wrap: wrap; gap: 20px; }
+        @page { margin: 10mm; }
+        body { margin: 0; font-family: Helvetica, Arial, sans-serif; background: {{ theme.background }}; }
+        .grid { font-size: 0; }
         .label {
-            width: 45%;
-            border: 2px solid #333;
-            border-radius: 8px;
-            padding: 20px;
+            display: inline-block;
+            vertical-align: top;
+            width: 61mm;
+            height: 90mm;
+            margin: 2mm;
+            border: 1.4mm solid {{ theme.primary }};
+            border-radius: 4mm;
+            background: {{ theme.surface }};
+            box-sizing: border-box;
+            padding: 4mm;
             text-align: center;
             page-break-inside: avoid;
+            position: relative;
         }
-        .restaurant-name { font-size: 14px; font-weight: bold; margin-bottom: 10px; color: #333; }
-        .qr-image { width: 120px; height: 120px; margin: 10px auto; }
-        .table-number { font-size: 24px; font-weight: bold; margin-top: 10px; }
-        .scan-text { font-size: 10px; color: #666; margin-top: 5px; }
+        .logo { width: 14mm; height: 14mm; object-fit: contain; margin: 0 auto 2mm; display: block; }
+        .name { font-size: 10pt; font-weight: 700; color: {{ theme.primaryDark }}; margin-bottom: 1.5mm; }
+        .qr-wrap { border: 1mm solid {{ theme.divider }}; border-radius: 3mm; background: #fff; padding: 1.5mm; width: 36mm; height: 36mm; margin: 0 auto; }
+        .qr { width: 100%; height: 100%; display: block; }
+        .table {
+            position: absolute;
+            left: {{ theme.tableBadge.posX }}%;
+            top: {{ theme.tableBadge.posY }}%;
+            transform: translate(-50%, -50%);
+            margin: 0;
+            font-size: 12pt;
+            font-weight: 700;
+            color: {{ theme.tableBadge.textColor }};
+            background: {{ theme.tableBadge.bgColor }};
+            border: {{ theme.tableBadge.borderWidth }}px solid {{ theme.tableBadge.borderColor }};
+            border-radius: {{ theme.tableBadge.borderRadius }}px;
+            padding: 2mm 4mm;
+        }
+        .label-text { font-size: 8.5pt; color: {{ theme.text }}; margin-top: 1mm; min-height: 4mm; }
+        .scan { font-size: 7.5pt; color: {{ theme.muted }}; margin-top: 2mm; letter-spacing: 0.3mm; text-transform: uppercase; }
     </style>
 </head>
 <body>
-    <div class="grid">
-        {% for qr in qrCodes %}
-        <div class="label">
-            <div class="restaurant-name">{{ restaurant.name }}</div>
-            <div class="qr-image">
-                <img src="{{ qr.encodedUrl }}" alt="QR" style="width:120px;height:120px;">
+<div class="grid">
+    {% for qr in qrCodes %}
+        <div class="label" {% if labelBackgroundDataMap[qr.uuid.toString] ?? null %}style="background-image:url('{{ labelBackgroundDataMap[qr.uuid.toString] }}');background-size:cover;background-position:center;"{% endif %}>
+            {% if restaurantLogoDataUri %}
+                <img class="logo" src="{{ restaurantLogoDataUri }}" alt="Logo">
+            {% endif %}
+            <div class="name">{{ restaurant.name }}</div>
+            <div class="qr-wrap">
+                <img class="qr" src="{{ qrImageDataMap[qr.uuid.toString] ?? '' }}" alt="QR">
             </div>
-            {% if qr.tableNumber %}
-                <div class="table-number">Table {{ qr.tableNumber }}</div>
-            {% endif %}
-            {% if qr.tableLabel %}
-                <div class="scan-text">{{ qr.tableLabel }}</div>
-            {% endif %}
-            <div class="scan-text">Scan to view menu</div>
+            <div class="table">{{ qr.tableNumber ? 'Masa ' ~ qr.tableNumber : 'Menu' }}</div>
+            <div class="label-text">{{ qr.tableLabel ?? 'Telefonunuzla okutun' }}</div>
+            <div class="scan">Scan For Menu</div>
         </div>
-        {% endfor %}
-    </div>
+    {% endfor %}
+</div>
 </body>
 </html>

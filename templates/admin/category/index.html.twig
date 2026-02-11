@@ -1,6 +1,78 @@
 {% extends 'admin/base.html.twig' %}
 
-{% block title %}Kategoriler{% endblock %}
+{% set ui = {
+    tr: {
+        title: 'Kategoriler',
+        count: 'kategori',
+        new: 'Yeni Kategori',
+        name: 'Ad',
+        description: 'Açıklama',
+        sort: 'Sıra',
+        status: 'Durum',
+        actions: 'İşlemler',
+        empty: 'Henüz kategori yok.',
+        active: 'Aktif',
+        passive: 'Pasif',
+        delete_confirm: 'Bu kategoriyi silmek istediğinize emin misiniz?'
+    },
+    en: {
+        title: 'Categories',
+        count: 'categories',
+        new: 'New Category',
+        name: 'Name',
+        description: 'Description',
+        sort: 'Order',
+        status: 'Status',
+        actions: 'Actions',
+        empty: 'No categories yet.',
+        active: 'Active',
+        passive: 'Inactive',
+        delete_confirm: 'Are you sure you want to delete this category?'
+    },
+    ar: {
+        title: 'الفئات',
+        count: 'فئة',
+        new: 'فئة جديدة',
+        name: 'الاسم',
+        description: 'الوصف',
+        sort: 'الترتيب',
+        status: 'الحالة',
+        actions: 'الإجراءات',
+        empty: 'لا توجد فئات بعد.',
+        active: 'نشط',
+        passive: 'غير نشط',
+        delete_confirm: 'هل أنت متأكد أنك تريد حذف هذه الفئة؟'
+    },
+    ru: {
+        title: 'Категории',
+        count: 'категорий',
+        new: 'Новая категория',
+        name: 'Название',
+        description: 'Описание',
+        sort: 'Порядок',
+        status: 'Статус',
+        actions: 'Действия',
+        empty: 'Категорий пока нет.',
+        active: 'Активно',
+        passive: 'Неактивно',
+        delete_confirm: 'Вы уверены, что хотите удалить эту категорию?'
+    }
+}[currentLocale] ?? {
+    title: 'Categories',
+    count: 'categories',
+    new: 'New Category',
+    name: 'Name',
+    description: 'Description',
+    sort: 'Order',
+    status: 'Status',
+    actions: 'Actions',
+    empty: 'No categories yet.',
+    active: 'Active',
+    passive: 'Inactive',
+    delete_confirm: 'Are you sure you want to delete this category?'
+} %}
+
+{% block title %}{{ ui.title }}{% endblock %}
 
 {% block body %}
 <div class="container-fluid">
@@ -16,11 +88,11 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="mb-1">Kategoriler</h2>
-            <small class="text-muted">{{ categories|length }} kategori</small>
+            <h2 class="mb-1">{{ ui.title }}</h2>
+            <small class="text-muted">{{ categories|length }} {{ ui.count }}</small>
         </div>
-        <a href="{{ path('admin_category_create') }}" class="btn btn-primary">
-            <i class="bi bi-plus-lg"></i> Yeni Kategori
+        <a href="{{ path('admin_category_create', {lang: currentLocale}) }}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> {{ ui.new }}
         </a>
     </div>
 
@@ -30,38 +102,40 @@
                 <table class="table mb-0">
                     <thead>
                         <tr>
-                            <th>Ad</th>
-                            <th>Açıklama</th>
-                            <th>Sıra</th>
-                            <th>Durum</th>
-                            <th class="text-end">İşlemler</th>
+                            <th>{{ ui.name }}</th>
+                            <th>{{ ui.description }}</th>
+                            <th>{{ ui.sort }}</th>
+                            <th>{{ ui.status }}</th>
+                            <th class="text-end">{{ ui.actions }}</th>
                         </tr>
                     </thead>
                     <tbody>
                     {% if categories is empty %}
                         <tr>
-                            <td colspan="5" class="text-center py-4 text-muted">Henüz kategori yok.</td>
+                            <td colspan="5" class="text-center py-4 text-muted">{{ ui.empty }}</td>
                         </tr>
                     {% else %}
                         {% for category in categories %}
+                            {% set display = categoryView[category.id] ?? {'name': category.name, 'description': category.description} %}
                             <tr>
-                                <td class="fw-semibold">{{ category.name }}</td>
-                                <td class="text-muted">{{ category.description ?: '-' }}</td>
+                                <td class="fw-semibold">{{ display.name }}</td>
+                                <td class="text-muted">{{ display.description ?: '-' }}</td>
                                 <td>{{ category.sortOrder }}</td>
                                 <td>
                                     {% if category.isActive %}
-                                        <span class="badge bg-success-subtle text-success">Aktif</span>
+                                        <span class="badge bg-success-subtle text-success">{{ ui.active }}</span>
                                     {% else %}
-                                        <span class="badge bg-secondary-subtle text-secondary">Pasif</span>
+                                        <span class="badge bg-secondary-subtle text-secondary">{{ ui.passive }}</span>
                                     {% endif %}
                                 </td>
                                 <td class="text-end">
-                                    <a href="{{ path('admin_category_edit', {uuid: category.uuid}) }}" class="btn btn-sm btn-outline-secondary">
+                                    <a href="{{ path('admin_category_edit', {uuid: category.uuid, lang: currentLocale}) }}" class="btn btn-sm btn-outline-secondary">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-                                    <form method="post" action="{{ path('admin_category_delete', {uuid: category.uuid}) }}" class="d-inline"
-                                          onsubmit="return confirm('Bu kategoriyi silmek istediğinize emin misiniz?');">
+                                    <form method="post" action="{{ path('admin_category_delete', {uuid: category.uuid, lang: currentLocale}) }}" class="d-inline"
+                                          onsubmit="return confirm('{{ ui.delete_confirm }}');">
                                         <input type="hidden" name="_token" value="{{ csrf_token('category_delete_' ~ category.uuid) }}">
+                                        <input type="hidden" name="lang" value="{{ currentLocale }}">
                                         <button type="submit" class="btn btn-sm btn-outline-danger">
                                             <i class="bi bi-trash"></i>
                                         </button>

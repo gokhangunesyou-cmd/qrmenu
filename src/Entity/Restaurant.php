@@ -11,6 +11,7 @@ use Ramsey\Uuid\UuidInterface;
 
 #[ORM\Entity(repositoryClass: RestaurantRepository::class)]
 #[ORM\Table(name: 'restaurants')]
+#[ORM\Index(columns: ['customer_account_id'], name: 'idx_restaurants_customer_account')]
 class Restaurant
 {
     #[ORM\Id]
@@ -20,6 +21,10 @@ class Restaurant
 
     #[ORM\Column(type: 'uuid', unique: true)]
     private UuidInterface $uuid;
+
+    #[ORM\ManyToOne(targetEntity: CustomerAccount::class, inversedBy: 'restaurants')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?CustomerAccount $customerAccount = null;
 
     #[ORM\Column(length: 150)]
     private string $name;
@@ -113,6 +118,10 @@ class Restaurant
     #[ORM\OneToMany(targetEntity: QrCode::class, mappedBy: 'restaurant', cascade: ['persist', 'remove'])]
     private Collection $qrCodes;
 
+    /** @var Collection<int, User> */
+    #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'restaurants')]
+    private Collection $users;
+
     public function __construct(string $name, string $slug, Theme $theme)
     {
         $this->uuid = Uuid::uuid7();
@@ -126,6 +135,7 @@ class Restaurant
         $this->socialLinks = new ArrayCollection();
         $this->pages = new ArrayCollection();
         $this->qrCodes = new ArrayCollection();
+        $this->users = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -136,6 +146,16 @@ class Restaurant
     public function getUuid(): UuidInterface
     {
         return $this->uuid;
+    }
+
+    public function getCustomerAccount(): ?CustomerAccount
+    {
+        return $this->customerAccount;
+    }
+
+    public function setCustomerAccount(?CustomerAccount $customerAccount): void
+    {
+        $this->customerAccount = $customerAccount;
     }
 
     public function getName(): string
@@ -396,5 +416,11 @@ class Restaurant
     public function getQrCodes(): Collection
     {
         return $this->qrCodes;
+    }
+
+    /** @return Collection<int, User> */
+    public function getUsers(): Collection
+    {
+        return $this->users;
     }
 }

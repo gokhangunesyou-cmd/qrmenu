@@ -57,9 +57,8 @@ class RestaurantResourceVoter extends Voter
             return true;
         }
 
-        $restaurant = $user->getRestaurant();
-
-        if ($restaurant === null) {
+        $accessibleRestaurantIds = $user->getAccessibleRestaurantIds();
+        if ($accessibleRestaurantIds === []) {
             return false;
         }
 
@@ -77,6 +76,6 @@ class RestaurantResourceVoter extends Voter
             return false;
         }
 
-        return $resourceRestaurant->getId() === $restaurant->getId();
+        return in_array($resourceRestaurant->getId(), $accessibleRestaurantIds, true);
     }
 }

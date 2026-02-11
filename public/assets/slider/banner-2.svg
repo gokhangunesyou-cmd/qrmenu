@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">QR Menu Banner 2</title>
+  <desc id="desc">Dummy slider image for home banner area.</desc>
+  <defs>
+    <linearGradient id="bg2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#a05a1c" />
+      <stop offset="100%" stop-color="#d69045" />
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg2)" />
+  <circle cx="1340" cy="180" r="180" fill="rgba(255,255,255,0.2)" />
+  <rect x="96" y="96" width="1408" height="708" rx="36" fill="rgba(15,23,42,0.12)" />
+  <text x="156" y="360" fill="#ffffff" font-size="90" font-family="Arial, sans-serif" font-weight="700">Toplu QR Operasyonu</text>
+  <text x="156" y="440" fill="#fdf2df" font-size="42" font-family="Arial, sans-serif">Masa bazli kod olustur, aninda dagit</text>
+  <text x="156" y="690" fill="#fff8ee" font-size="34" font-family="Arial, sans-serif">DUMMY BANNER 02</text>
+</svg>

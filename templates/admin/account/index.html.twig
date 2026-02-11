@@ -1,0 +1,433 @@
+{% extends 'admin/base.html.twig' %}
+
+{% set ui = {
+    tr: {
+        title: 'Uyelik ve Ekip',
+        header: 'Uyelik ve Ekip Yonetimi',
+        subtitle: 'Plan limitleriyle restoran ve kullanici yonetimi.',
+        no_plan: 'Plansiz',
+        restaurant_limit: 'Restoran Limiti',
+        user_limit: 'Kullanici Limiti',
+        subscription_end: 'Abonelik Bitis',
+        premium_active: 'Premium uyelik aktif: restoran ve ekip yonetimi acik.',
+        membership_info: 'Uyelik Bilgileri',
+        business_name: 'Musteri/Isletme Adi',
+        email: 'E-posta',
+        update_info: 'Bilgileri Guncelle',
+        change_plan: 'Plan Degistir',
+        plan_note: 'Fiyatlar planlarin yillik ucretini ifade eder.',
+        active_plans: 'Aktif Planlar',
+        select_plan: 'Plan seciniz',
+        per_year: '/ yil',
+        restaurant_short: 'restoran',
+        user_short: 'kullanici',
+        update_plan: 'Plani Guncelle',
+        renewal: 'Yenileme Ekrani',
+        new_restaurant: 'Yeni Restoran Ac',
+        restaurant_name: 'Restoran Adi',
+        restaurant_email_optional: 'Restoran E-posta (opsiyonel)',
+        create_restaurant: 'Restoran Olustur',
+        restaurant_limit_reached: 'Restoran limitine ulastiniz.',
+        new_user: 'Yeni Kullanici Olustur',
+        first_name: 'Ad',
+        last_name: 'Soyad',
+        password: 'Sifre',
+        restaurant_permissions: 'Restoran Yetkileri',
+        no_restaurant_yet: 'Once restoran olusturmalisiniz.',
+        multi_select_hint: 'Ctrl/Cmd ile birden fazla secim yapabilirsiniz.',
+        add_user: 'Kullanici Ekle',
+        user_limit_reached: 'Kullanici limitine ulastiniz.',
+        users_permissions: 'Kullanicilar ve Restoran Yetkileri',
+        user: 'Kullanici',
+        authorized_restaurants: 'Yetkili Restoranlar',
+        action: 'Islem',
+        save: 'Kaydet',
+        no_users: 'Bu hesaba bagli kullanici bulunamadi.'
+    },
+    en: {
+        title: 'Membership & Team',
+        header: 'Membership and Team Management',
+        subtitle: 'Manage restaurants and users within plan limits.',
+        no_plan: 'No plan',
+        restaurant_limit: 'Restaurant Limit',
+        user_limit: 'User Limit',
+        subscription_end: 'Subscription End',
+        premium_active: 'Premium membership active: restaurant and team management enabled.',
+        membership_info: 'Membership Information',
+        business_name: 'Customer/Business Name',
+        email: 'Email',
+        update_info: 'Update Information',
+        change_plan: 'Change Plan',
+        plan_note: 'Prices represent annual plan fees.',
+        active_plans: 'Active Plans',
+        select_plan: 'Select a plan',
+        per_year: '/ year',
+        restaurant_short: 'restaurants',
+        user_short: 'users',
+        update_plan: 'Update Plan',
+        renewal: 'Renewal Screen',
+        new_restaurant: 'Create New Restaurant',
+        restaurant_name: 'Restaurant Name',
+        restaurant_email_optional: 'Restaurant Email (optional)',
+        create_restaurant: 'Create Restaurant',
+        restaurant_limit_reached: 'Restaurant limit reached.',
+        new_user: 'Create New User',
+        first_name: 'First Name',
+        last_name: 'Last Name',
+        password: 'Password',
+        restaurant_permissions: 'Restaurant Permissions',
+        no_restaurant_yet: 'You must create a restaurant first.',
+        multi_select_hint: 'Use Ctrl/Cmd to select multiple.',
+        add_user: 'Add User',
+        user_limit_reached: 'User limit reached.',
+        users_permissions: 'Users and Restaurant Permissions',
+        user: 'User',
+        authorized_restaurants: 'Authorized Restaurants',
+        action: 'Action',
+        save: 'Save',
+        no_users: 'No users linked to this account.'
+    },
+    ar: {
+        title: 'الاشتراك والفريق',
+        header: 'إدارة الاشتراك والفريق',
+        subtitle: 'إدارة المطاعم والمستخدمين ضمن حدود الخطة.',
+        no_plan: 'بدون خطة',
+        restaurant_limit: 'حد المطاعم',
+        user_limit: 'حد المستخدمين',
+        subscription_end: 'انتهاء الاشتراك',
+        premium_active: 'اشتراك بريميوم نشط: إدارة المطاعم والفريق مفعلة.',
+        membership_info: 'معلومات الاشتراك',
+        business_name: 'اسم العميل/النشاط',
+        email: 'البريد الإلكتروني',
+        update_info: 'تحديث المعلومات',
+        change_plan: 'تغيير الخطة',
+        plan_note: 'الأسعار تمثل الرسوم السنوية للخطة.',
+        active_plans: 'الخطط النشطة',
+        select_plan: 'اختر خطة',
+        per_year: '/ سنة',
+        restaurant_short: 'مطاعم',
+        user_short: 'مستخدمين',
+        update_plan: 'تحديث الخطة',
+        renewal: 'صفحة التجديد',
+        new_restaurant: 'إنشاء مطعم جديد',
+        restaurant_name: 'اسم المطعم',
+        restaurant_email_optional: 'بريد المطعم (اختياري)',
+        create_restaurant: 'إنشاء مطعم',
+        restaurant_limit_reached: 'تم الوصول إلى حد المطاعم.',
+        new_user: 'إنشاء مستخدم جديد',
+        first_name: 'الاسم الأول',
+        last_name: 'اسم العائلة',
+        password: 'كلمة المرور',
+        restaurant_permissions: 'صلاحيات المطاعم',
+        no_restaurant_yet: 'يجب إنشاء مطعم أولاً.',
+        multi_select_hint: 'استخدم Ctrl/Cmd لتحديد عدة عناصر.',
+        add_user: 'إضافة مستخدم',
+        user_limit_reached: 'تم الوصول إلى حد المستخدمين.',
+        users_permissions: 'المستخدمون وصلاحيات المطاعم',
+        user: 'المستخدم',
+        authorized_restaurants: 'المطاعم المصرح بها',
+        action: 'الإجراء',
+        save: 'حفظ',
+        no_users: 'لا يوجد مستخدمون مرتبطون بهذا الحساب.'
+    },
+    ru: {
+        title: 'Подписка и команда',
+        header: 'Управление подпиской и командой',
+        subtitle: 'Управление ресторанами и пользователями в рамках лимитов плана.',
+        no_plan: 'Без плана',
+        restaurant_limit: 'Лимит ресторанов',
+        user_limit: 'Лимит пользователей',
+        subscription_end: 'Окончание подписки',
+        premium_active: 'Премиум подписка активна: управление ресторанами и командой включено.',
+        membership_info: 'Информация о подписке',
+        business_name: 'Название клиента/бизнеса',
+        email: 'Email',
+        update_info: 'Обновить данные',
+        change_plan: 'Сменить план',
+        plan_note: 'Цены указаны за годовой план.',
+        active_plans: 'Активные планы',
+        select_plan: 'Выберите план',
+        per_year: '/ год',
+        restaurant_short: 'ресторанов',
+        user_short: 'пользователей',
+        update_plan: 'Обновить план',
+        renewal: 'Экран продления',
+        new_restaurant: 'Создать ресторан',
+        restaurant_name: 'Название ресторана',
+        restaurant_email_optional: 'Email ресторана (опционально)',
+        create_restaurant: 'Создать ресторан',
+        restaurant_limit_reached: 'Достигнут лимит ресторанов.',
+        new_user: 'Создать пользователя',
+        first_name: 'Имя',
+        last_name: 'Фамилия',
+        password: 'Пароль',
+        restaurant_permissions: 'Права ресторанов',
+        no_restaurant_yet: 'Сначала нужно создать ресторан.',
+        multi_select_hint: 'Используйте Ctrl/Cmd для выбора нескольких.',
+        add_user: 'Добавить пользователя',
+        user_limit_reached: 'Достигнут лимит пользователей.',
+        users_permissions: 'Пользователи и права ресторанов',
+        user: 'Пользователь',
+        authorized_restaurants: 'Доступные рестораны',
+        action: 'Действие',
+        save: 'Сохранить',
+        no_users: 'Нет пользователей, связанных с этим аккаунтом.'
+    }
+}[currentLocale] ?? {
+    title: 'Membership & Team',
+    header: 'Membership and Team Management',
+    subtitle: 'Manage restaurants and users within plan limits.',
+    no_plan: 'No plan',
+    restaurant_limit: 'Restaurant Limit',
+    user_limit: 'User Limit',
+    subscription_end: 'Subscription End',
+    premium_active: 'Premium membership active: restaurant and team management enabled.',
+    membership_info: 'Membership Information',
+    business_name: 'Customer/Business Name',
+    email: 'Email',
+    update_info: 'Update Information',
+    change_plan: 'Change Plan',
+    plan_note: 'Prices represent annual plan fees.',
+    active_plans: 'Active Plans',
+    select_plan: 'Select a plan',
+    per_year: '/ year',
+    restaurant_short: 'restaurants',
+    user_short: 'users',
+    update_plan: 'Update Plan',
+    renewal: 'Renewal Screen',
+    new_restaurant: 'Create New Restaurant',
+    restaurant_name: 'Restaurant Name',
+    restaurant_email_optional: 'Restaurant Email (optional)',
+    create_restaurant: 'Create Restaurant',
+    restaurant_limit_reached: 'Restaurant limit reached.',
+    new_user: 'Create New User',
+    first_name: 'First Name',
+    last_name: 'Last Name',
+    password: 'Password',
+    restaurant_permissions: 'Restaurant Permissions',
+    no_restaurant_yet: 'You must create a restaurant first.',
+    multi_select_hint: 'Use Ctrl/Cmd to select multiple.',
+    add_user: 'Add User',
+    user_limit_reached: 'User limit reached.',
+    users_permissions: 'Users and Restaurant Permissions',
+    user: 'User',
+    authorized_restaurants: 'Authorized Restaurants',
+    action: 'Action',
+    save: 'Save',
+    no_users: 'No users linked to this account.'
+} %}
+
+{% block title %}{{ ui.title }}{% endblock %}
+
+{% block body %}
+<div class="row g-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="mb-1">{{ ui.header }}</h4>
+                    <small class="text-muted">{{ ui.subtitle }}</small>
+                </div>
+                {% if currentPlan %}
+                    <span class="badge bg-primary">{{ currentPlan.name }}</span>
+                {% else %}
+                    <span class="badge bg-warning text-dark">{{ ui.no_plan }}</span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="border rounded-4 p-3 h-100">
+                            <div class="text-muted small">{{ ui.restaurant_limit }}</div>
+                            <div class="fw-semibold fs-5">{{ restaurantsUsed }} / {{ currentPlan ? currentPlan.maxRestaurants : 0 }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="border rounded-4 p-3 h-100">
+                            <div class="text-muted small">{{ ui.user_limit }}</div>
+                            <div class="fw-semibold fs-5">{{ usersUsed }} / {{ currentPlan ? currentPlan.maxUsers : 0 }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="border rounded-4 p-3 h-100">
+                            <div class="text-muted small">{{ ui.subscription_end }}</div>
+                            <div class="fw-semibold fs-5">{{ subscription ? subscription.endsAt|date('d.m.Y') : '-' }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% if currentPlan and currentPlan.code == 'premium' %}
+                    <div class="mt-3 text-success small fw-semibold">{{ ui.premium_active }}</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header"><strong>{{ ui.membership_info }}</strong></div>
+            <div class="card-body">
+                <form method="post" action="{{ path('admin_account_membership_update') }}" class="row g-2">
+                    <input type="hidden" name="_token" value="{{ csrf_token('account_membership_update') }}">
+                    <div class="col-12">
+                        <label class="form-label">{{ ui.business_name }}</label>
+                        <input class="form-control" name="name" value="{{ account.name }}" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">{{ ui.email }}</label>
+                        <input class="form-control" type="email" name="email" value="{{ account.email }}">
+                    </div>
+                    <div class="col-12">
+                        <button class="btn btn-primary">{{ ui.update_info }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header"><strong>{{ ui.change_plan }}</strong></div>
+            <div class="card-body">
+                <div class="small text-muted mb-2">{{ ui.plan_note }}</div>
+                <form method="post" action="{{ path('admin_account_plan_change') }}" class="row g-2">
+                    <input type="hidden" name="_token" value="{{ csrf_token('account_plan_change') }}">
+                    <div class="col-12">
+                        <label class="form-label">{{ ui.active_plans }}</label>
+                        <select class="form-select" name="plan_id" required>
+                            <option value="">{{ ui.select_plan }}</option>
+                            {% for plan in plans %}
+                                <option value="{{ plan.id }}" {{ currentPlan and currentPlan.id == plan.id ? 'selected' : '' }}>
+                                    {{ plan.name }} - {{ plan.yearlyPrice }} TRY {{ ui.per_year }} ({{ plan.maxRestaurants }} {{ ui.restaurant_short }} / {{ plan.maxUsers }} {{ ui.user_short }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <button class="btn btn-primary">{{ ui.update_plan }}</button>
+                        <a href="{{ path('admin_account_subscription_renew') }}" class="btn btn-outline-secondary">{{ ui.renewal }}</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header"><strong>{{ ui.new_restaurant }}</strong></div>
+            <div class="card-body">
+                <form method="post" action="{{ path('admin_account_restaurant_create') }}" class="row g-2">
+                    <input type="hidden" name="_token" value="{{ csrf_token('account_restaurant_create') }}">
+                    <div class="col-12">
+                        <label class="form-label">{{ ui.restaurant_name }}</label>
+                        <input class="form-control" name="name" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">{{ ui.restaurant_email_optional }}</label>
+                        <input class="form-control" type="email" name="email">
+                    </div>
+                    <div class="col-12">
+                        <button class="btn btn-primary" {{ currentPlan and restaurantsUsed >= currentPlan.maxRestaurants ? 'disabled' : '' }}>
+                            {{ ui.create_restaurant }}
+                        </button>
+                    </div>
+                </form>
+                {% if currentPlan and restaurantsUsed >= currentPlan.maxRestaurants %}
+                    <div class="small text-danger mt-2">{{ ui.restaurant_limit_reached }}</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header"><strong>{{ ui.new_user }}</strong></div>
+            <div class="card-body">
+                <form method="post" action="{{ path('admin_account_user_create') }}" class="row g-2">
+                    <input type="hidden" name="_token" value="{{ csrf_token('account_user_create') }}">
+                    <div class="col-md-6">
+                        <label class="form-label">{{ ui.first_name }}</label>
+                        <input class="form-control" name="first_name" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">{{ ui.last_name }}</label>
+                        <input class="form-control" name="last_name" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">{{ ui.email }}</label>
+                        <input class="form-control" type="email" name="email" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">{{ ui.password }}</label>
+                        <input class="form-control" type="password" name="password" minlength="8" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">{{ ui.restaurant_permissions }}</label>
+                        {% if restaurants is empty %}
+                            <div class="small text-muted">{{ ui.no_restaurant_yet }}</div>
+                        {% else %}
+                            <select class="form-select" name="restaurant_ids[]" multiple size="{{ restaurants|length > 6 ? 6 : restaurants|length }}" required>
+                                {% for restaurant in restaurants %}
+                                    <option value="{{ restaurant.id }}">{{ restaurant.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="small text-muted mt-1">{{ ui.multi_select_hint }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-12">
+                        <button class="btn btn-primary" {{ currentPlan and usersUsed >= currentPlan.maxUsers ? 'disabled' : '' }}>{{ ui.add_user }}</button>
+                    </div>
+                </form>
+                {% if currentPlan and usersUsed >= currentPlan.maxUsers %}
+                    <div class="small text-danger mt-2">{{ ui.user_limit_reached }}</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header"><strong>{{ ui.users_permissions }}</strong></div>
+            <div class="card-body table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                    <tr>
+                        <th>{{ ui.user }}</th>
+                        <th>{{ ui.email }}</th>
+                        <th>{{ ui.authorized_restaurants }}</th>
+                        <th>{{ ui.action }}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for user in users %}
+                        <tr>
+                            <td>{{ user.firstName }} {{ user.lastName }}</td>
+                            <td>{{ user.email }}</td>
+                            <td style="min-width: 320px;">
+                                <form method="post" action="{{ path('admin_account_user_permissions_update', {id: user.id}) }}" class="d-flex gap-2">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('account_user_permissions_' ~ user.id) }}">
+                                    <select class="form-select form-select-sm" name="restaurant_ids[]" multiple size="3" required>
+                                        {% for restaurant in restaurants %}
+                                            <option value="{{ restaurant.id }}" {{ user.restaurants.contains(restaurant) ? 'selected' : '' }}>
+                                                {{ restaurant.name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    <button class="btn btn-sm btn-outline-secondary">{{ ui.save }}</button>
+                                </form>
+                            </td>
+                            <td>
+                                <span class="badge text-bg-light">{{ user.restaurant ? user.restaurant.name : '-' }}</span>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="4" class="text-muted">{{ ui.no_users }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

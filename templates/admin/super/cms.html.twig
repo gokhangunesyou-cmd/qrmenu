@@ -1,0 +1,66 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Super Admin - CMS{% endblock %}
+
+{% block body %}
+{% set ui = currentLocale == 'tr' ? {
+    title: 'Ana Sayfa CMS Yönetimi',
+    subtitle: 'Header, hero, iletişim ve footer alanlarını tek formdan güncelleyebilirsin.',
+    fields: 'Site Alanları',
+    editing: 'Düzenlenen dil',
+    save: 'CMS Değişikliklerini Kaydet'
+} : {
+    title: 'Homepage CMS Management',
+    subtitle: 'Update header, hero, contact and footer sections from one form.',
+    fields: 'Site Fields',
+    editing: 'Editing locale',
+    save: 'Save CMS Changes'
+} %}
+<div class="row g-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">{{ ui.title }}</h4>
+                <span class="badge text-bg-primary">Super Admin</span>
+            </div>
+            <div class="card-body">
+                <div class="text-muted">{{ ui.subtitle }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header"><strong>{{ ui.fields }}</strong></div>
+            <div class="card-body">
+                <form method="post" action="{{ path('admin_super_cms_update') }}" class="row g-3">
+                    <input type="hidden" name="_token" value="{{ csrf_token('super_cms_update') }}">
+                    <input type="hidden" name="lang" value="{{ currentLocale }}">
+                    <div class="col-12">
+                        <div class="small text-primary">{{ ui.editing }}: {{ currentLocale|upper }}</div>
+                    </div>
+
+                    {% for key, field in cmsConfig %}
+                        {% set current = cmsContents[key] ?? null %}
+                        <div class="col-md-6">
+                            <label class="form-label mb-1" for="cms_{{ key }}">{{ field.label }}</label>
+                            <input
+                                id="cms_{{ key }}"
+                                class="form-control"
+                                name="{{ key }}"
+                                value="{{ cmsValues[key] ?? (current ? current.body : '') }}"
+                                placeholder="{{ field.placeholder }}"
+                            >
+                            <div class="form-text">Key: <code>{{ key }}</code></div>
+                        </div>
+                    {% endfor %}
+
+                    <div class="col-12 d-flex justify-content-end">
+                        <button class="btn btn-primary">{{ ui.save }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

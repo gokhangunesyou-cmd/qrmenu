@@ -1,16 +1,108 @@
 {% extends 'admin/base.html.twig' %}
 
-{% block title %}Restoran Bilgilerini Düzenle{% endblock %}
+{% set ui = {
+    tr: {
+        title: 'Restoran Bilgilerini Düzenle',
+        subtitle: 'MVP için temel profil ve görseller.',
+        back: 'Geri',
+        general: 'Genel Bilgiler',
+        social: 'Sosyal Medya ve Harita',
+        logo: 'Logo',
+        logo_current: 'Mevcut logo',
+        logo_preview: 'Logo Önizleme',
+        logo_alt: 'Mevcut Logo',
+        logo_max: 'Maks. 2MB (JPEG, PNG, WebP)',
+        cover: 'Kapak Fotoğrafı',
+        cover_current: 'Mevcut kapak',
+        cover_preview: 'Kapak Önizleme',
+        cover_alt: 'Mevcut Kapak',
+        cover_max: 'Maks. 5MB (JPEG, PNG, WebP)',
+        save: 'Kaydet'
+    },
+    en: {
+        title: 'Edit Restaurant Information',
+        subtitle: 'Basic profile and visuals for MVP.',
+        back: 'Back',
+        general: 'General Information',
+        social: 'Social Media and Map',
+        logo: 'Logo',
+        logo_current: 'Current logo',
+        logo_preview: 'Logo Preview',
+        logo_alt: 'Current Logo',
+        logo_max: 'Max 2MB (JPEG, PNG, WebP)',
+        cover: 'Cover Photo',
+        cover_current: 'Current cover',
+        cover_preview: 'Cover Preview',
+        cover_alt: 'Current Cover',
+        cover_max: 'Max 5MB (JPEG, PNG, WebP)',
+        save: 'Save'
+    },
+    ar: {
+        title: 'تعديل معلومات المطعم',
+        subtitle: 'الملف الأساسي والصور لنسخة MVP.',
+        back: 'رجوع',
+        general: 'معلومات عامة',
+        social: 'وسائل التواصل والخريطة',
+        logo: 'الشعار',
+        logo_current: 'الشعار الحالي',
+        logo_preview: 'معاينة الشعار',
+        logo_alt: 'الشعار الحالي',
+        logo_max: 'الحد الأقصى 2MB (JPEG, PNG, WebP)',
+        cover: 'صورة الغلاف',
+        cover_current: 'الغلاف الحالي',
+        cover_preview: 'معاينة الغلاف',
+        cover_alt: 'الغلاف الحالي',
+        cover_max: 'الحد الأقصى 5MB (JPEG, PNG, WebP)',
+        save: 'حفظ'
+    },
+    ru: {
+        title: 'Редактировать данные ресторана',
+        subtitle: 'Базовый профиль и изображения для MVP.',
+        back: 'Назад',
+        general: 'Общая информация',
+        social: 'Соцсети и карта',
+        logo: 'Логотип',
+        logo_current: 'Текущий логотип',
+        logo_preview: 'Предпросмотр логотипа',
+        logo_alt: 'Текущий логотип',
+        logo_max: 'Макс 2MB (JPEG, PNG, WebP)',
+        cover: 'Обложка',
+        cover_current: 'Текущая обложка',
+        cover_preview: 'Предпросмотр обложки',
+        cover_alt: 'Текущая обложка',
+        cover_max: 'Макс 5MB (JPEG, PNG, WebP)',
+        save: 'Сохранить'
+    }
+}[currentLocale] ?? {
+    title: 'Edit Restaurant Information',
+    subtitle: 'Basic profile and visuals for MVP.',
+    back: 'Back',
+    general: 'General Information',
+    social: 'Social Media and Map',
+    logo: 'Logo',
+    logo_current: 'Current logo',
+    logo_preview: 'Logo Preview',
+    logo_alt: 'Current Logo',
+    logo_max: 'Max 2MB (JPEG, PNG, WebP)',
+    cover: 'Cover Photo',
+    cover_current: 'Current cover',
+    cover_preview: 'Cover Preview',
+    cover_alt: 'Current Cover',
+    cover_max: 'Max 5MB (JPEG, PNG, WebP)',
+    save: 'Save'
+} %}
+
+{% block title %}{{ ui.title }}{% endblock %}
 
 {% block body %}
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="mb-1">Restoran Bilgilerini Düzenle</h2>
-            <div class="text-muted">MVP için temel profil ve görseller.</div>
+            <h2 class="mb-1">{{ ui.title }}</h2>
+            <div class="text-muted">{{ ui.subtitle }}</div>
         </div>
         <a href="{{ path('admin_restaurant_show') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> Geri
+            <i class="bi bi-arrow-left"></i> {{ ui.back }}
         </a>
     </div>
 
@@ -27,7 +119,7 @@
         <div class="col-md-8">
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5 class="mb-0">Genel Bilgiler</h5>
+                    <h5 class="mb-0">{{ ui.general }}</h5>
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
@@ -66,6 +158,57 @@
                         {{ form_widget(form.city) }}
                         {{ form_errors(form.city) }}
                     </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            {{ form_label(form.countryCode) }}
+                            {{ form_widget(form.countryCode) }}
+                            {{ form_errors(form.countryCode) }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form_label(form.latitude) }}
+                            {{ form_widget(form.latitude) }}
+                            {{ form_errors(form.latitude) }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form_label(form.longitude) }}
+                            {{ form_widget(form.longitude) }}
+                            {{ form_errors(form.longitude) }}
+                        </div>
+                    </div>
+
+                    <hr>
+                    <h6 class="mb-3">{{ ui.social }}</h6>
+                    <div class="mb-3">
+                        {{ form_label(form.instagramUrl) }}
+                        {{ form_widget(form.instagramUrl) }}
+                        {{ form_errors(form.instagramUrl) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_label(form.facebookUrl) }}
+                        {{ form_widget(form.facebookUrl) }}
+                        {{ form_errors(form.facebookUrl) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_label(form.twitterUrl) }}
+                        {{ form_widget(form.twitterUrl) }}
+                        {{ form_errors(form.twitterUrl) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_label(form.tiktokUrl) }}
+                        {{ form_widget(form.tiktokUrl) }}
+                        {{ form_errors(form.tiktokUrl) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_label(form.websiteUrl) }}
+                        {{ form_widget(form.websiteUrl) }}
+                        {{ form_errors(form.websiteUrl) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_label(form.googleMapsUrl) }}
+                        {{ form_widget(form.googleMapsUrl) }}
+                        {{ form_errors(form.googleMapsUrl) }}
+                    </div>
                 </div>
             </div>
         </div>
@@ -73,51 +216,51 @@
         <div class="col-md-4">
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5 class="mb-0">Logo</h5>
+                    <h5 class="mb-0">{{ ui.logo }}</h5>
                 </div>
                 <div class="card-body">
                     {% if restaurant.logoMedia %}
                         <div class="mb-3 text-center">
-                            <img src="{{ media_url(restaurant.logoMedia.storagePath) }}" alt="Mevcut Logo" class="img-fluid rounded mb-2" style="max-height: 100px;" id="logo-preview">
-                            <p class="text-muted small">Mevcut logo</p>
+                            <img src="{{ media_url(restaurant.logoMedia.storagePath) }}" alt="{{ ui.logo_alt }}" class="img-fluid rounded mb-2" style="max-height: 100px;" id="logo-preview">
+                            <p class="text-muted small">{{ ui.logo_current }}</p>
                         </div>
                     {% else %}
                         <div class="mb-3 text-center">
-                            <img src="" alt="Logo Önizleme" class="img-fluid rounded mb-2" style="max-height: 100px; display: none;" id="logo-preview">
+                            <img src="" alt="{{ ui.logo_preview }}" class="img-fluid rounded mb-2" style="max-height: 100px; display: none;" id="logo-preview">
                         </div>
                     {% endif %}
                     {{ form_label(form.logoFile) }}
                     {{ form_widget(form.logoFile, {'attr': {'onchange': 'previewImage(this, \"logo-preview\")'}}) }}
                     {{ form_errors(form.logoFile) }}
-                    <small class="text-muted">Maks. 2MB (JPEG, PNG, WebP)</small>
+                    <small class="text-muted">{{ ui.logo_max }}</small>
                 </div>
             </div>
 
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5 class="mb-0">Kapak Fotoğrafı</h5>
+                    <h5 class="mb-0">{{ ui.cover }}</h5>
                 </div>
                 <div class="card-body">
                     {% if restaurant.coverMedia %}
                         <div class="mb-3 text-center">
-                            <img src="{{ media_url(restaurant.coverMedia.storagePath) }}" alt="Mevcut Kapak" class="img-fluid rounded mb-2" id="cover-preview">
-                            <p class="text-muted small">Mevcut kapak</p>
+                            <img src="{{ media_url(restaurant.coverMedia.storagePath) }}" alt="{{ ui.cover_alt }}" class="img-fluid rounded mb-2" id="cover-preview">
+                            <p class="text-muted small">{{ ui.cover_current }}</p>
                         </div>
                     {% else %}
                         <div class="mb-3 text-center">
-                            <img src="" alt="Kapak Önizleme" class="img-fluid rounded mb-2" style="display: none;" id="cover-preview">
+                            <img src="" alt="{{ ui.cover_preview }}" class="img-fluid rounded mb-2" style="display: none;" id="cover-preview">
                         </div>
                     {% endif %}
                     {{ form_label(form.coverFile) }}
                     {{ form_widget(form.coverFile, {'attr': {'onchange': 'previewImage(this, \"cover-preview\")'}}) }}
                     {{ form_errors(form.coverFile) }}
-                    <small class="text-muted">Maks. 5MB (JPEG, PNG, WebP)</small>
+                    <small class="text-muted">{{ ui.cover_max }}</small>
                 </div>
             </div>
 
             <div class="d-grid">
                 <button type="submit" class="btn btn-primary btn-lg">
-                    <i class="bi bi-check-lg"></i> Kaydet
+                    <i class="bi bi-check-lg"></i> {{ ui.save }}
                 </button>
             </div>
         </div>

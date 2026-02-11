@@ -1,0 +1,153 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Super Admin - Abonelikler{% endblock %}
+
+{% block body %}
+<div class="row g-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Abonelik Takibi</h4>
+                <span class="badge text-bg-primary">Super Admin</span>
+            </div>
+            <div class="card-body">
+                <div class="text-muted">Musteri bazinda aktif/pasif planlar, baslangic-bitis tarihleri ve kalan sure.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header"><strong>Yeni Abone Ekle</strong></div>
+            <div class="card-body">
+                <form method="post" action="{{ path('admin_super_subscription_create') }}" class="row g-3">
+                    <input type="hidden" name="_token" value="{{ csrf_token('super_subscription_create') }}">
+                    <div class="col-md-3">
+                        <label class="form-label">Musteri Adi</label>
+                        <input class="form-control" name="account_name" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">E-posta</label>
+                        <input class="form-control" type="email" name="email" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Ad</label>
+                        <input class="form-control" name="first_name" value="Isletme" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Soyad</label>
+                        <input class="form-control" name="last_name" value="Yoneticisi" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Plan</label>
+                        <select class="form-select" name="plan_id" required>
+                            <option value="">Seciniz</option>
+                            {% for plan in plans %}
+                                <option value="{{ plan.id }}">{{ plan.name }} ({{ plan.code }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Baslangic</label>
+                        <input class="form-control" type="date" name="starts_at" value="{{ 'now'|date('Y-m-d') }}" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Bitis</label>
+                        <input class="form-control" type="date" name="ends_at" value="{{ 'now'|date_modify('+1 year')|date('Y-m-d') }}" required>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="create_sub_active" name="is_active" checked>
+                            <label class="form-check-label" for="create_sub_active">Aktif</label>
+                        </div>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button class="btn btn-primary w-100">Aboneyi Olustur</button>
+                    </div>
+                </form>
+                <div class="small text-muted mt-2">Olusturulan kullaniciya gecici sifre e-posta ile gonderilir.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header"><strong>Abonelik Listesi</strong></div>
+            <div class="card-body table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Musteri</th>
+                            <th>Plan ve Tarih</th>
+                            <th>Baslangic</th>
+                            <th>Bitis</th>
+                            <th>Kalan Gun</th>
+                            <th>Durum</th>
+                            <th>Kullanim</th>
+                            <th>Islem</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in rows %}
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">{{ row.account.name }}</div>
+                                <div class="small text-muted">{{ row.account.email ?: '-' }}</div>
+                            </td>
+                            <td style="min-width: 260px;">
+                                <form method="post" action="{{ path('admin_super_subscription_update', {id: row.subscription.id}) }}" class="row g-2 mb-0">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('super_subscription_update_' ~ row.subscription.id) }}">
+                                    <div class="col-12">
+                                        <select class="form-select form-select-sm" name="plan_id" required>
+                                            {% for plan in plans %}
+                                                <option value="{{ plan.id }}" {{ row.plan.id == plan.id ? 'selected' : '' }}>
+                                                    {{ plan.name }} ({{ plan.code }})
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-6">
+                                        <input class="form-control form-control-sm" type="date" name="starts_at" value="{{ row.subscription.startsAt|date('Y-m-d') }}" required>
+                                    </div>
+                                    <div class="col-6">
+                                        <input class="form-control form-control-sm" type="date" name="ends_at" value="{{ row.subscription.endsAt|date('Y-m-d') }}" required>
+                                    </div>
+                                    <div class="col-12 d-flex align-items-center justify-content-between">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="sub_active_{{ row.subscription.id }}" name="is_active" {{ row.subscription.isActive ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="sub_active_{{ row.subscription.id }}">Aktif</label>
+                                        </div>
+                                        <button class="btn btn-sm btn-primary">Guncelle</button>
+                                    </div>
+                                </form>
+                            </td>
+                            <td>{{ row.subscription.startsAt|date('d.m.Y') }}</td>
+                            <td>{{ row.subscription.endsAt|date('d.m.Y') }}</td>
+                            <td>
+                                {% if row.daysRemaining >= 0 %}
+                                    {{ row.daysRemaining }}
+                                {% else %}
+                                    {{ row.daysRemaining|abs }} gun gecmis
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% set statusClass = row.status == 'Aktif' ? 'text-bg-success' : (row.status == 'Suresi dolmus' ? 'text-bg-danger' : 'text-bg-secondary') %}
+                                <span class="badge {{ statusClass }}">{{ row.status }}</span>
+                            </td>
+                            <td class="small text-muted">
+                                {{ row.account.restaurants|length }} restoran / {{ row.account.users|length }} kullanici
+                            </td>
+                            <td class="small text-muted">Kayit #{{ row.subscription.id }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="8" class="text-muted">Abonelik kaydi bulunamadi.</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

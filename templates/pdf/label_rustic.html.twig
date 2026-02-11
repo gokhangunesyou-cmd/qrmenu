@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page { margin: 9mm; }
+        body { margin: 0; font-family: 'Times New Roman', serif; background: {{ theme.background }}; }
+        .grid { font-size: 0; }
+        .label {
+            display: inline-block;
+            vertical-align: top;
+            width: 62mm;
+            height: 92mm;
+            margin: 2mm;
+            box-sizing: border-box;
+            border: 0.8mm solid {{ theme.primaryDark }};
+            background: {{ theme.surface }};
+            padding: 4mm;
+            position: relative;
+            page-break-inside: avoid;
+            text-align: center;
+        }
+        .corner {
+            position: absolute;
+            width: 9mm;
+            height: 9mm;
+            border: 0.6mm solid {{ theme.primary }};
+        }
+        .corner.tl { top: 1.5mm; left: 1.5mm; border-right: none; border-bottom: none; }
+        .corner.tr { top: 1.5mm; right: 1.5mm; border-left: none; border-bottom: none; }
+        .corner.bl { bottom: 1.5mm; left: 1.5mm; border-right: none; border-top: none; }
+        .corner.br { bottom: 1.5mm; right: 1.5mm; border-left: none; border-top: none; }
+        .logo { width: 10mm; height: 10mm; object-fit: contain; display: block; margin: 2mm auto 1.5mm; }
+        .name { font-size: 10pt; color: {{ theme.primaryDark }}; font-weight: 700; margin-bottom: 2mm; }
+        .qr { width: 36mm; height: 36mm; margin: 0 auto; display: block; }
+        .table {
+            position: absolute;
+            left: {{ theme.tableBadge.posX }}%;
+            top: {{ theme.tableBadge.posY }}%;
+            transform: translate(-50%, -50%);
+            margin: 0;
+            font-size: 12pt;
+            font-weight: 700;
+            color: {{ theme.tableBadge.textColor }};
+            background: {{ theme.tableBadge.bgColor }};
+            border: {{ theme.tableBadge.borderWidth }}px solid {{ theme.tableBadge.borderColor }};
+            border-radius: {{ theme.tableBadge.borderRadius }}px;
+            padding: 2mm 4mm;
+        }
+        .sub { margin-top: 1mm; font-size: 7.8pt; color: {{ theme.text }}; }
+        .scan { margin-top: 2.5mm; font-size: 7pt; color: {{ theme.muted }}; letter-spacing: 0.2mm; }
+    </style>
+</head>
+<body>
+<div class="grid">
+    {% for qr in qrCodes %}
+        <div class="label" {% if labelBackgroundDataMap[qr.uuid.toString] ?? null %}style="background-image:url('{{ labelBackgroundDataMap[qr.uuid.toString] }}');background-size:cover;background-position:center;"{% endif %}>
+            <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+            {% if restaurantLogoDataUri %}
+                <img class="logo" src="{{ restaurantLogoDataUri }}" alt="Logo">
+            {% endif %}
+            <div class="name">{{ restaurant.name }}</div>
+            <img class="qr" src="{{ qrImageDataMap[qr.uuid.toString] ?? '' }}" alt="QR">
+            <div class="table">{{ qr.tableNumber ? 'Table ' ~ qr.tableNumber : 'Menu' }}</div>
+            <div class="sub">{{ qr.tableLabel ?? 'Please scan for digital menu' }}</div>
+            <div class="scan">HANDCRAFTED TASTE</div>
+        </div>
+    {% endfor %}
+</div>
+</body>
+</html>

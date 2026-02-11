@@ -11,7 +11,9 @@ use App\Entity\User;
 use App\Infrastructure\Storage\StorageInterface;
 use App\Repository\CategoryRepository;
 use App\Repository\ProductRepository;
+use App\Service\LanguageContext;
 use App\Service\ProductService;
+use App\Service\TranslationService;
 use Ramsey\Uuid\Uuid;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -27,6 +29,8 @@ class ProductWebController extends AbstractController
         private readonly CategoryRepository $categoryRepository,
         private readonly ProductService $productService,
         private readonly StorageInterface $storage,
+        private readonly TranslationService $translationService,
+        private readonly LanguageContext $languageContext,
     ) {
     }
 
@@ -34,6 +38,7 @@ class ProductWebController extends AbstractController
     public function index(Request $request): Response
     {
         $restaurant = $this->getRestaurantOrThrow();
+        $locale = $this->languageContext->resolveAdminLocale($request, $restaurant->getDefaultLocale());
 
         $search = $request->query->getString('search', '');
         $categoryUuid = $request->query->getString('category', '');
@@ -54,6 +59,26 @@ class ProductWebController extends AbstractController
         );
 
         $categories = $this->categoryRepository->findByRestaurant($restaurant);
+        $categoryIds = array_values(array_map(static fn ($category): int => (int) $category->getId(), $categories));
+        $productIds = array_values(array_map(static fn ($product): int => (int) $product->getId(), $result['items']));
+        $categoryTranslations = $this->translationService->getFieldMapWithFallback('category', $categoryIds, $locale);
+        $productTranslations = $this->translationService->getFieldMapWithFallback('product', $productIds, $locale);
+
+        $categoryView = [];
+        foreach ($categories as $category) {
+            $categoryId = (int) $category->getId();
+            $categoryView[$categoryId] = $this->translationService->resolve($categoryTranslations, $categoryId, 'name', $category->getName()) ?? $category->getName();
+        }
+
+        $productView = [];
+        foreach ($result['items'] as $product) {
+            $productId = (int) $product->getId();
+            $productView[$productId] = [
+                'name' => $this->translationService->resolve($productTranslations, $productId, 'name', $product->getName()) ?? $product->getName(),
+                'description' => $this->translationService->resolve($productTranslations, $productId, 'description', $product->getDescription()),
+                'categoryName' => $categoryView[(int) $product->getCategory()->getId()] ?? $product->getCategory()->getName(),
+            ];
+        }
 
         return $this->render('admin/product/index.html.twig', [
             'products' => $result['items'],
@@ -64,6 +89,9 @@ class ProductWebController extends AbstractController
             'categoryUuid' => $categoryUuid,
             'categories' => $categories,
             'storage' => $this->storage,
+            'categoryView' => $categoryView,
+            'productView' => $productView,
+            'currentLocale' => $locale,
         ]);
     }
 
@@ -71,13 +99,21 @@ class ProductWebController extends AbstractController
     public function create(Request $request): Response
     {
         $restaurant = $this->getRestaurantOrThrow();
+        $locale = $this->languageContext->resolveAdminLocale($request, $restaurant->getDefaultLocale());
 
         $categories = $this->categoryRepository->findByRestaurant($restaurant);
+        $categoryIds = array_values(array_map(static fn ($category): int => (int) $category->getId(), $categories));
+        $categoryTranslations = $this->translationService->getFieldMapWithFallback('category', $categoryIds, $locale);
+        $categoryView = [];
+        foreach ($categories as $category) {
+            $categoryId = (int) $category->getId();
+            $categoryView[$categoryId] = $this->translationService->resolve($categoryTranslations, $categoryId, 'name', $category->getName()) ?? $category->getName();
+        }
 
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('product_create', $request->request->getString('_token'))) {
                 $this->addFlash('error', 'Geçersiz CSRF token.');
-                return $this->redirectToRoute('admin_product_web_create');
+                return $this->redirectToRoute('admin_product_web_create', ['lang' => $locale]);
             }
 
             try {
@@ -107,9 +143,15 @@ class ProductWebController extends AbstractController
 
                 // Flush for calories & isActive
                 $this->productRepository->getEntityManager()->flush();
+                $productId = (int) $product->getId();
+                if ($productId > 0) {
+                    $this->translationService->upsert('product', $productId, $locale, 'name', trim($request->request->getString('name')));
+                    $this->translationService->upsert('product', $productId, $locale, 'description', trim($request->request->getString('description')) ?: null);
+                    $this->productRepository->getEntityManager()->flush();
+                }
 
                 $this->addFlash('success', 'Ürün başarıyla oluşturuldu.');
-                return $this->redirectToRoute('admin_product_web_index');
+                return $this->redirectToRoute('admin_product_web_index', ['lang' => $locale]);
             } catch (\App\Exception\EntityNotFoundException $e) {
                 $this->addFlash('error', 'Kategori veya medya bulunamadı: ' . $e->getMessage());
             } catch (\App\Exception\ValidationException $e) {
@@ -123,6 +165,8 @@ class ProductWebController extends AbstractController
                 'product' => null,
                 'formData' => $request->request->all(),
                 'storage' => $this->storage,
+                'categoryView' => $categoryView,
+                'currentLocale' => $locale,
             ]);
         }
 
@@ -131,6 +175,8 @@ class ProductWebController extends AbstractController
             'product' => null,
             'formData' => [],
             'storage' => $this->storage,
+            'categoryView' => $categoryView,
+            'currentLocale' => $locale,
         ]);
     }
 
@@ -138,19 +184,28 @@ class ProductWebController extends AbstractController
     public function edit(string $uuid, Request $request): Response
     {
         $restaurant = $this->getRestaurantOrThrow();
+        $locale = $this->languageContext->resolveAdminLocale($request, $restaurant->getDefaultLocale());
 
         $product = $this->productRepository->findOneByUuidAndRestaurant($uuid, $restaurant);
         if ($product === null) {
             $this->addFlash('error', 'Ürün bulunamadı.');
-            return $this->redirectToRoute('admin_product_web_index');
+            return $this->redirectToRoute('admin_product_web_index', ['lang' => $locale]);
         }
 
         $categories = $this->categoryRepository->findByRestaurant($restaurant);
+        $categoryIds = array_values(array_map(static fn ($category): int => (int) $category->getId(), $categories));
+        $categoryTranslations = $this->translationService->getFieldMapWithFallback('category', $categoryIds, $locale);
+        $categoryView = [];
+        foreach ($categories as $category) {
+            $categoryId = (int) $category->getId();
+            $categoryView[$categoryId] = $this->translationService->resolve($categoryTranslations, $categoryId, 'name', $category->getName()) ?? $category->getName();
+        }
+        $productTranslation = $this->translationService->getFieldMapWithFallback('product', [(int) $product->getId()], $locale);
 
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('product_edit_' . $uuid, $request->request->getString('_token'))) {
                 $this->addFlash('error', 'Geçersiz CSRF token.');
-                return $this->redirectToRoute('admin_product_web_edit', ['uuid' => $uuid]);
+                return $this->redirectToRoute('admin_product_web_edit', ['uuid' => $uuid, 'lang' => $locale]);
             }
 
             try {
@@ -158,8 +213,8 @@ class ProductWebController extends AbstractController
                 $imageMediaUuids = $this->extractValidMediaUuids($request);
 
                 $dto = new UpdateProductRequest(
-                    name: trim($request->request->getString('name')),
-                    description: trim($request->request->getString('description')) ?: null,
+                    name: $locale === $restaurant->getDefaultLocale() ? trim($request->request->getString('name')) : $product->getName(),
+                    description: $locale === $restaurant->getDefaultLocale() ? (trim($request->request->getString('description')) ?: null) : $product->getDescription(),
                     price: $request->request->getString('price'),
                     categoryUuid: $request->request->getString('category_uuid'),
                     isFeatured: $request->request->getBoolean('is_featured'),
@@ -169,6 +224,11 @@ class ProductWebController extends AbstractController
                 );
 
                 $this->productService->update($uuid, $dto, $restaurant);
+                $productId = (int) $product->getId();
+                if ($productId > 0) {
+                    $this->translationService->upsert('product', $productId, $locale, 'name', trim($request->request->getString('name')));
+                    $this->translationService->upsert('product', $productId, $locale, 'description', trim($request->request->getString('description')) ?: null);
+                }
 
                 // Set calories
                 $calories = $request->request->getString('calories');
@@ -177,7 +237,7 @@ class ProductWebController extends AbstractController
                 $this->productRepository->getEntityManager()->flush();
 
                 $this->addFlash('success', 'Ürün başarıyla güncellendi.');
-                return $this->redirectToRoute('admin_product_web_index');
+                return $this->redirectToRoute('admin_product_web_index', ['lang' => $locale]);
             } catch (\App\Exception\EntityNotFoundException $e) {
                 $this->addFlash('error', 'Kategori veya medya bulunamadı: ' . $e->getMessage());
             } catch (\App\Exception\ValidationException $e) {
@@ -192,6 +252,10 @@ class ProductWebController extends AbstractController
             'product' => $product,
             'formData' => [],
             'storage' => $this->storage,
+            'categoryView' => $categoryView,
+            'localizedName' => $this->translationService->resolve($productTranslation, (int) $product->getId(), 'name', $product->getName()),
+            'localizedDescription' => $this->translationService->resolve($productTranslation, (int) $product->getId(), 'description', $product->getDescription()),
+            'currentLocale' => $locale,
         ]);
     }
 
@@ -199,10 +263,11 @@ class ProductWebController extends AbstractController
     public function delete(string $uuid, Request $request): Response
     {
         $restaurant = $this->getRestaurantOrThrow();
+        $locale = $this->languageContext->resolveAdminLocale($request, $restaurant->getDefaultLocale());
 
         if (!$this->isCsrfTokenValid('product_delete_' . $uuid, $request->request->getString('_token'))) {
             $this->addFlash('error', 'Geçersiz CSRF token.');
-            return $this->redirectToRoute('admin_product_web_index');
+            return $this->redirectToRoute('admin_product_web_index', ['lang' => $locale]);
         }
 
         try {
@@ -214,7 +279,7 @@ class ProductWebController extends AbstractController
             $this->addFlash('error', 'Bir hata oluştu: ' . $e->getMessage());
         }
 
-        return $this->redirectToRoute('admin_product_web_index');
+        return $this->redirectToRoute('admin_product_web_index', ['lang' => $locale]);
     }
 
     #[Route('/{uuid}/toggle-active', name: 'admin_product_web_toggle_active', methods: ['POST'])]
@@ -248,16 +313,17 @@ class ProductWebController extends AbstractController
     public function bulkDelete(Request $request): Response
     {
         $restaurant = $this->getRestaurantOrThrow();
+        $locale = $this->languageContext->resolveAdminLocale($request, $restaurant->getDefaultLocale());
 
         if (!$this->isCsrfTokenValid('product_bulk_delete', $request->request->getString('_token'))) {
             $this->addFlash('error', 'Geçersiz CSRF token.');
-            return $this->redirectToRoute('admin_product_web_index');
+            return $this->redirectToRoute('admin_product_web_index', ['lang' => $locale]);
         }
 
         $uuids = $request->request->all('uuids');
         if (empty($uuids)) {
             $this->addFlash('error', 'Silinecek ürün seçilmedi.');
-            return $this->redirectToRoute('admin_product_web_index');
+            return $this->redirectToRoute('admin_product_web_index', ['lang' => $locale]);
         }
 
         $deleted = 0;
@@ -271,7 +337,72 @@ class ProductWebController extends AbstractController
         }
 
         $this->addFlash('success', sprintf('%d ürün başarıyla silindi.', $deleted));
-        return $this->redirectToRoute('admin_product_web_index');
+        return $this->redirectToRoute('admin_product_web_index', ['lang' => $locale]);
+    }
+
+    #[Route('/bulk-price-update', name: 'admin_product_web_bulk_price_update', methods: ['POST'])]
+    public function bulkPriceUpdate(Request $request): Response
+    {
+        $restaurant = $this->getRestaurantOrThrow();
+        $locale = $this->languageContext->resolveAdminLocale($request, $restaurant->getDefaultLocale());
+
+        if (!$this->isCsrfTokenValid('product_bulk_price_update', $request->request->getString('_token'))) {
+            $this->addFlash('error', 'Geçersiz CSRF token.');
+            return $this->redirectToRoute('admin_product_web_index', ['lang' => $locale]);
+        }
+
+        $operation = $request->request->getString('operation', 'increase_fixed');
+        $rawAmount = str_replace(',', '.', trim($request->request->getString('amount')));
+        $amount = (float) $rawAmount;
+
+        if ($amount <= 0) {
+            $this->addFlash('error', 'Lütfen 0\'dan büyük bir değer girin.');
+            return $this->redirectToRoute('admin_product_web_index', ['lang' => $locale]);
+        }
+
+        $category = null;
+        $categoryUuid = trim($request->request->getString('category_uuid'));
+        if ($categoryUuid !== '') {
+            $category = $this->categoryRepository->findOneByUuidAndRestaurant($categoryUuid, $restaurant);
+            if ($category === null) {
+                $this->addFlash('error', 'Kategori bulunamadı.');
+                return $this->redirectToRoute('admin_product_web_index', ['lang' => $locale]);
+            }
+        }
+
+        $products = $this->productRepository->findByRestaurantAndCategory($restaurant, $category);
+        if ($products === []) {
+            $this->addFlash('error', 'Güncellenecek ürün bulunamadı.');
+            return $this->redirectToRoute('admin_product_web_index', ['lang' => $locale]);
+        }
+
+        $updatedCount = 0;
+        foreach ($products as $product) {
+            $current = (float) $product->getPrice();
+
+            $newPrice = match ($operation) {
+                'increase_fixed' => $current + $amount,
+                'decrease_fixed' => $current - $amount,
+                'increase_percent' => $current + ($current * ($amount / 100)),
+                'decrease_percent' => $current - ($current * ($amount / 100)),
+                default => null,
+            };
+
+            if ($newPrice === null) {
+                $this->addFlash('error', 'Geçersiz fiyat güncelleme işlemi.');
+                return $this->redirectToRoute('admin_product_web_index', ['lang' => $locale]);
+            }
+
+            $newPrice = max(0, $newPrice);
+            $product->setPrice(number_format($newPrice, 2, '.', ''));
+            ++$updatedCount;
+        }
+
+        $this->productRepository->getEntityManager()->flush();
+
+        $this->addFlash('success', sprintf('%d ürünün fiyatı güncellendi.', $updatedCount));
+
+        return $this->redirectToRoute('admin_product_web_index', ['lang' => $locale]);
     }
 
     private function getRestaurantOrThrow(): Restaurant

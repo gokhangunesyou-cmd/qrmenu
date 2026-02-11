@@ -1,0 +1,1618 @@
+{% extends 'base.html.twig' %}
+
+{% set meta = {
+    tr: {
+        title: 'Altay QR Menu | Restoranlar Icin Dijital Menu',
+        description: 'Restoranlar icin QR menu, karekod menu ve dijital menu yonetim paneli. Masa QR kodu olusturma, coklu dil, menu guncelleme ve detayli analiz tek altyapida.',
+        keywords: 'qr menu, karekod menu, dijital menu, restoran qr menu sistemi, masa qr kodu, menu yonetim paneli',
+        og_description: 'QR menu ve karekod menu altyapisi ile restoran menu yonetimini hizlandirin. Coklu dil, masa bazli QR ve operasyon paneli tek sistemde.',
+        twitter_description: 'QR menu, karekod menu ve restoran menu yonetimi icin modern altyapi.'
+    },
+    en: {
+        title: 'Altay QR Menu | Digital Menu for Restaurants',
+        description: 'QR menu, QR code menu, and digital menu management for restaurants. Table QR setup, multi-language support, menu updates, and analytics in one platform.',
+        keywords: 'qr menu, qr code menu, digital menu, restaurant qr menu system, table qr code, menu management panel',
+        og_description: 'Speed up restaurant menu management with QR and QR code menu infrastructure. Multi-language, table-based QR, and operations in one system.',
+        twitter_description: 'Modern infrastructure for QR menus, QR code menus, and restaurant menu management.'
+    },
+    ar: {
+        title: 'Altay QR Menu | قائمة رقمية للمطاعم',
+        description: 'قائمة QR وقائمة برمز QR وإدارة القوائم الرقمية للمطاعم. إعداد QR للطاولات ودعم متعدد اللغات وتحديثات القائمة والتحليلات في منصة واحدة.',
+        keywords: 'قائمة qr، قائمة برمز qr، قائمة رقمية، نظام قائمة qr للمطاعم، qr للطاولة، لوحة إدارة القائمة',
+        og_description: 'سرّع إدارة قوائم المطاعم عبر بنية قائمة QR ورمز QR. تعدد اللغات وQR للطاولات ولوحة العمليات في نظام واحد.',
+        twitter_description: 'بنية حديثة لقوائم QR وقوائم رموز QR وإدارة قوائم المطاعم.'
+    },
+    ru: {
+        title: 'Altay QR Menu | Цифровое меню для ресторанов',
+        description: 'QR-меню, меню с QR-кодом и управление цифровым меню для ресторанов. QR для столов, поддержка языков, обновления меню и аналитика в одной платформе.',
+        keywords: 'qr меню, меню с qr кодом, цифровое меню, система qr меню для ресторанов, qr код для стола, панель управления меню',
+        og_description: 'Ускорьте управление меню ресторана с помощью QR-меню. Мультиязычность, QR для столов и операционная панель в одном решении.',
+        twitter_description: 'Современная инфраструктура для QR-меню, меню с QR-кодом и управления меню ресторана.'
+    }
+}[currentLocale] ?? {
+    title: 'Altay QR Menu | Digital Menu for Restaurants',
+    description: 'QR menu, QR code menu, and digital menu management for restaurants. Table QR setup, multi-language support, menu updates, and analytics in one platform.',
+    keywords: 'qr menu, qr code menu, digital menu, restaurant qr menu system, table qr code, menu management panel',
+    og_description: 'Speed up restaurant menu management with QR and QR code menu infrastructure. Multi-language, table-based QR, and operations in one system.',
+    twitter_description: 'Modern infrastructure for QR menus, QR code menus, and restaurant menu management.'
+} %}
+
+{% set ui = {
+    tr: {
+        nav_slider: 'Slider',
+        nav_features: 'Özellikler',
+        nav_panel: 'Panel',
+        nav_plans: 'Planlar',
+        nav_references: 'Referanslar',
+        nav_blog: 'Blog',
+        nav_contact: 'İletişim',
+        blog_read: 'Detayı Oku',
+        blog_empty_title: 'Henüz yayınlanmış blog yazısı yok',
+        blog_empty_body: 'Blog içerikleri eklendikçe burada otomatik listelenecek.',
+        all_blogs: 'Tüm Blog Yazıları',
+        reads: 'okunma',
+        contact_title: 'İletişim',
+        hero_cards: [
+            { title: 'Dakikalar Icinde', body: 'Restoran acilisi, menu girisi ve QR yayinina hizli gecis.' },
+            { title: 'PDF + QR Uyumlu', body: 'Urune ozel PDF etiketi, masa kartyasi ve mutfak ciktisi destegi.' },
+            { title: 'Coklu Sube Hazir', body: 'Sube bazli menu farklastirma, rol bazli ekip yonetimi ve izolasyon.' }
+        ],
+        slider_title: 'One Cikan Cozumler',
+        slider_note: 'Bu alan Super Admin panelinden yonetilen slider icerikleriyle otomatik guncellenir.',
+        slider_aside_title: 'Kurumsal Not',
+        slider_note_default: 'Bu icerigi guncellemek icin: Super Admin > Slider menusu.',
+        slider_defaults: [
+            { title: 'PDF Tasarimlarini Markana Gore Ozellestir', body: 'Logo, renk, urun alanlari ve masa karti yapisini kurumsal kimlige uygun sekilde yonet.' },
+            { title: 'Coklu Masa ve Toplu QR Operasyonu', body: 'Yuzlerce masa icin QR kodlarini tek ekranda olustur, indir ve servis akisini hizlandir.' },
+            { title: 'Sube Bazli Yonetim, Merkezi Kontrol', body: 'Her sube kendi operasyonunu yonetsin, merkez ekip standartlari bozmadan tum yapiyi izlesin.' }
+        ],
+        features_title: 'Guclu Ozellikler',
+        features_note: 'Panel, icerik ve QR operasyonlarini hizlandiran, zengin ve esnek altyapi.',
+        features: [
+            { title: 'Kategori ve Urun Yonetimi', body: 'Kategori, urun, fiyat ve aciklamalari panelden hizlica ekleyin, guncelleyin, silin.' },
+            { title: 'Coklu Dil Destegi', body: 'Menunuzu birden fazla dilde yayinlayin, misafir diline gore otomatik gosterim saglayin.' },
+            { title: 'Urun Fotograf ve Medya Arsivi', body: 'Gorselleri panelde arsivleyin, yeniden kullanin, urunlere kolayca baglayin.' },
+            { title: 'QR Kod Olusturucu', body: 'Masa bazli QR uretin, tek tikla indirin, servis alanina gore gruplayin.' },
+            { title: 'Toplu Fiyat Guncelleme', body: 'Yuzde veya sabit tutar ile onlarca urunun fiyatini ayni anda degistirin.' },
+            { title: 'PDF & QR Sablonlari', body: 'Etiket, masa karti ve PDF tasarimlarini hazir sablonlarla yonetin.' },
+            { title: 'Sube Bazli Menu', body: 'Her sube icin farkli fiyat, urun ve kategori varyasyonlarini yonetin.' },
+            { title: 'Rol Bazli Yetki ve Yayin Kontrolu', body: 'Ekip rolleri, taslak/onayli/yayinda akisi ile guvenli yayin.' }
+        ],
+        panel_title: 'Panel Gorunumleri',
+        panel_note: 'Panel uzerinden icerik, gorsel ve QR akisini tek yerden yonetin.',
+        panel_shots: [
+            { title: 'Panel Genel Bakis', body: 'Restoran, sube ve icerik durumunu tek ekranda izleyin.', image: '/assets/panel/panel-1.svg' },
+            { title: 'Menu Duzenleyici', body: 'Kategori, urun, fiyat ve gorselleri dakikalar icinde guncelleyin.', image: '/assets/panel/panel-2.svg' },
+            { title: 'QR & PDF Kurulumu', body: 'QR kod, masa karti ve PDF sablonlarini tek akista yonetin.', image: '/assets/panel/panel-3.svg' }
+        ],
+        plans_title: 'Planlar',
+        plans_note: 'Butcenize gore baslayin, operasyon buyudukce ayni altyapida bir ust pakete gecin.',
+        plans_badge: 'En Cok Tercih Edilen',
+        plan_desc_fallback: 'Kurumsal dijital menu yonetimi icin yillik abonelik plani.',
+        plan_price_suffix: '/ yil',
+        plan_limit_restaurant: 'Restoran limiti',
+        plan_limit_user: 'Kullanici limiti',
+        plan_cta_choose: 'Bu Plani Sec',
+        plan_cta_start: 'Uyeligi Baslat',
+        plan_cta_offer: 'Teklif Al',
+        plan_cta_meeting: 'Gorusme Talep Et',
+        plan_free_desc: 'Yeni acilan restoranlar icin temel dijital menu baslangic paketi.',
+        plan_premium_desc: 'Birden fazla sube yoneten markalar icin genisletilmis paket.',
+        plan_enterprise_desc: 'Cok lokasyonlu zincirler ve franchise yapilari icin ozel kurgu.',
+        plan_price_custom: 'Ozel Fiyat',
+        plan_unlimited: 'Sinirsiz',
+        plan_features: [
+            [
+                'Kategori ve urun yonetimi (ekle/guncelle/sil)',
+                'Coklu dil destegi',
+                'Urun aciklama ve fiyat alanlari',
+                'Urun fotograflari ve medya kutuphanesi',
+                'Masa bazli QR kod olusturma',
+                'QR kodlarini farkli boyutlarda indirme',
+                'PDF etiket ve masa karti ciktilari',
+                'Hazir QR/PDF sablonlari',
+                'Isletme logo ve kapak gorseli',
+                'Isletme bilgileri ve iletisim alanlari',
+                'Panelden menu yayinlama kontrolu'
+            ],
+            [
+                'Toplu fiyat guncelleme (yuzde/sabit)',
+                'Toplu urun silme',
+                'Coklu masa icin toplu QR olusturma',
+                'QR kod logo ekleme',
+                'QR kodlarini paket halinde indirme',
+                'PDF etiket arka plan gorseli',
+                'QR/PDF tema secenekleri',
+                'Medya arsivinde toplu gorsel yukleme',
+                'Rol bazli yetkilendirme',
+                'Taslak/onayli/yayinda akis',
+                'Sube bazli menu varyasyonlari',
+                'Merkezi panelden toplu guncelleme'
+            ],
+            [
+                'Cok lokasyonlu yapilar icin merkezi panel',
+                'Sube ve marka seviyesinde rol hiyerarsisi',
+                'Markaya ozel PDF/QR tasarim kurgusu',
+                'Ozel sablon/tema gelistirme',
+                'Kurumsal veri izolasyonu ve guvenlik katmanlari',
+                'Gelistirilmis gozlem ve raporlama',
+                'Ozel entegrasyon danismanligi',
+                'Kurumsal onboarding ve egitim',
+                'Oncelikli destek ve SLA',
+                'Teknik hesap yonetimi'
+            ]
+        ],
+        references_title: 'Referanslar',
+        references_note: 'Farkli segmentlerden restoran markalarinin operasyonuna uyumlu bir altyapi.',
+        references: [
+            { title: 'Anadolu Mutfaklari', body: '3 subede tek panelden menu ve PDF etiketi yonetimi.' },
+            { title: 'Kiyi Bistro Group', body: 'Sezona gore hizli fiyat guncelleme ve masa bazli QR dagitimi.' },
+            { title: 'Gurme Sokak Lezzetleri', body: 'Operasyon ekibi ile merkez ekip arasinda rol bazli kontrollu yonetim.' },
+            { title: 'Lezzet Caddesi Franchise', body: 'Franchise subelerde standart menu politikasi ve yerel varyasyon dengesi.' }
+        ],
+        blog_note: 'Dijital menu, restoran operasyonu ve buyume stratejilerine dair icerikler.',
+        contact_email: 'E-posta',
+        contact_phone: 'Telefon'
+    },
+    en: {
+        nav_slider: 'Slider',
+        nav_features: 'Features',
+        nav_panel: 'Panel',
+        nav_plans: 'Plans',
+        nav_references: 'References',
+        nav_blog: 'Blog',
+        nav_contact: 'Contact',
+        blog_read: 'Read Details',
+        blog_empty_title: 'No published blog post yet',
+        blog_empty_body: 'Blog posts will appear here automatically as they are published.',
+        all_blogs: 'All Blog Posts',
+        reads: 'views',
+        contact_title: 'Contact',
+        hero_cards: [
+            { title: 'Within Minutes', body: 'Fast onboarding for restaurant setup, menu entry, and QR publishing.' },
+            { title: 'PDF + QR Compatible', body: 'Support for product PDF labels, table cards, and kitchen printouts.' },
+            { title: 'Multi-Branch Ready', body: 'Branch-specific menus, role-based team management, and isolation.' }
+        ],
+        slider_title: 'Featured Solutions',
+        slider_note: 'This area updates automatically with slider content managed in Super Admin.',
+        slider_aside_title: 'Corporate Note',
+        slider_note_default: 'To update this content: Super Admin > Slider.',
+        slider_defaults: [
+            { title: 'Customize PDF Designs for Your Brand', body: 'Manage logo, colors, product fields, and table card layout to match your brand identity.' },
+            { title: 'Multi-Table and Bulk QR Operations', body: 'Create and download QR codes for hundreds of tables from one screen and speed up service.' },
+            { title: 'Branch-Level Management, Central Control', body: 'Let each branch manage its operations while the central team monitors without breaking standards.' }
+        ],
+        features_title: 'Powerful Features',
+        features_note: 'A rich, flexible infrastructure that accelerates panel, content, and QR operations.',
+        features: [
+            { title: 'Category & Product Management', body: 'Add, update, and remove categories, products, prices, and descriptions from one panel.' },
+            { title: 'Multi-Language Support', body: 'Publish menus in multiple languages with automatic guest-facing display.' },
+            { title: 'Product Photos & Media Library', body: 'Archive visuals, reuse them, and attach them to products easily.' },
+            { title: 'QR Code Generator', body: 'Create table-based QR codes, download with one click, and group by service area.' },
+            { title: 'Bulk Price Updates', body: 'Update dozens of prices at once using percentage or fixed amount changes.' },
+            { title: 'PDF & QR Templates', body: 'Manage table cards, labels, and PDF outputs with ready-made templates.' },
+            { title: 'Branch-Based Menus', body: 'Control price, product, and category variations per branch.' },
+            { title: 'Role Access & Publishing Control', body: 'Team roles plus draft/approved/live flow for safe publishing.' }
+        ],
+        panel_title: 'Panel Visuals',
+        panel_note: 'Manage content, visuals, and QR setup from one dashboard.',
+        panel_shots: [
+            { title: 'Panel Overview', body: 'Monitor restaurant, branch, and content status on a single screen.', image: '/assets/panel/panel-1.svg' },
+            { title: 'Menu Editor', body: 'Update categories, products, prices, and visuals in minutes.', image: '/assets/panel/panel-2.svg' },
+            { title: 'QR & PDF Setup', body: 'Handle QR codes, table cards, and PDF templates in one flow.', image: '/assets/panel/panel-3.svg' }
+        ],
+        plans_title: 'Plans',
+        plans_note: 'Start within your budget and move to the next package as your operations grow.',
+        plans_badge: 'Most Popular',
+        plan_desc_fallback: 'Annual subscription plan for enterprise digital menu management.',
+        plan_price_suffix: '/ year',
+        plan_limit_restaurant: 'Restaurant limit',
+        plan_limit_user: 'User limit',
+        plan_cta_choose: 'Choose This Plan',
+        plan_cta_start: 'Start Subscription',
+        plan_cta_offer: 'Get a Quote',
+        plan_cta_meeting: 'Request a Call',
+        plan_free_desc: 'Starter digital menu package for newly opened restaurants.',
+        plan_premium_desc: 'Extended package for brands managing multiple branches.',
+        plan_enterprise_desc: 'Tailored setup for multi-location chains and franchises.',
+        plan_price_custom: 'Custom Price',
+        plan_unlimited: 'Unlimited',
+        plan_features: [
+            [
+                'Category & product management (add/update/delete)',
+                'Multi-language support',
+                'Product descriptions and pricing fields',
+                'Product photos and media library',
+                'Table-based QR code creation',
+                'Download QR codes in multiple sizes',
+                'PDF labels and table card outputs',
+                'Ready-made QR/PDF templates',
+                'Business logo and cover visuals',
+                'Business details and contact fields',
+                'Publishing control from the panel'
+            ],
+            [
+                'Bulk price updates (percent/fixed)',
+                'Bulk product delete',
+                'Bulk QR creation for multiple tables',
+                'Add logo to QR codes',
+                'Download QR codes as a package',
+                'PDF label background visuals',
+                'QR/PDF theme options',
+                'Bulk media uploads to the library',
+                'Role-based permissions',
+                'Draft/approved/live publishing flow',
+                'Branch-based menu variations',
+                'Bulk updates from the central panel'
+            ],
+            [
+                'Central panel for multi-location operations',
+                'Branch and brand-level role hierarchy',
+                'Brand-specific PDF/QR design setup',
+                'Custom template/theme development',
+                'Enterprise-grade data isolation and security layers',
+                'Advanced monitoring and reporting',
+                'Custom integration consulting',
+                'Enterprise onboarding and training',
+                'Priority support and SLA',
+                'Technical account management'
+            ]
+        ],
+        references_title: 'References',
+        references_note: 'An infrastructure aligned with operations across different restaurant segments.',
+        references: [
+            { title: 'Anadolu Kitchens', body: 'Menu and PDF label management from one panel across 3 branches.' },
+            { title: 'Coast Bistro Group', body: 'Seasonal price updates and table-based QR distribution.' },
+            { title: 'Gourmet Street Flavors', body: 'Role-based controlled management between operations and central teams.' },
+            { title: 'Flavor Avenue Franchise', body: 'Standard menu policy with local variation balance in franchise branches.' }
+        ],
+        blog_note: 'Content on digital menus, restaurant operations, and growth strategies.',
+        contact_email: 'Email',
+        contact_phone: 'Phone'
+    },
+    ar: {
+        nav_slider: 'سلايدر',
+        nav_features: 'الميزات',
+        nav_panel: 'لوحة التحكم',
+        nav_plans: 'الخطط',
+        nav_references: 'مرجعيات',
+        nav_blog: 'المدونة',
+        nav_contact: 'التواصل',
+        blog_read: 'اقرأ التفاصيل',
+        blog_empty_title: 'لا توجد مقالة منشورة بعد',
+        blog_empty_body: 'ستظهر المقالات هنا تلقائيًا عند نشرها.',
+        all_blogs: 'كل المقالات',
+        reads: 'مشاهدة',
+        contact_title: 'التواصل',
+        hero_cards: [
+            { title: 'خلال دقائق', body: 'تهيئة المطعم وإدخال القائمة ونشر QR بسرعة.' },
+            { title: 'متوافق مع PDF و QR', body: 'يدعم ملصقات PDF للمنتجات وبطاقات الطاولات وطباعة المطبخ.' },
+            { title: 'جاهز للفروع المتعددة', body: 'قوائم حسب الفروع وإدارة فريق بالأدوار وعزل البيانات.' }
+        ],
+        slider_title: 'حلول مميزة',
+        slider_note: 'يتم تحديث هذا القسم تلقائيًا بمحتوى السلايدر المُدار من لوحة السوبر أدمن.',
+        slider_aside_title: 'ملاحظة مؤسسية',
+        slider_note_default: 'لتحديث هذا المحتوى: السوبر أدمن > السلايدر.',
+        slider_defaults: [
+            { title: 'خصص تصاميم PDF لعلامتك', body: 'أدِر الشعار والألوان وحقول المنتجات وتخطيط بطاقات الطاولات بما يناسب هويتك.' },
+            { title: 'عمليات QR جماعية لعدة طاولات', body: 'أنشئ وحمّل رموز QR لمئات الطاولات من شاشة واحدة لتسريع الخدمة.' },
+            { title: 'إدارة للفروع وتحكم مركزي', body: 'دع كل فرع يدير عملياته بينما يراقب الفريق المركزي دون كسر المعايير.' }
+        ],
+        features_title: 'ميزات قوية',
+        features_note: 'بنية مرنة وغنية تسرّع عمليات اللوحة والمحتوى وQR.',
+        features: [
+            { title: 'إدارة الفئات والمنتجات', body: 'أضف وعدّل واحذف الفئات والمنتجات والأسعار من لوحة واحدة.' },
+            { title: 'دعم متعدد اللغات', body: 'اعرض قائمتك بعدة لغات مع عرض تلقائي حسب لغة الضيف.' },
+            { title: 'صور المنتجات وأرشيف الوسائط', body: 'احفظ الصور وأعد استخدامها واربطها بالمنتجات بسهولة.' },
+            { title: 'منشئ رموز QR', body: 'أنشئ QR للطاولات وحمّلها بنقرة واحدة وصنّفها حسب منطقة الخدمة.' },
+            { title: 'تحديث الأسعار بالجملة', body: 'غيّر أسعار عشرات المنتجات بنسبة أو قيمة ثابتة دفعة واحدة.' },
+            { title: 'قوالب PDF وQR', body: 'إدارة بطاقات الطاولات وملصقات PDF عبر قوالب جاهزة.' },
+            { title: 'قوائم حسب الفروع', body: 'تحكم في اختلافات الأسعار والمنتجات والفئات لكل فرع.' },
+            { title: 'صلاحيات الأدوار والتحكم بالنشر', body: 'تدفق مسودات/موافقة/نشر لضمان نشر آمن.' }
+        ],
+        panel_title: 'صور اللوحة',
+        panel_note: 'إدارة المحتوى والوسائط وإعداد QR من لوحة واحدة.',
+        panel_shots: [
+            { title: 'نظرة عامة على اللوحة', body: 'راقب حالة المطاعم والفروع والمحتوى في شاشة واحدة.', image: '/assets/panel/panel-1.svg' },
+            { title: 'محرر القائمة', body: 'حدّث الفئات والمنتجات والأسعار والوسائط خلال دقائق.', image: '/assets/panel/panel-2.svg' },
+            { title: 'إعداد QR وPDF', body: 'أدر رموز QR وبطاقات الطاولات وقوالب PDF في تدفق واحد.', image: '/assets/panel/panel-3.svg' }
+        ],
+        plans_title: 'الخطط',
+        plans_note: 'ابدأ وفق الميزانية ثم انتقل إلى الباقة التالية مع توسع عملياتك.',
+        plans_badge: 'الأكثر اختيارًا',
+        plan_desc_fallback: 'خطة اشتراك سنوي لإدارة القوائم الرقمية للمؤسسات.',
+        plan_price_suffix: '/ سنة',
+        plan_limit_restaurant: 'حد المطاعم',
+        plan_limit_user: 'حد المستخدمين',
+        plan_cta_choose: 'اختر هذه الخطة',
+        plan_cta_start: 'ابدأ الاشتراك',
+        plan_cta_offer: 'اطلب عرضًا',
+        plan_cta_meeting: 'اطلب مكالمة',
+        plan_free_desc: 'باقة بداية للقوائم الرقمية للمطاعم الجديدة.',
+        plan_premium_desc: 'باقة موسعة للعلامات التي تدير عدة فروع.',
+        plan_enterprise_desc: 'إعداد مخصص للسلاسل متعددة المواقع والفرنشايز.',
+        plan_price_custom: 'سعر مخصص',
+        plan_unlimited: 'غير محدود',
+        plan_features: [
+            [
+                'إدارة الفئات والمنتجات (إضافة/تعديل/حذف)',
+                'دعم متعدد اللغات',
+                'أوصاف المنتجات وحقول الأسعار',
+                'صور المنتجات ومكتبة الوسائط',
+                'إنشاء QR حسب الطاولة',
+                'تنزيل QR بأحجام متعددة',
+                'ملصقات PDF وبطاقات الطاولة',
+                'قوالب QR/PDF جاهزة',
+                'شعار وصورة غلاف للمنشأة',
+                'بيانات المنشأة وحقول التواصل',
+                'التحكم في النشر من اللوحة'
+            ],
+            [
+                'تحديث الأسعار بالجملة (نسبة/قيمة)',
+                'حذف منتجات بالجملة',
+                'إنشاء QR بالجملة لعدة طاولات',
+                'إضافة الشعار إلى QR',
+                'تنزيل QR كحزمة',
+                'صورة خلفية لملصق PDF',
+                'خيارات ثيمات QR/PDF',
+                'رفع وسائط بالجملة إلى المكتبة',
+                'صلاحيات حسب الدور',
+                'تدفق مسودة/موافقة/منشور',
+                'قوائم حسب الفروع',
+                'تحديثات جماعية من اللوحة المركزية'
+            ],
+            [
+                'لوحة مركزية لعمليات متعددة المواقع',
+                'تسلسل أدوار على مستوى الفرع والعلامة',
+                'إعداد تصميم PDF/QR مخصص للعلامة',
+                'تطوير قوالب/ثيمات مخصصة',
+                'عزل بيانات وأمان بمستوى مؤسسي',
+                'مراقبة وتقارير متقدمة',
+                'استشارات تكامل مخصصة',
+                'تهيئة وتدريب للمؤسسات',
+                'دعم أولوية وSLA',
+                'إدارة حساب تقني'
+            ]
+        ],
+        references_title: 'مرجعيات',
+        references_note: 'بنية تحتية متوافقة مع عمليات علامات المطاعم في شرائح مختلفة.',
+        references: [
+            { title: 'مطابخ الأناضول', body: 'إدارة القائمة وملصقات PDF من لوحة واحدة عبر 3 فروع.' },
+            { title: 'مجموعة كوست بيسترو', body: 'تحديث أسعار موسمي وتوزيع QR حسب الطاولات.' },
+            { title: 'نكهات الشارع الفاخرة', body: 'إدارة محكومة بالأدوار بين فريق العمليات والفريق المركزي.' },
+            { title: 'فرنشايز شارع النكهات', body: 'سياسة قائمة موحدة مع توازن للمتغيرات المحلية.' }
+        ],
+        blog_note: 'محتوى حول القوائم الرقمية وتشغيل المطاعم واستراتيجيات النمو.',
+        contact_email: 'البريد الإلكتروني',
+        contact_phone: 'الهاتف'
+    },
+    ru: {
+        nav_slider: 'Слайдер',
+        nav_features: 'Функции',
+        nav_panel: 'Панель',
+        nav_plans: 'Тарифы',
+        nav_references: 'Референсы',
+        nav_blog: 'Блог',
+        nav_contact: 'Контакты',
+        blog_read: 'Читать подробнее',
+        blog_empty_title: 'Пока нет опубликованных постов',
+        blog_empty_body: 'Публикации будут появляться здесь автоматически после выхода.',
+        all_blogs: 'Все статьи',
+        reads: 'просмотров',
+        contact_title: 'Контакты',
+        hero_cards: [
+            { title: 'За считанные минуты', body: 'Быстрое подключение: запуск ресторана, ввод меню и публикация QR.' },
+            { title: 'Совместимо с PDF и QR', body: 'Поддержка PDF-этикеток, карточек столов и кухонных распечаток.' },
+            { title: 'Готово для сети филиалов', body: 'Меню по филиалам, управление по ролям и изоляция данных.' }
+        ],
+        slider_title: 'Ключевые решения',
+        slider_note: 'Этот блок автоматически обновляется контентом слайдера из панели Супер Админ.',
+        slider_aside_title: 'Корпоративная заметка',
+        slider_note_default: 'Чтобы обновить этот контент: Супер Админ > Слайдер.',
+        slider_defaults: [
+            { title: 'Настройте PDF-дизайны под ваш бренд', body: 'Управляйте логотипом, цветами, полями товаров и макетом карточек столов.' },
+            { title: 'Массовые QR-операции для столов', body: 'Создавайте и скачивайте QR-коды для сотен столов на одном экране.' },
+            { title: 'Управление по филиалам, централизованный контроль', body: 'Каждый филиал управляет своим процессом, а центр контролирует стандарты.' }
+        ],
+        features_title: 'Мощные функции',
+        features_note: 'Гибкая, богатая функциональность для быстрых операций в панели и QR.',
+        features: [
+            { title: 'Категории и продукты', body: 'Добавляйте, обновляйте и удаляйте категории, продукты, цены и описания из одной панели.' },
+            { title: 'Мультиязычность', body: 'Публикуйте меню на нескольких языках с автоотображением для гостя.' },
+            { title: 'Фото и медиатека', body: 'Храните изображения, переиспользуйте их и легко привязывайте к продуктам.' },
+            { title: 'Генератор QR-кодов', body: 'Создавайте QR по столам, скачивайте в один клик и группируйте по зонам.' },
+            { title: 'Массовое обновление цен', body: 'Меняйте цены десятков позиций одним действием — процентом или суммой.' },
+            { title: 'Шаблоны PDF и QR', body: 'Управляйте карточками столов, этикетками и PDF через готовые шаблоны.' },
+            { title: 'Меню по филиалам', body: 'Контролируйте различия по ценам, товарам и категориям для каждого филиала.' },
+            { title: 'Роли и публикация', body: 'Роли команды плюс поток черновик/одобрено/в эфире для безопасной публикации.' }
+        ],
+        panel_title: 'Визуалы панели',
+        panel_note: 'Управляйте контентом, визуалами и QR-настройками из одной панели.',
+        panel_shots: [
+            { title: 'Обзор панели', body: 'Следите за статусом ресторанов, филиалов и контента на одном экране.', image: '/assets/panel/panel-1.svg' },
+            { title: 'Редактор меню', body: 'Обновляйте категории, продукты, цены и визуалы за минуты.', image: '/assets/panel/panel-2.svg' },
+            { title: 'Настройка QR и PDF', body: 'Управляйте QR-кодами, карточками столов и PDF-шаблонами в одном потоке.', image: '/assets/panel/panel-3.svg' }
+        ],
+        plans_title: 'Тарифы',
+        plans_note: 'Начните в рамках бюджета и переходите на следующий пакет по мере роста.',
+        plans_badge: 'Самый популярный',
+        plan_desc_fallback: 'Годовой план подписки для управления корпоративным цифровым меню.',
+        plan_price_suffix: '/ год',
+        plan_limit_restaurant: 'Лимит ресторанов',
+        plan_limit_user: 'Лимит пользователей',
+        plan_cta_choose: 'Выбрать план',
+        plan_cta_start: 'Начать подписку',
+        plan_cta_offer: 'Запросить цену',
+        plan_cta_meeting: 'Запросить звонок',
+        plan_free_desc: 'Базовый пакет цифрового меню для новых ресторанов.',
+        plan_premium_desc: 'Расширенный пакет для брендов с несколькими филиалами.',
+        plan_enterprise_desc: 'Индивидуальная конфигурация для сетей и франчайзинга.',
+        plan_price_custom: 'Индивидуальная цена',
+        plan_unlimited: 'Без ограничений',
+        plan_features: [
+            [
+                'Категории и продукты (добавить/обновить/удалить)',
+                'Мультиязычная поддержка',
+                'Описания продуктов и поля цен',
+                'Фото продуктов и медиатека',
+                'QR-коды по столам',
+                'Скачивание QR в разных размерах',
+                'PDF-этикетки и карточки столов',
+                'Готовые шаблоны QR/PDF',
+                'Логотип и обложка бизнеса',
+                'Данные бизнеса и контакты',
+                'Контроль публикации из панели'
+            ],
+            [
+                'Массовое обновление цен (процент/сумма)',
+                'Массовое удаление продуктов',
+                'Массовое создание QR для нескольких столов',
+                'Логотип на QR-кодах',
+                'Скачивание QR пакетом',
+                'Фоновые изображения для PDF-этикеток',
+                'Темы QR/PDF',
+                'Массовая загрузка медиа в библиотеку',
+                'Ролевые права',
+                'Поток черновик/одобрено/в эфире',
+                'Меню по филиалам',
+                'Массовые обновления из центральной панели'
+            ],
+            [
+                'Центральная панель для многолокационных операций',
+                'Иерархия ролей на уровне филиала и бренда',
+                'Брендированная настройка PDF/QR',
+                'Разработка кастомных шаблонов/тем',
+                'Изоляция данных и уровни безопасности',
+                'Расширенный мониторинг и отчетность',
+                'Консалтинг по интеграциям',
+                'Корпоративное внедрение и обучение',
+                'Приоритетная поддержка и SLA',
+                'Техническое сопровождение аккаунта'
+            ]
+        ],
+        references_title: 'Референсы',
+        references_note: 'Инфраструктура, адаптированная к операционным процессам ресторанов разных сегментов.',
+        references: [
+            { title: 'Anadolu Kitchens', body: 'Управление меню и PDF-этикетками с одной панели для 3 филиалов.' },
+            { title: 'Coast Bistro Group', body: 'Быстрое сезонное обновление цен и распределение QR по столам.' },
+            { title: 'Gourmet Street Flavors', body: 'Ролевое управление между операционной и центральной командой.' },
+            { title: 'Flavor Avenue Franchise', body: 'Единая политика меню с учетом локальных вариаций.' }
+        ],
+        blog_note: 'Материалы о цифровых меню, операциях ресторана и стратегиях роста.',
+        contact_email: 'Email',
+        contact_phone: 'Телефон'
+    }
+}[currentLocale] ?? {
+    nav_slider: 'Slider',
+    nav_features: 'Features',
+    nav_panel: 'Panel',
+    nav_plans: 'Plans',
+    nav_references: 'References',
+    nav_blog: 'Blog',
+    nav_contact: 'Contact',
+    blog_read: 'Read Details',
+    blog_empty_title: 'No published blog post yet',
+    blog_empty_body: 'Blog posts will appear here automatically as they are published.',
+    all_blogs: 'All Blog Posts',
+    reads: 'views',
+    contact_title: 'Contact',
+    hero_cards: [
+        { title: 'Within Minutes', body: 'Fast onboarding for restaurant setup, menu entry, and QR publishing.' },
+        { title: 'PDF + QR Compatible', body: 'Support for product PDF labels, table cards, and kitchen printouts.' },
+        { title: 'Multi-Branch Ready', body: 'Branch-specific menus, role-based team management, and isolation.' }
+    ],
+    slider_title: 'Featured Solutions',
+    slider_note: 'This area updates automatically with slider content managed in Super Admin.',
+    slider_aside_title: 'Corporate Note',
+    slider_note_default: 'To update this content: Super Admin > Slider.',
+    slider_defaults: [
+        { title: 'Customize PDF Designs for Your Brand', body: 'Manage logo, colors, product fields, and table card layout to match your brand identity.' },
+        { title: 'Multi-Table and Bulk QR Operations', body: 'Create and download QR codes for hundreds of tables from one screen and speed up service.' },
+        { title: 'Branch-Level Management, Central Control', body: 'Let each branch manage its operations while the central team monitors without breaking standards.' }
+    ],
+    features_title: 'Powerful Features',
+    features_note: 'A rich, flexible infrastructure that accelerates panel, content, and QR operations.',
+    features: [
+        { title: 'Category & Product Management', body: 'Add, update, and remove categories, products, prices, and descriptions from one panel.' },
+        { title: 'Multi-Language Support', body: 'Publish menus in multiple languages with automatic guest-facing display.' },
+        { title: 'Product Photos & Media Library', body: 'Archive visuals, reuse them, and attach them to products easily.' },
+        { title: 'QR Code Generator', body: 'Create table-based QR codes, download with one click, and group by service area.' },
+        { title: 'Bulk Price Updates', body: 'Update dozens of prices at once using percentage or fixed amount changes.' },
+        { title: 'PDF & QR Templates', body: 'Manage table cards, labels, and PDF outputs with ready-made templates.' },
+        { title: 'Branch-Based Menus', body: 'Control price, product, and category variations per branch.' },
+        { title: 'Role Access & Publishing Control', body: 'Team roles plus draft/approved/live flow for safe publishing.' }
+    ],
+    panel_title: 'Panel Visuals',
+    panel_note: 'Manage content, visuals, and QR setup from one dashboard.',
+    panel_shots: [
+        { title: 'Panel Overview', body: 'Monitor restaurant, branch, and content status on a single screen.', image: '/assets/panel/panel-1.svg' },
+        { title: 'Menu Editor', body: 'Update categories, products, prices, and visuals in minutes.', image: '/assets/panel/panel-2.svg' },
+        { title: 'QR & PDF Setup', body: 'Handle QR codes, table cards, and PDF templates in one flow.', image: '/assets/panel/panel-3.svg' }
+    ],
+    plans_title: 'Plans',
+    plans_note: 'Start within your budget and move to the next package as your operations grow.',
+    plans_badge: 'Most Popular',
+    plan_desc_fallback: 'Annual subscription plan for enterprise digital menu management.',
+    plan_price_suffix: '/ year',
+    plan_limit_restaurant: 'Restaurant limit',
+    plan_limit_user: 'User limit',
+    plan_cta_choose: 'Choose This Plan',
+    plan_cta_start: 'Start Subscription',
+    plan_cta_offer: 'Get a Quote',
+    plan_cta_meeting: 'Request a Call',
+    plan_free_desc: 'Starter digital menu package for newly opened restaurants.',
+    plan_premium_desc: 'Extended package for brands managing multiple branches.',
+    plan_enterprise_desc: 'Tailored setup for multi-location chains and franchises.',
+    plan_price_custom: 'Custom Price',
+    plan_unlimited: 'Unlimited',
+    plan_features: [
+        [
+            'Category & product management (add/update/delete)',
+            'Multi-language support',
+            'Product descriptions and pricing fields',
+            'Product photos and media library',
+            'Table-based QR code creation',
+            'Download QR codes in multiple sizes',
+            'PDF labels and table card outputs',
+            'Ready-made QR/PDF templates',
+            'Business logo and cover visuals',
+            'Business details and contact fields',
+            'Publishing control from the panel'
+        ],
+        [
+            'Bulk price updates (percent/fixed)',
+            'Bulk product delete',
+            'Bulk QR creation for multiple tables',
+            'Add logo to QR codes',
+            'Download QR codes as a package',
+            'PDF label background visuals',
+            'QR/PDF theme options',
+            'Bulk media uploads to the library',
+            'Role-based permissions',
+            'Draft/approved/live publishing flow',
+            'Branch-based menu variations',
+            'Bulk updates from the central panel'
+        ],
+        [
+            'Central panel for multi-location operations',
+            'Branch and brand-level role hierarchy',
+            'Brand-specific PDF/QR design setup',
+            'Custom template/theme development',
+            'Enterprise-grade data isolation and security layers',
+            'Advanced monitoring and reporting',
+            'Custom integration consulting',
+            'Enterprise onboarding and training',
+            'Priority support and SLA',
+            'Technical account management'
+        ]
+    ],
+    references_title: 'References',
+    references_note: 'An infrastructure aligned with operations across different restaurant segments.',
+    references: [
+        { title: 'Anadolu Kitchens', body: 'Menu and PDF label management from one panel across 3 branches.' },
+        { title: 'Coast Bistro Group', body: 'Seasonal price updates and table-based QR distribution.' },
+        { title: 'Gourmet Street Flavors', body: 'Role-based controlled management between operations and central teams.' },
+        { title: 'Flavor Avenue Franchise', body: 'Standard menu policy with local variation balance in franchise branches.' }
+    ],
+    blog_note: 'Content on digital menus, restaurant operations, and growth strategies.',
+    contact_email: 'Email',
+    contact_phone: 'Phone'
+} %}
+
+{% block title %}{{ meta.title }}{% endblock %}
+{% block meta_description %}{{ meta.description }}{% endblock %}
+{% block meta_keywords %}{{ meta.keywords }}{% endblock %}
+{% block canonical_url %}{{ absolute_url(path('site_home')) }}{% endblock %}
+{% block og_title %}{{ meta.title }}{% endblock %}
+{% block og_description %}{{ meta.og_description }}{% endblock %}
+{% block og_url %}{{ absolute_url(path('site_home')) }}{% endblock %}
+{% block og_image %}{{ absolute_url('/assets/slider/banner-1.svg') }}{% endblock %}
+{% block twitter_title %}{{ meta.title }}{% endblock %}
+{% block twitter_description %}{{ meta.twitter_description }}{% endblock %}
+{% block twitter_image %}{{ absolute_url('/assets/slider/banner-1.svg') }}{% endblock %}
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Altay QR Menu",
+  "url": "{{ absolute_url(path('site_home')) }}",
+  "logo": "{{ absolute_url('/assets/slider/banner-1.svg') }}",
+  "contactPoint": [{
+    "@type": "ContactPoint",
+    "contactType": "sales",
+    "email": "{{ cms.contactEmail|e('js') }}",
+    "telephone": "{{ cms.contactPhone|e('js') }}"
+  }]
+}
+</script>
+{% endblock %}
+
+{% block stylesheets %}
+<style>
+    :root {
+        --bg: #f4f1ea;
+        --ink: #1f2937;
+        --ink-soft: #4b5563;
+        --line: #d6d0c4;
+        --panel: #fffdf8;
+        --panel-strong: #ffffff;
+        --brand: #1f4d3d;
+        --brand-soft: #d8ebe3;
+        --accent: #9f6b31;
+        --shadow: 0 12px 30px rgba(31, 41, 55, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        color: var(--ink);
+        font-family: "Manrope", sans-serif;
+        background:
+            radial-gradient(circle at 85% 12%, rgba(159, 107, 49, 0.15) 0%, rgba(159, 107, 49, 0) 40%),
+            radial-gradient(circle at 20% 8%, rgba(31, 77, 61, 0.12) 0%, rgba(31, 77, 61, 0) 36%),
+            linear-gradient(180deg, #fcfaf5 0%, #f4f1ea 55%, #efebe2 100%);
+    }
+
+    h1, h2, h3, h4 {
+        margin: 0;
+        font-family: "Plus Jakarta Sans", sans-serif;
+        letter-spacing: -0.02em;
+    }
+
+    p { margin: 0; }
+
+    .container {
+        width: min(1140px, 92vw);
+        margin: 0 auto;
+    }
+
+    .nav-wrap {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        backdrop-filter: blur(8px);
+        background: rgba(252, 250, 245, 0.72);
+        border-bottom: 1px solid rgba(214, 208, 196, 0.55);
+    }
+
+    .nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 0;
+    }
+
+    .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-family: "Plus Jakarta Sans", sans-serif;
+        font-weight: 700;
+    }
+
+    .brand-mark {
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        background: linear-gradient(140deg, var(--brand), #2d6a54);
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.82rem;
+        font-weight: 800;
+    }
+
+    .nav-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        align-items: center;
+    }
+
+    .nav-links a {
+        color: var(--ink-soft);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+    .nav-links a:hover { color: var(--ink); }
+
+    .nav-cta {
+        background: var(--brand);
+        color: #fff;
+        padding: 10px 14px;
+        border-radius: 12px;
+    }
+
+    .lang-flags {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 6px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: #fffaf3;
+    }
+
+    .lang-flag {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        text-decoration: none;
+        font-size: 1rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .lang-flag.active {
+        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.18);
+        transform: translateY(-1px);
+    }
+
+    .hero {
+        padding: 52px 0 30px;
+        animation: rise 0.55s ease-out both;
+    }
+
+    .hero-grid {
+        display: grid;
+        grid-template-columns: 1.08fr 0.92fr;
+        gap: 20px;
+    }
+
+    .panel {
+        background: var(--panel-strong);
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        box-shadow: var(--shadow);
+    }
+
+    .hero-main {
+        padding: 34px;
+    }
+
+    .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        padding: 7px 12px;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 0.78rem;
+        color: var(--brand);
+        background: var(--brand-soft);
+        border: 1px solid rgba(31, 77, 61, 0.18);
+        margin-bottom: 14px;
+    }
+
+    .hero h1 {
+        font-size: clamp(2rem, 4vw, 3.5rem);
+        line-height: 1.06;
+    }
+
+    .hero p {
+        margin-top: 14px;
+        color: var(--ink-soft);
+        line-height: 1.6;
+        max-width: 56ch;
+    }
+
+    .btn-row {
+        margin-top: 24px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+        border-radius: 12px;
+        border: 1px solid transparent;
+        padding: 11px 16px;
+        font-weight: 700;
+        font-size: 0.95rem;
+    }
+
+    .btn-primary { background: var(--brand); color: #fff; }
+    .btn-ghost {
+        background: #fff;
+        color: var(--ink);
+        border-color: var(--line);
+    }
+
+    .hero-side {
+        padding: 24px;
+        display: grid;
+        gap: 12px;
+        align-content: start;
+    }
+
+    .mini-card {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: var(--panel);
+        padding: 16px;
+    }
+
+    .metric {
+        font-family: "Plus Jakarta Sans", sans-serif;
+        font-size: 1.7rem;
+        font-weight: 800;
+        color: var(--brand);
+        line-height: 1;
+        margin-bottom: 6px;
+    }
+
+    .muted { color: var(--ink-soft); }
+
+    .slider-wrap {
+        position: relative;
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        background: var(--panel-strong);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+    }
+
+    #slider {
+        margin-bottom: 8px;
+        padding-bottom: 36px;
+        border-bottom: 1px solid rgba(214, 208, 196, 0.8);
+    }
+
+    .slider-track {
+        display: flex;
+        transition: transform 0.45s ease;
+        will-change: transform;
+    }
+
+    .slide {
+        min-width: 100%;
+        padding: 28px 30px;
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 18px;
+        align-items: center;
+        background:
+            radial-gradient(circle at 80% 25%, rgba(31, 77, 61, 0.12) 0%, rgba(31, 77, 61, 0) 42%),
+            linear-gradient(180deg, #fffdf8 0%, #f7f3ea 100%);
+    }
+
+    .slide-kicker {
+        display: inline-block;
+        margin-bottom: 10px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: #efe8dc;
+        color: var(--accent);
+        font-size: 0.78rem;
+        font-weight: 700;
+    }
+
+    .slide h3 {
+        font-size: clamp(1.4rem, 2.3vw, 2rem);
+        margin-bottom: 8px;
+    }
+
+    .slide p {
+        color: var(--ink-soft);
+        line-height: 1.6;
+        max-width: 52ch;
+    }
+
+    .slide-aside {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.75);
+        padding: 14px;
+        display: grid;
+        gap: 10px;
+    }
+
+    .slide-aside strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 1.05rem;
+    }
+
+    .slide-media {
+        width: 100%;
+        height: 168px;
+        object-fit: cover;
+        border-radius: 12px;
+        border: 1px solid var(--line);
+        background: #f2eee6;
+    }
+
+    .slider-controls {
+        position: absolute;
+        right: 14px;
+        bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 2;
+    }
+
+    .slider-btn {
+        width: 34px;
+        height: 34px;
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--ink);
+        border-radius: 10px;
+        font-weight: 800;
+        cursor: pointer;
+    }
+
+    .slider-dots {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .slider-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #c9c2b5;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+    }
+
+    .slider-dot.active { background: var(--brand); }
+
+    section { padding: 30px 0; }
+
+    .section-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 14px;
+        margin-bottom: 16px;
+    }
+
+    .section-head h2 { font-size: clamp(1.35rem, 2.2vw, 2rem); }
+
+    .section-note {
+        color: var(--ink-soft);
+        font-size: 0.95rem;
+        max-width: 48ch;
+    }
+
+    .grid-3 {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .grid-4 {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .feature-card,
+    .plan-card,
+    .simple-card {
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: var(--panel-strong);
+        padding: 20px;
+    }
+
+    .feature-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        background: #efe8dc;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--accent);
+        font-weight: 800;
+        margin-bottom: 12px;
+    }
+
+    .feature-card h3 {
+        font-size: 1.05rem;
+        margin-bottom: 7px;
+    }
+
+    .feature-card p {
+        color: var(--ink-soft);
+        line-height: 1.5;
+        font-size: 0.94rem;
+    }
+
+    .panel-grid {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .panel-shot {
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: var(--panel-strong);
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .panel-shot img {
+        width: 100%;
+        height: 220px;
+        object-fit: cover;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        background: #f2eee6;
+    }
+
+    .panel-shot h3 {
+        font-size: 1.05rem;
+        margin-bottom: 6px;
+    }
+
+    .panel-shot p {
+        color: var(--ink-soft);
+        line-height: 1.5;
+        font-size: 0.94rem;
+    }
+
+    .plan-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .plan-card.highlight {
+        border: 1px solid rgba(31, 77, 61, 0.45);
+        box-shadow: 0 16px 36px rgba(31, 77, 61, 0.15);
+        background:
+            linear-gradient(180deg, rgba(216, 235, 227, 0.38), rgba(216, 235, 227, 0) 45%),
+            #ffffff;
+    }
+
+    .plan-badge {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        background: var(--brand);
+        color: #fff;
+        font-size: 0.72rem;
+        border-radius: 999px;
+        padding: 6px 9px;
+        font-weight: 700;
+    }
+
+    .plan-title {
+        font-size: 1.25rem;
+        padding-right: 105px;
+    }
+
+    .plan-desc {
+        color: var(--ink-soft);
+        min-height: 44px;
+        font-size: 0.94rem;
+    }
+
+    .plan-price {
+        font-family: "Plus Jakarta Sans", sans-serif;
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--ink);
+    }
+
+    .plan-price span {
+        font-size: 0.9rem;
+        color: var(--ink-soft);
+        font-weight: 600;
+    }
+
+    .plan-limits {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .plan-limit {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--panel);
+        padding: 10px;
+    }
+
+    .plan-limit strong {
+        display: block;
+        font-size: 1.1rem;
+        margin-bottom: 3px;
+    }
+
+    .feature-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 8px;
+    }
+
+    .feature-list li {
+        font-size: 0.92rem;
+        color: var(--ink-soft);
+        position: relative;
+        padding-left: 24px;
+        line-height: 1.45;
+    }
+
+    .feature-list li::before {
+        content: "✓";
+        position: absolute;
+        left: 0;
+        top: 0.1em;
+        font-weight: 800;
+        color: var(--brand);
+    }
+
+    .list-2 {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .simple-card h4 {
+        margin-bottom: 6px;
+        font-size: 1.03rem;
+    }
+
+    .simple-card p {
+        color: var(--ink-soft);
+        line-height: 1.5;
+        font-size: 0.93rem;
+    }
+
+    footer {
+        padding: 28px 0 44px;
+        color: var(--ink-soft);
+        font-size: 0.9rem;
+        border-top: 1px solid rgba(214, 208, 196, 0.8);
+        margin-top: 18px;
+    }
+
+    @keyframes rise {
+        from { opacity: 0; transform: translateY(12px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 1040px) {
+        .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 900px) {
+        .nav { flex-direction: column; align-items: flex-start; gap: 10px; }
+        .hero-grid,
+        .grid-3,
+        .list-2,
+        .panel-grid { grid-template-columns: 1fr; }
+        .slide { grid-template-columns: 1fr; padding: 22px; }
+        .plan-title { padding-right: 0; }
+        .plan-badge {
+            position: static;
+            width: fit-content;
+            margin-bottom: 2px;
+        }
+    }
+
+    @media (max-width: 620px) {
+        .hero-main,
+        .hero-side,
+        .plan-card,
+        .feature-card,
+        .simple-card,
+        .panel-shot { padding: 16px; }
+
+        .grid-4 { grid-template-columns: 1fr; }
+        .section-head { flex-direction: column; align-items: flex-start; }
+    }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+<div class="nav-wrap">
+    <div class="container">
+        <nav class="nav">
+            <div class="brand">
+                <span class="brand-mark">AQ</span>
+                <span>{{ cms.headerBrand }}</span>
+            </div>
+            <div class="nav-links">
+                <a href="#slider">{{ ui.nav_slider }}</a>
+                <a href="#ozellikler">{{ ui.nav_features }}</a>
+                <a href="#panel">{{ ui.nav_panel }}</a>
+                <a href="#plans">{{ ui.nav_plans }}</a>
+                <a href="#references">{{ ui.nav_references }}</a>
+                <a href="{{ path('site_blog_index', {lang: currentLocale}) }}">{{ ui.nav_blog }}</a>
+                <a href="#contact">{{ ui.nav_contact }}</a>
+                <div class="lang-flags" role="group" aria-label="Language">
+                    {% for localeCode, localeLabel in availableLocales %}
+                        <a class="lang-flag {{ localeCode == currentLocale ? 'active' : '' }}" href="{{ path('site_home', {lang: localeCode}) }}" title="{{ localeLabel }}">
+                            {% if localeCode == 'tr' %}🇹🇷{% elseif localeCode == 'en' %}🇬🇧{% elseif localeCode == 'ar' %}🇸🇦{% elseif localeCode == 'ru' %}🇷🇺{% else %}🌐{% endif %}
+                        </a>
+                    {% endfor %}
+                </div>
+                <a href="{{ cms.headerCtaUrl }}" class="nav-cta">{{ cms.headerCtaText }}</a>
+            </div>
+        </nav>
+    </div>
+</div>
+
+<div class="container">
+    <section class="hero">
+        <div class="hero-grid">
+            <article class="panel hero-main">
+                <span class="eyebrow">{{ cms.heroEyebrow }}</span>
+                <h1>{{ cms.heroTitle }}</h1>
+                <p>{{ cms.heroDescription }}</p>
+                <div class="btn-row">
+                    <a href="{{ cms.heroPrimaryUrl }}" class="btn btn-primary">{{ cms.heroPrimaryText }}</a>
+                    <a href="{{ cms.heroSecondaryUrl }}" class="btn btn-ghost">{{ cms.heroSecondaryText }}</a>
+                </div>
+            </article>
+
+            <aside class="panel hero-side">
+                {% for card in ui.hero_cards %}
+                    <div class="mini-card">
+                        <div class="metric">{{ card.title }}</div>
+                        <p class="muted">{{ card.body }}</p>
+                    </div>
+                {% endfor %}
+            </aside>
+        </div>
+    </section>
+
+    {% set defaultSliderItems = [
+        {
+            title: ui.slider_defaults[0].title,
+            body: ui.slider_defaults[0].body
+        },
+        {
+            title: ui.slider_defaults[1].title,
+            body: ui.slider_defaults[1].body
+        },
+        {
+            title: ui.slider_defaults[2].title,
+            body: ui.slider_defaults[2].body
+        }
+    ] %}
+    {% set sliderItems = sliderItems|default([]) %}
+    {% if sliderItems|length < 3 %}
+        {% set sliderItems = sliderItems|merge(defaultSliderItems|slice(0, 3 - sliderItems|length)) %}
+    {% endif %}
+
+    <section id="slider">
+        <div class="section-head">
+            <h2>{{ ui.slider_title }}</h2>
+            <p class="section-note">{{ ui.slider_note }}</p>
+        </div>
+
+        <div class="slider-wrap js-home-slider" data-autoplay="true" data-interval="5500">
+            <div class="slider-track">
+                {% for item in sliderItems %}
+                    <article class="slide">
+                        <div>
+                            <span class="slide-kicker">{{ item.kicker|default('Slider ' ~ '%02d'|format(loop.index)) }}</span>
+                            <h3>{{ item.title }}</h3>
+                            <p>{{ item.body|nl2br }}</p>
+                        </div>
+                        <div class="slide-aside">
+                            <strong>{{ ui.slider_aside_title }}</strong>
+                            {% if item.imageUrl is defined and item.imageUrl is not empty %}
+                                <img class="slide-media" src="{{ item.imageUrl }}" alt="{{ item.title }}">
+                            {% endif %}
+                            <p class="muted">{{ item.note|default(ui.slider_note_default) }}</p>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+
+            <div class="slider-controls">
+                <button class="slider-btn" type="button" data-prev>&lt;</button>
+                <div class="slider-dots">
+                    {% for item in sliderItems %}
+                        <button class="slider-dot {{ loop.first ? 'active' : '' }}" type="button" data-slide-to="{{ loop.index0 }}"></button>
+                    {% endfor %}
+                </div>
+                <button class="slider-btn" type="button" data-next>&gt;</button>
+            </div>
+        </div>
+    </section>
+
+    <section id="ozellikler">
+        <div class="section-head">
+            <h2>{{ ui.features_title }}</h2>
+            <p class="section-note">{{ ui.features_note }}</p>
+        </div>
+        <div class="grid-4">
+            {% for feature in ui.features %}
+                <article class="feature-card">
+                    <div class="feature-icon">{{ '%02d'|format(loop.index) }}</div>
+                    <h3>{{ feature.title }}</h3>
+                    <p>{{ feature.body }}</p>
+                </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section id="panel">
+        <div class="section-head">
+            <h2>{{ ui.panel_title }}</h2>
+            <p class="section-note">{{ ui.panel_note }}</p>
+        </div>
+        <div class="panel-grid">
+            {% for shot in ui.panel_shots %}
+                <article class="panel-shot">
+                    <img src="{{ shot.image }}" alt="{{ shot.title }}">
+                    <div>
+                        <h3>{{ shot.title }}</h3>
+                        <p>{{ shot.body }}</p>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    {% set defaultPlanFeatures = [
+        ui.plan_features[0],
+        ui.plan_features[1],
+        ui.plan_features[2]
+    ] %}
+
+    <section id="plans">
+        <div class="section-head">
+            <h2>{{ ui.plans_title }}</h2>
+            <p class="section-note">{{ ui.plans_note }}</p>
+        </div>
+
+        <div class="grid-3">
+            {% if plans is not empty %}
+                {% for plan in plans %}
+                    {% set planFeatureIndex = loop.index0 < defaultPlanFeatures|length ? loop.index0 : (defaultPlanFeatures|length - 1) %}
+                    <article class="plan-card {{ loop.index == 2 ? 'highlight' : '' }}">
+                        {% if loop.index == 2 %}
+                            <span class="plan-badge">{{ ui.plans_badge }}</span>
+                        {% endif %}
+                        <h3 class="plan-title">{{ plan.name }}</h3>
+                        <p class="plan-desc">{{ plan.description ?: ui.plan_desc_fallback }}</p>
+                        <div class="plan-price">
+                            {{ plan.yearlyPrice }} TRY <span>{{ ui.plan_price_suffix }}</span>
+                        </div>
+
+                        <div class="plan-limits">
+                            <div class="plan-limit">
+                                <strong>{{ plan.maxRestaurants }}</strong>
+                                {{ ui.plan_limit_restaurant }}
+                            </div>
+                            <div class="plan-limit">
+                                <strong>{{ plan.maxUsers }}</strong>
+                                {{ ui.plan_limit_user }}
+                            </div>
+                        </div>
+
+                        <ul class="feature-list">
+                            {% for feature in defaultPlanFeatures[planFeatureIndex] %}
+                                <li>{{ feature }}</li>
+                            {% endfor %}
+                        </ul>
+
+                        <a href="{{ path('site_signup', {lang: currentLocale}) }}" class="btn {{ loop.index == 2 ? 'btn-primary' : 'btn-ghost' }}">{{ ui.plan_cta_choose }}</a>
+                    </article>
+                {% endfor %}
+            {% else %}
+                <article class="plan-card">
+                    <h3 class="plan-title">Free</h3>
+                    <p class="plan-desc">{{ ui.plan_free_desc }}</p>
+                    <div class="plan-price">0 TRY <span>{{ ui.plan_price_suffix }}</span></div>
+                    <div class="plan-limits">
+                        <div class="plan-limit"><strong>1</strong>{{ ui.plan_limit_restaurant }}</div>
+                        <div class="plan-limit"><strong>1</strong>{{ ui.plan_limit_user }}</div>
+                    </div>
+                    <ul class="feature-list">
+                        {% for feature in defaultPlanFeatures[0] %}<li>{{ feature }}</li>{% endfor %}
+                    </ul>
+                    <a href="{{ path('site_signup', {lang: currentLocale}) }}" class="btn btn-ghost">{{ ui.plan_cta_start }}</a>
+                </article>
+
+                <article class="plan-card highlight">
+                    <span class="plan-badge">{{ ui.plans_badge }}</span>
+                    <h3 class="plan-title">Premium</h3>
+                    <p class="plan-desc">{{ ui.plan_premium_desc }}</p>
+                    <div class="plan-price">2.900 TRY <span>{{ ui.plan_price_suffix }}</span></div>
+                    <div class="plan-limits">
+                        <div class="plan-limit"><strong>20</strong>{{ ui.plan_limit_restaurant }}</div>
+                        <div class="plan-limit"><strong>25</strong>{{ ui.plan_limit_user }}</div>
+                    </div>
+                    <ul class="feature-list">
+                        {% for feature in defaultPlanFeatures[1] %}<li>{{ feature }}</li>{% endfor %}
+                    </ul>
+                    <a href="{{ path('site_signup', {lang: currentLocale}) }}" class="btn btn-primary">{{ ui.plan_cta_offer }}</a>
+                </article>
+
+                <article class="plan-card">
+                    <h3 class="plan-title">Enterprise</h3>
+                    <p class="plan-desc">{{ ui.plan_enterprise_desc }}</p>
+                    <div class="plan-price">{{ ui.plan_price_custom }}</div>
+                    <div class="plan-limits">
+                        <div class="plan-limit"><strong>{{ ui.plan_unlimited }}</strong>{{ ui.plan_limit_restaurant }}</div>
+                        <div class="plan-limit"><strong>{{ ui.plan_unlimited }}</strong>{{ ui.plan_limit_user }}</div>
+                    </div>
+                    <ul class="feature-list">
+                        {% for feature in defaultPlanFeatures[2] %}<li>{{ feature }}</li>{% endfor %}
+                    </ul>
+                    <a href="{{ path('site_signup', {lang: currentLocale}) }}" class="btn btn-ghost">{{ ui.plan_cta_meeting }}</a>
+                </article>
+            {% endif %}
+        </div>
+    </section>
+
+    <section id="references">
+        <div class="section-head">
+            <h2>{{ ui.references_title }}</h2>
+            <p class="section-note">{{ ui.references_note }}</p>
+        </div>
+        <div class="list-2">
+            {% for reference in ui.references %}
+                <article class="simple-card">
+                    <h4>{{ reference.title }}</h4>
+                    <p>{{ reference.body }}</p>
+                </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section id="blog">
+        <div class="section-head">
+            <h2>{{ ui.nav_blog }}</h2>
+            <p class="section-note">{{ ui.blog_note }}</p>
+        </div>
+        <div class="grid-3">
+            {% if posts is not empty %}
+                {% for post in posts %}
+                    {% set postItem = postView[post.id] ?? {'title': post.title, 'body': post.body, 'metaDescription': post.metaDescription} %}
+                    <article class="simple-card">
+                        <h4>{{ postItem.title }}</h4>
+                        <p>{{ postItem.metaDescription ?: postItem.body|slice(0, 130) ~ '...' }}</p>
+                        <p class="muted" style="margin-top: 8px;">{{ post.viewCount }} {{ ui.reads }}</p>
+                        <a href="{{ path('site_blog_detail', {slug: post.slug, lang: currentLocale}) }}" class="btn btn-ghost" style="margin-top: 12px;">{{ ui.blog_read }}</a>
+                    </article>
+                {% endfor %}
+            {% else %}
+                <article class="simple-card">
+                    <h4>{{ ui.blog_empty_title }}</h4>
+                    <p>{{ ui.blog_empty_body }}</p>
+                </article>
+            {% endif %}
+        </div>
+        <div style="margin-top: 14px;">
+            <a href="{{ path('site_blog_index', {lang: currentLocale}) }}" class="btn btn-primary">{{ ui.all_blogs }}</a>
+        </div>
+    </section>
+
+    <section id="contact">
+        <div class="section-head">
+            <h2>{{ ui.contact_title }}</h2>
+            <p class="section-note">{{ cms.contactNote }}</p>
+        </div>
+        <article class="simple-card">
+            <h4>{{ cms.contactTitle }}</h4>
+            <p>{{ ui.contact_email }}: <strong>{{ cms.contactEmail }}</strong></p>
+            <p>{{ ui.contact_phone }}: <strong>{{ cms.contactPhone }}</strong></p>
+        </article>
+    </section>
+
+    <footer>
+        {{ cms.footerText }}
+    </footer>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    window.addEventListener('DOMContentLoaded', function () {
+        const slider = document.querySelector('.js-home-slider');
+        if (!slider) {
+            return;
+        }
+
+        const track = slider.querySelector('.slider-track');
+        const slides = Array.from(slider.querySelectorAll('.slide'));
+        const dots = Array.from(slider.querySelectorAll('[data-slide-to]'));
+        const prevBtn = slider.querySelector('[data-prev]');
+        const nextBtn = slider.querySelector('[data-next]');
+        const autoPlay = slider.dataset.autoplay === 'true';
+        const intervalMs = Number(slider.dataset.interval || 5500);
+
+        let index = 0;
+        let timer = null;
+
+        const setIndex = (nextIndex) => {
+            if (!slides.length) {
+                return;
+            }
+            index = (nextIndex + slides.length) % slides.length;
+            track.style.transform = `translateX(-${index * 100}%)`;
+            dots.forEach((dot, dotIndex) => dot.classList.toggle('active', dotIndex === index));
+        };
+
+        const start = () => {
+            if (!autoPlay || slides.length < 2) {
+                return;
+            }
+            stop();
+            timer = window.setInterval(() => setIndex(index + 1), intervalMs);
+        };
+
+        const stop = () => {
+            if (timer) {
+                window.clearInterval(timer);
+                timer = null;
+            }
+        };
+
+        prevBtn && prevBtn.addEventListener('click', () => {
+            setIndex(index - 1);
+            start();
+        });
+
+        nextBtn && nextBtn.addEventListener('click', () => {
+            setIndex(index + 1);
+            start();
+        });
+
+        dots.forEach((dot) => {
+            dot.addEventListener('click', () => {
+                setIndex(Number(dot.dataset.slideTo || 0));
+                start();
+            });
+        });
+
+        slider.addEventListener('mouseenter', stop);
+        slider.addEventListener('mouseleave', start);
+
+        setIndex(0);
+        start();
+    });
+</script>
+{% endblock %}

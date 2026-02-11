@@ -1,0 +1,113 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Super Admin - Blog{% endblock %}
+
+{% block body %}
+{% set ui = currentLocale == 'tr' ? {
+    title: 'Blog Yönetimi',
+    approval: 'Yorum Onayı',
+    description: 'Blog yazılarını yayınla, düzenle ve listele.',
+    editing: 'Düzenlenen dil',
+    new_post: 'Yeni Blog Yazısı',
+    posts: 'Blog Yazıları',
+    empty: 'Blog yazısı yok.',
+    publish: 'Yayınla',
+    live: 'Yayında',
+    update: 'Güncelle',
+    delete: 'Sil',
+    add: 'Yazı Ekle'
+} : {
+    title: 'Blog Management',
+    approval: 'Comment Review',
+    description: 'Publish, edit and list blog posts.',
+    editing: 'Editing locale',
+    new_post: 'New Blog Post',
+    posts: 'Blog Posts',
+    empty: 'No blog posts yet.',
+    publish: 'Publish',
+    live: 'Live',
+    update: 'Update',
+    delete: 'Delete',
+    add: 'Add Post'
+} %}
+<div class="row g-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">{{ ui.title }}</h4>
+                <div class="d-flex align-items-center gap-2">
+                    <a href="{{ path('admin_super_blog_comments', {lang: currentLocale}) }}" class="btn btn-sm btn-outline-secondary">
+                        {{ ui.approval }}{% if pendingCommentCount > 0 %} ({{ pendingCommentCount }}){% endif %}
+                    </a>
+                    <span class="badge text-bg-primary">Super Admin</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="text-muted">{{ ui.description }}</div>
+                <div class="small text-primary mt-2">{{ ui.editing }}: {{ currentLocale|upper }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card h-100">
+            <div class="card-header"><strong>{{ ui.new_post }}</strong></div>
+            <div class="card-body">
+                <form method="post" action="{{ path('admin_super_blog_create') }}" class="row g-2">
+                    <input type="hidden" name="_token" value="{{ csrf_token('super_blog_create') }}">
+                    <input type="hidden" name="lang" value="{{ currentLocale }}">
+                    <div class="col-12"><input class="form-control" name="title" placeholder="Baslik" required></div>
+                    <div class="col-12"><textarea class="form-control" rows="5" name="body" placeholder="Icerik" required></textarea></div>
+                    <div class="col-md-6"><input class="form-control" name="meta_title" placeholder="Meta title"></div>
+                    <div class="col-md-6"><input class="form-control" name="meta_description" placeholder="Meta description"></div>
+                    <div class="col-12 form-check ms-2">
+                        <input class="form-check-input" type="checkbox" id="blog_published_create" name="is_published" checked>
+                        <label class="form-check-label" for="blog_published_create">{{ ui.publish }}</label>
+                    </div>
+                    <div class="col-12"><button class="btn btn-primary">{{ ui.add }}</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="card h-100">
+            <div class="card-header"><strong>{{ ui.posts }}</strong></div>
+            <div class="card-body">
+                {% for post in posts %}
+                    {% set row = postView[post.id] ?? {'title': post.title, 'body': post.body, 'metaTitle': post.metaTitle, 'metaDescription': post.metaDescription} %}
+                    <div class="border rounded p-3 mb-3">
+                        <form method="post" action="{{ path('admin_super_blog_update', {id: post.id}) }}" class="row g-2">
+                            <input type="hidden" name="_token" value="{{ csrf_token('super_blog_update_' ~ post.id) }}">
+                            <input type="hidden" name="lang" value="{{ currentLocale }}">
+                            <div class="col-md-8">
+                                <input class="form-control form-control-sm" name="title" value="{{ row.title }}" required>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-center">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="blog_published_{{ post.id }}" name="is_published" {{ post.isPublished ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="blog_published_{{ post.id }}">{{ ui.live }}</label>
+                                </div>
+                            </div>
+                            <div class="col-12"><textarea class="form-control form-control-sm" rows="4" name="body" required>{{ row.body }}</textarea></div>
+                            <div class="col-md-6"><input class="form-control form-control-sm" name="meta_title" value="{{ row.metaTitle }}" placeholder="Meta title"></div>
+                            <div class="col-md-6"><input class="form-control form-control-sm" name="meta_description" value="{{ row.metaDescription }}" placeholder="Meta description"></div>
+                            <div class="col-12 d-flex justify-content-between align-items-center">
+                                <div class="small text-muted">Slug: {{ post.slug }}{% if post.publishedAt %} | Yayin: {{ post.publishedAt|date('d.m.Y H:i') }}{% endif %}</div>
+                                <button class="btn btn-sm btn-primary">{{ ui.update }}</button>
+                            </div>
+                        </form>
+                        <form method="post" action="{{ path('admin_super_blog_delete', {id: post.id}) }}" class="mt-2 text-end">
+                            <input type="hidden" name="_token" value="{{ csrf_token('super_blog_delete_' ~ post.id) }}">
+                            <input type="hidden" name="lang" value="{{ currentLocale }}">
+                            <button class="btn btn-sm btn-outline-danger">{{ ui.delete }}</button>
+                        </form>
+                    </div>
+                {% else %}
+                    <div class="text-muted">{{ ui.empty }}</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

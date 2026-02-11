@@ -3,42 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <style>
-        body { font-family: Georgia, 'Times New Roman', serif; margin: 0; padding: 20px; }
-        .grid { display: flex; flex-wrap: wrap; gap: 20px; }
+        @page { margin: 10mm; }
+        body { margin: 0; font-family: Georgia, 'Times New Roman', serif; background: {{ theme.background }}; }
+        .grid { font-size: 0; }
         .label {
-            width: 45%;
-            border: 1px solid #c9a96e;
-            padding: 25px;
+            display: inline-block;
+            vertical-align: top;
+            width: 61mm;
+            height: 90mm;
+            margin: 2mm;
+            border: 0.7mm solid {{ theme.primary }};
+            box-sizing: border-box;
+            padding: 4mm;
             text-align: center;
             page-break-inside: avoid;
+            background: #fff;
+            position: relative;
         }
-        .divider { width: 40px; height: 1px; background: #c9a96e; margin: 10px auto; }
-        .restaurant-name { font-size: 14px; font-style: italic; color: #333; }
-        .qr-image { width: 130px; height: 130px; margin: 15px auto; }
-        .table-number { font-size: 22px; color: #333; }
-        .table-label { font-size: 11px; color: #666; font-style: italic; }
-        .scan-text { font-size: 9px; color: #999; margin-top: 8px; }
+        .line { width: 80%; height: 0.4mm; margin: 0 auto 2mm; background: {{ theme.primary }}; }
+        .logo { width: 12mm; height: 12mm; object-fit: contain; display: block; margin: 0 auto 1.5mm; }
+        .name { font-size: 10pt; font-style: italic; color: {{ theme.primaryDark }}; }
+        .qr-wrap { width: 37mm; height: 37mm; margin: 3mm auto; padding: 1.3mm; border: 0.8mm solid {{ theme.divider }}; }
+        .qr { width: 100%; height: 100%; display: block; }
+        .table {
+            position: absolute;
+            left: {{ theme.tableBadge.posX }}%;
+            top: {{ theme.tableBadge.posY }}%;
+            transform: translate(-50%, -50%);
+            margin: 0;
+            font-size: 12pt;
+            font-weight: 700;
+            color: {{ theme.tableBadge.textColor }};
+            background: {{ theme.tableBadge.bgColor }};
+            border: {{ theme.tableBadge.borderWidth }}px solid {{ theme.tableBadge.borderColor }};
+            border-radius: {{ theme.tableBadge.borderRadius }}px;
+            padding: 2mm 4mm;
+        }
+        .hint { font-size: 8pt; color: {{ theme.text }}; margin-top: 1mm; }
+        .scan { font-size: 7pt; color: {{ theme.muted }}; margin-top: 1.5mm; letter-spacing: 0.2mm; }
     </style>
 </head>
 <body>
-    <div class="grid">
-        {% for qr in qrCodes %}
-        <div class="label">
-            <div class="restaurant-name">{{ restaurant.name }}</div>
-            <div class="divider"></div>
-            <div class="qr-image">
-                <img src="{{ qr.encodedUrl }}" alt="QR" style="width:130px;height:130px;">
-            </div>
-            {% if qr.tableNumber %}
-                <div class="table-number">Table {{ qr.tableNumber }}</div>
+<div class="grid">
+    {% for qr in qrCodes %}
+        <div class="label" {% if labelBackgroundDataMap[qr.uuid.toString] ?? null %}style="background-image:url('{{ labelBackgroundDataMap[qr.uuid.toString] }}');background-size:cover;background-position:center;"{% endif %}>
+            <div class="line"></div>
+            {% if restaurantLogoDataUri %}
+                <img class="logo" src="{{ restaurantLogoDataUri }}" alt="Logo">
             {% endif %}
-            {% if qr.tableLabel %}
-                <div class="table-label">{{ qr.tableLabel }}</div>
-            {% endif %}
-            <div class="divider"></div>
-            <div class="scan-text">Scan to view our menu</div>
+            <div class="name">{{ restaurant.name }}</div>
+            <div class="qr-wrap"><img class="qr" src="{{ qrImageDataMap[qr.uuid.toString] ?? '' }}" alt="QR"></div>
+            <div class="table">{{ qr.tableNumber ? 'Masa ' ~ qr.tableNumber : 'Menu' }}</div>
+            <div class="hint">{{ qr.tableLabel ?? 'Qr kodu okutunuz' }}</div>
+            <div class="line" style="margin-top: 2.5mm;"></div>
+            <div class="scan">Scan To View Our Menu</div>
         </div>
-        {% endfor %}
-    </div>
+    {% endfor %}
+</div>
 </body>
 </html>

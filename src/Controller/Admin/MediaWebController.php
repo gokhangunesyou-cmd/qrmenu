@@ -68,8 +68,7 @@ class MediaWebController extends AbstractController
             return new JsonResponse(['error' => 'Geçersiz dosya.'], 422);
         }
 
-        $imageSize = @getimagesize($file->getPathname());
-        $mimeType = $imageSize['mime'] ?? $file->getClientMimeType() ?? '';
+        $mimeType = $this->resolveMimeType($file);
 
         // Validate mime type
         $allowedMimes = ['image/jpeg', 'image/png', 'image/webp'];
@@ -79,22 +78,28 @@ class MediaWebController extends AbstractController
             ], 422);
         }
 
+        $fileSize = $this->resolveFileSize($file);
+
         // Validate file size (5MB)
         $maxSize = 5 * 1024 * 1024;
-        if ($file->getSize() > $maxSize) {
+        if ($fileSize > $maxSize) {
             return new JsonResponse([
                 'error' => 'Dosya boyutu 5MB\'dan büyük olamaz.',
             ], 422);
         }
 
         try {
-            $media = $this->uploadAndCreateMedia($file, $restaurant, $mimeType);
+            $media = $this->uploadAndCreateMedia($file, $restaurant, $mimeType, $fileSize);
+        } catch (\InvalidArgumentException $e) {
+            return new JsonResponse([
+                'error' => $e->getMessage(),
+            ], 422);
         } catch (\Throwable $e) {
-            $this->logger->error('Media upload failed', [
+            $this->logger->error(sprintf('Media upload failed [%s]: %s', $e::class, $e->getMessage()), [
                 'exception' => $e,
                 'filename' => $file->getClientOriginalName(),
                 'mimeType' => $mimeType,
-                'size' => $file->getSize(),
+                'size' => $fileSize,
             ]);
 
             return new JsonResponse([
@@ -162,6 +167,7 @@ class MediaWebController extends AbstractController
         UploadedFile $file,
         \App\Entity\Restaurant $restaurant,
         string $mimeType,
+        int $fileSize,
     ): Media
     {
         $extension = strtolower($file->getClientOriginalExtension());
@@ -177,7 +183,10 @@ class MediaWebController extends AbstractController
         $mediaUuid = \Ramsey\Uuid\Uuid::uuid7()->toString();
         $storagePath = sprintf('media/%s/%s.%s', $restaurant->getUuid()->toString(), $mediaUuid, $extension);
 
-        $fileContent = (string) file_get_contents($file->getPathname());
+        $fileContent = file_get_contents($file->getPathname());
+        if ($fileContent === false) {
+            throw new \RuntimeException('Uploaded file could not be read.');
+        }
 
         // Upload original to storage
         $this->storage->put($storagePath, $fileContent, $mimeType);
@@ -195,7 +204,7 @@ class MediaWebController extends AbstractController
             $file->getClientOriginalName(),
             $storagePath,
             $mimeType,
-            $file->getSize(),
+            $fileSize,
             $restaurant,
         );
 
@@ -240,6 +249,8 @@ class MediaWebController extends AbstractController
             }
             $newWidth = (int) round($origWidth * $ratio);
             $newHeight = (int) round($origHeight * $ratio);
+            $newWidth = max(1, $newWidth);
+            $newHeight = max(1, $newHeight);
 
             $source = match ($mimeType) {
                 'image/jpeg' => function_exists('imagecreatefromjpeg') ? @imagecreatefromjpeg($file->getPathname()) : false,
@@ -280,6 +291,26 @@ class MediaWebController extends AbstractController
             $thumbPath = sprintf('media/%s/thumbs/%s.%s', $restaurantUuid, $mediaUuid, $extension);
             $this->storage->put($thumbPath, $thumbContent, $mimeType);
         }
+    }
+
+    private function resolveMimeType(UploadedFile $file): string
+    {
+        $imageSize = @getimagesize($file->getPathname());
+        if (is_array($imageSize) && isset($imageSize['mime']) && is_string($imageSize['mime'])) {
+            return $imageSize['mime'];
+        }
+
+        return $file->getClientMimeType();
+    }
+
+    private function resolveFileSize(UploadedFile $file): int
+    {
+        $size = @filesize($file->getPathname());
+        if (!is_int($size) || $size < 0) {
+            throw new \InvalidArgumentException('Dosya boyutu okunamadı.');
+        }
+
+        return $size;
     }
 
     private function getRestaurantOrThrow(): Restaurant

@@ -3,34 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <style>
-        body { font-family: Helvetica, Arial, sans-serif; margin: 0; padding: 20px; }
-        .grid { display: flex; flex-wrap: wrap; gap: 10px; }
+        @page { margin: 9mm; }
+        body { margin: 0; font-family: Helvetica, Arial, sans-serif; background: {{ theme.background }}; }
+        .grid { font-size: 0; }
         .label {
-            width: 30%;
-            padding: 15px;
+            display: inline-block;
+            vertical-align: top;
+            width: 62mm;
+            height: 90mm;
+            margin: 2mm;
+            border: 0.6mm dashed {{ theme.divider }};
+            border-radius: 2.5mm;
+            background: #fff;
+            box-sizing: border-box;
             text-align: center;
+            padding: 4mm;
             page-break-inside: avoid;
+            position: relative;
         }
-        .qr-image { width: 100px; height: 100px; margin: 0 auto; }
-        .table-number { font-size: 16px; font-weight: bold; margin-top: 8px; color: #000; }
-        .table-label { font-size: 9px; color: #666; }
+        .logo { width: 10mm; height: 10mm; object-fit: contain; display: block; margin: 0 auto 1mm; }
+        .name { font-size: 8.5pt; color: {{ theme.muted }}; text-transform: uppercase; letter-spacing: 0.3mm; }
+        .qr { width: 37mm; height: 37mm; display: block; margin: 4mm auto 2.5mm; }
+        .table {
+            position: absolute;
+            left: {{ theme.tableBadge.posX }}%;
+            top: {{ theme.tableBadge.posY }}%;
+            transform: translate(-50%, -50%);
+            margin: 0;
+            font-size: 12pt;
+            font-weight: 700;
+            color: {{ theme.tableBadge.textColor }};
+            background: {{ theme.tableBadge.bgColor }};
+            border: {{ theme.tableBadge.borderWidth }}px solid {{ theme.tableBadge.borderColor }};
+            border-radius: {{ theme.tableBadge.borderRadius }}px;
+            padding: 2mm 4mm;
+        }
+        .hint { font-size: 8pt; color: {{ theme.text }}; }
+        .url { font-size: 6.5pt; color: {{ theme.muted }}; margin-top: 2mm; word-break: break-all; }
     </style>
 </head>
 <body>
-    <div class="grid">
-        {% for qr in qrCodes %}
-        <div class="label">
-            <div class="qr-image">
-                <img src="{{ qr.encodedUrl }}" alt="QR" style="width:100px;height:100px;">
-            </div>
-            {% if qr.tableNumber %}
-                <div class="table-number">{{ qr.tableNumber }}</div>
+<div class="grid">
+    {% for qr in qrCodes %}
+        <div class="label" {% if labelBackgroundDataMap[qr.uuid.toString] ?? null %}style="background-image:url('{{ labelBackgroundDataMap[qr.uuid.toString] }}');background-size:cover;background-position:center;"{% endif %}>
+            {% if restaurantLogoDataUri %}
+                <img class="logo" src="{{ restaurantLogoDataUri }}" alt="Logo">
             {% endif %}
-            {% if qr.tableLabel %}
-                <div class="table-label">{{ qr.tableLabel }}</div>
-            {% endif %}
+            <div class="name">{{ restaurant.name }}</div>
+            <img class="qr" src="{{ qrImageDataMap[qr.uuid.toString] ?? '' }}" alt="QR">
+            <div class="table">{{ qr.tableNumber ? qr.tableNumber : 'MENU' }}</div>
+            <div class="hint">{{ qr.tableLabel ?? 'Masa menusune ulasmak icin okutun' }}</div>
+            <div class="url">{{ qr.encodedUrl }}</div>
         </div>
-        {% endfor %}
-    </div>
+    {% endfor %}
+</div>
 </body>
 </html>

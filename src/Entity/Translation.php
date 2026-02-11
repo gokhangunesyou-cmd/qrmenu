@@ -2,9 +2,10 @@
 
 namespace App\Entity;
 
+use App\Repository\TranslationRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: TranslationRepository::class)]
 #[ORM\Table(name: 'translations')]
 #[ORM\UniqueConstraint(name: 'uq_translation_entity_locale_field', columns: ['entity_type', 'entity_id', 'locale', 'field'])]
 #[ORM\Index(columns: ['entity_type', 'entity_id', 'locale'], name: 'idx_translations_lookup')]

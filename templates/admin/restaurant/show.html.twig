@@ -1,16 +1,148 @@
 {% extends 'admin/base.html.twig' %}
 
-{% block title %}Restoran Profili{% endblock %}
+{% set ui = {
+    tr: {
+        title: 'Restoran Profili',
+        subtitle: 'Mekanın görünürlüğünü ve temel bilgilerini yönetin.',
+        edit: 'Düzenle',
+        general: 'Genel Bilgiler',
+        name: 'Restoran Adı',
+        slug: 'Slug',
+        description: 'Açıklama',
+        phone: 'Telefon',
+        email: 'E-posta',
+        address: 'Adres',
+        city: 'Şehir',
+        country_code: 'Ülke Kodu',
+        location: 'Konum',
+        social: 'Sosyal Medya / Harita',
+        status: 'Durum',
+        active: 'Aktif',
+        passive: 'Pasif',
+        created_at: 'Oluşturulma Tarihi',
+        logo: 'Logo',
+        logo_empty: 'Logo yüklenmemiş',
+        cover: 'Kapak Fotoğrafı',
+        cover_empty: 'Kapak fotoğrafı yüklenmemiş',
+        cover_alt: 'Kapak',
+        logo_alt: 'Logo'
+    },
+    en: {
+        title: 'Restaurant Profile',
+        subtitle: 'Manage visibility and basic information.',
+        edit: 'Edit',
+        general: 'General Information',
+        name: 'Restaurant Name',
+        slug: 'Slug',
+        description: 'Description',
+        phone: 'Phone',
+        email: 'Email',
+        address: 'Address',
+        city: 'City',
+        country_code: 'Country Code',
+        location: 'Location',
+        social: 'Social Media / Map',
+        status: 'Status',
+        active: 'Active',
+        passive: 'Inactive',
+        created_at: 'Created At',
+        logo: 'Logo',
+        logo_empty: 'No logo uploaded',
+        cover: 'Cover Photo',
+        cover_empty: 'No cover photo uploaded',
+        cover_alt: 'Cover',
+        logo_alt: 'Logo'
+    },
+    ar: {
+        title: 'ملف المطعم',
+        subtitle: 'إدارة الظهور والمعلومات الأساسية.',
+        edit: 'تعديل',
+        general: 'معلومات عامة',
+        name: 'اسم المطعم',
+        slug: 'المعرّف',
+        description: 'الوصف',
+        phone: 'الهاتف',
+        email: 'البريد الإلكتروني',
+        address: 'العنوان',
+        city: 'المدينة',
+        country_code: 'رمز الدولة',
+        location: 'الموقع',
+        social: 'وسائل التواصل / الخريطة',
+        status: 'الحالة',
+        active: 'نشط',
+        passive: 'غير نشط',
+        created_at: 'تاريخ الإنشاء',
+        logo: 'الشعار',
+        logo_empty: 'لم يتم رفع شعار',
+        cover: 'صورة الغلاف',
+        cover_empty: 'لم يتم رفع صورة الغلاف',
+        cover_alt: 'الغلاف',
+        logo_alt: 'الشعار'
+    },
+    ru: {
+        title: 'Профиль ресторана',
+        subtitle: 'Управляйте видимостью и базовой информацией.',
+        edit: 'Редактировать',
+        general: 'Общая информация',
+        name: 'Название ресторана',
+        slug: 'Слаг',
+        description: 'Описание',
+        phone: 'Телефон',
+        email: 'Email',
+        address: 'Адрес',
+        city: 'Город',
+        country_code: 'Код страны',
+        location: 'Локация',
+        social: 'Соцсети / Карта',
+        status: 'Статус',
+        active: 'Активно',
+        passive: 'Неактивно',
+        created_at: 'Дата создания',
+        logo: 'Логотип',
+        logo_empty: 'Логотип не загружен',
+        cover: 'Обложка',
+        cover_empty: 'Обложка не загружена',
+        cover_alt: 'Обложка',
+        logo_alt: 'Логотип'
+    }
+}[currentLocale] ?? {
+    title: 'Restaurant Profile',
+    subtitle: 'Manage visibility and basic information.',
+    edit: 'Edit',
+    general: 'General Information',
+    name: 'Restaurant Name',
+    slug: 'Slug',
+    description: 'Description',
+    phone: 'Phone',
+    email: 'Email',
+    address: 'Address',
+    city: 'City',
+    country_code: 'Country Code',
+    location: 'Location',
+    social: 'Social Media / Map',
+    status: 'Status',
+    active: 'Active',
+    passive: 'Inactive',
+    created_at: 'Created At',
+    logo: 'Logo',
+    logo_empty: 'No logo uploaded',
+    cover: 'Cover Photo',
+    cover_empty: 'No cover photo uploaded',
+    cover_alt: 'Cover',
+    logo_alt: 'Logo'
+} %}
+
+{% block title %}{{ ui.title }}{% endblock %}
 
 {% block body %}
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="mb-1">Restoran Profili</h2>
-            <div class="text-muted">Mekanın görünürlüğünü ve temel bilgilerini yönetin.</div>
+            <h2 class="mb-1">{{ ui.title }}</h2>
+            <div class="text-muted">{{ ui.subtitle }}</div>
         </div>
         <a href="{{ path('admin_restaurant_edit') }}" class="btn btn-primary">
-            <i class="bi bi-pencil"></i> Düzenle
+            <i class="bi bi-pencil"></i> {{ ui.edit }}
         </a>
     </div>
 
@@ -25,50 +157,80 @@
         <div class="col-md-8">
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5 class="mb-0">Genel Bilgiler</h5>
+                    <h5 class="mb-0">{{ ui.general }}</h5>
                 </div>
                 <div class="card-body">
                     <table class="table table-borderless">
                         <tr>
-                            <th style="width: 200px;">Restoran Adı</th>
+                            <th style="width: 200px;">{{ ui.name }}</th>
                             <td>{{ restaurant.name }}</td>
                         </tr>
                         <tr>
-                            <th>Slug</th>
+                            <th>{{ ui.slug }}</th>
                             <td><code>{{ restaurant.slug }}</code></td>
                         </tr>
                         <tr>
-                            <th>Açıklama</th>
+                            <th>{{ ui.description }}</th>
                             <td>{{ restaurant.description|default('-') }}</td>
                         </tr>
                         <tr>
-                            <th>Telefon</th>
+                            <th>{{ ui.phone }}</th>
                             <td>{{ restaurant.phone|default('-') }}</td>
                         </tr>
                         <tr>
-                            <th>E-posta</th>
+                            <th>{{ ui.email }}</th>
                             <td>{{ restaurant.email|default('-') }}</td>
                         </tr>
                         <tr>
-                            <th>Adres</th>
+                            <th>{{ ui.address }}</th>
                             <td>{{ restaurant.address|default('-') }}</td>
                         </tr>
                         <tr>
-                            <th>Şehir</th>
+                            <th>{{ ui.city }}</th>
                             <td>{{ restaurant.city|default('-') }}</td>
                         </tr>
                         <tr>
-                            <th>Durum</th>
+                            <th>{{ ui.country_code }}</th>
+                            <td>{{ restaurant.countryCode|default('-') }}</td>
+                        </tr>
+                        <tr>
+                            <th>{{ ui.location }}</th>
                             <td>
-                                {% if restaurant.isActive %}
-                                    <span class="badge bg-success">Aktif</span>
+                                {% if restaurant.latitude and restaurant.longitude %}
+                                    {{ restaurant.latitude }}, {{ restaurant.longitude }}
                                 {% else %}
-                                    <span class="badge bg-secondary">Pasif</span>
+                                    -
                                 {% endif %}
                             </td>
                         </tr>
                         <tr>
-                            <th>Oluşturulma Tarihi</th>
+                            <th>{{ ui.social }}</th>
+                            <td>
+                                {% if socialLinks is not empty %}
+                                    <div class="d-flex flex-column gap-1">
+                                        {% for link in socialLinks %}
+                                            <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer">
+                                                {{ link.platform.value|replace({'_': ' '})|title }}
+                                            </a>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>{{ ui.status }}</th>
+                            <td>
+                                {% if restaurant.isActive %}
+                                    <span class="badge bg-success">{{ ui.active }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ ui.passive }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>{{ ui.created_at }}</th>
                             <td>{{ restaurant.createdAt|date('d.m.Y H:i') }}</td>
                         </tr>
                     </table>
@@ -79,15 +241,15 @@
         <div class="col-md-4">
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5 class="mb-0">Logo</h5>
+                    <h5 class="mb-0">{{ ui.logo }}</h5>
                 </div>
                 <div class="card-body text-center">
                     {% if restaurant.logoMedia %}
-                        <img src="{{ media_url(restaurant.logoMedia.storagePath) }}" alt="Logo" class="img-fluid rounded" style="max-height: 150px;">
+                        <img src="{{ media_url(restaurant.logoMedia.storagePath) }}" alt="{{ ui.logo_alt }}" class="img-fluid rounded" style="max-height: 150px;">
                     {% else %}
                         <div class="text-muted py-4">
                             <i class="bi bi-image" style="font-size: 3rem;"></i>
-                            <p class="mt-2 mb-0">Logo yüklenmemiş</p>
+                            <p class="mt-2 mb-0">{{ ui.logo_empty }}</p>
                         </div>
                     {% endif %}
                 </div>
@@ -95,15 +257,15 @@
 
             <div class="card">
                 <div class="card-header">
-                    <h5 class="mb-0">Kapak Fotoğrafı</h5>
+                    <h5 class="mb-0">{{ ui.cover }}</h5>
                 </div>
                 <div class="card-body text-center">
                     {% if restaurant.coverMedia %}
-                        <img src="{{ media_url(restaurant.coverMedia.storagePath) }}" alt="Kapak" class="img-fluid rounded">
+                        <img src="{{ media_url(restaurant.coverMedia.storagePath) }}" alt="{{ ui.cover_alt }}" class="img-fluid rounded">
                     {% else %}
                         <div class="text-muted py-4">
                             <i class="bi bi-image" style="font-size: 3rem;"></i>
-                            <p class="mt-2 mb-0">Kapak fotoğrafı yüklenmemiş</p>
+                            <p class="mt-2 mb-0">{{ ui.cover_empty }}</p>
                         </div>
                     {% endif %}
                 </div>

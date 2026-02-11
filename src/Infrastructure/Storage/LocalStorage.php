@@ -33,11 +33,20 @@ final class LocalStorage implements StorageInterface
         $fullPath = $this->toFilesystemPath($path);
         $dir = dirname($fullPath);
 
-        if (!is_dir($dir)) {
-            mkdir($dir, 0775, true);
+        if (!is_dir($dir) && !@mkdir($dir, 0777, true) && !is_dir($dir)) {
+            throw new \RuntimeException(sprintf('Upload directory could not be created: %s', $dir));
         }
 
-        file_put_contents($fullPath, $contents);
+        if (!is_writable($dir)) {
+            @chmod($dir, 0777);
+        }
+        if (!is_writable($dir)) {
+            throw new \RuntimeException(sprintf('Upload directory is not writable: %s', $dir));
+        }
+
+        if (file_put_contents($fullPath, $contents) === false) {
+            throw new \RuntimeException(sprintf('File could not be written: %s', $fullPath));
+        }
     }
 
     public function exists(string $path): bool

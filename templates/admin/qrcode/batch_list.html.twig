@@ -1,0 +1,132 @@
+{% extends 'admin/base.html.twig' %}
+
+{% set ui = {
+    tr: {
+        title: 'QR PDF Liste',
+        page_title: 'PDF Liste Sayfası',
+        new_batch: 'Yeni Üretim',
+        qr_list: 'QR Listesi',
+        preview_download: 'Önizleme + İndirme',
+        items: 'adet',
+        empty: 'Henüz liste yok. QR + PDF üretimi yaptıktan sonra burada görünecek.',
+        preview: 'Önizleme',
+        table: 'Masa',
+        pdf: 'PDF',
+        table_label: 'Masa Etiketi',
+        pdf_download: 'PDF İndir'
+    },
+    en: {
+        title: 'QR PDF List',
+        page_title: 'PDF List Page',
+        new_batch: 'New Batch',
+        qr_list: 'QR List',
+        preview_download: 'Preview + Download',
+        items: 'items',
+        empty: 'No list yet. It will appear here after generating QR + PDF.',
+        preview: 'Preview',
+        table: 'Table',
+        pdf: 'PDF',
+        table_label: 'Table Label',
+        pdf_download: 'Download PDF'
+    },
+    ar: {
+        title: 'قائمة QR PDF',
+        page_title: 'صفحة قائمة PDF',
+        new_batch: 'إنتاج جديد',
+        qr_list: 'قائمة QR',
+        preview_download: 'معاينة + تنزيل',
+        items: 'عنصر',
+        empty: 'لا توجد قائمة بعد. ستظهر هنا بعد إنشاء QR وPDF.',
+        preview: 'المعاينة',
+        table: 'طاولة',
+        pdf: 'PDF',
+        table_label: 'تسمية الطاولة',
+        pdf_download: 'تنزيل PDF'
+    },
+    ru: {
+        title: 'Список QR PDF',
+        page_title: 'Страница списка PDF',
+        new_batch: 'Новая генерация',
+        qr_list: 'Список QR',
+        preview_download: 'Предпросмотр + скачивание',
+        items: 'шт.',
+        empty: 'Списка пока нет. Он появится после генерации QR + PDF.',
+        preview: 'Предпросмотр',
+        table: 'Стол',
+        pdf: 'PDF',
+        table_label: 'Метка стола',
+        pdf_download: 'Скачать PDF'
+    }
+}[currentLocale] ?? {
+    title: 'QR PDF List',
+    page_title: 'PDF List Page',
+    new_batch: 'New Batch',
+    qr_list: 'QR List',
+    preview_download: 'Preview + Download',
+    items: 'items',
+    empty: 'No list yet. It will appear here after generating QR + PDF.',
+    preview: 'Preview',
+    table: 'Table',
+    pdf: 'PDF',
+    table_label: 'Table Label',
+    pdf_download: 'Download PDF'
+} %}
+
+{% block title %}{{ ui.title }}{% endblock %}
+
+{% block body %}
+<div class="container">
+    {% for type in ['success', 'error'] %}
+        {% for message in app.flashes(type) %}
+            <div class="alert alert-{{ type == 'error' ? 'danger' : type }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>{{ ui.page_title }}</h2>
+        <div class="d-flex gap-2">
+            <a href="{{ path('admin_qrcode_create') }}" class="btn btn-outline-primary"><i class="bi bi-plus-circle"></i> {{ ui.new_batch }}</a>
+            <a href="{{ path('admin_qrcode_index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> {{ ui.qr_list }}</a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-table"></i> {{ ui.preview_download }} ({{ batchResults|length }} {{ ui.items }})</h5>
+        </div>
+        <div class="card-body p-0">
+            {% if batchResults is empty %}
+                <div class="p-4 text-muted">{{ ui.empty }}</div>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover mb-0 align-middle">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>{{ ui.preview }}</th>
+                                <th>{{ ui.table }}</th>
+                                <th>{{ ui.pdf }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for row in batchResults %}
+                            <tr>
+                                <td>{{ row.row }}</td>
+                                <td>
+                                    <img src="{{ row.previewUrl }}" alt="QR" style="width:82px;height:82px;object-fit:cover;border:1px solid #dbe2ea;border-radius:8px;background:#fff;">
+                                </td>
+                                <td>{{ row.tableNumber ? (ui.table ~ ' ' ~ row.tableNumber) : ui.table_label }}</td>
+                                <td><a href="{{ row.downloadUrl }}" class="btn btn-sm btn-success"><i class="bi bi-download"></i> {{ ui.pdf_download }}</a></td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

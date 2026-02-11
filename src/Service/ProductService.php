@@ -277,14 +277,41 @@ class ProductService
      */
     private function syncImages(Product $product, array $mediaUuids, Restaurant $restaurant): void
     {
-        // Remove existing images
+        $normalizedUuids = [];
+        foreach ($mediaUuids as $uuid) {
+            if (!is_string($uuid)) {
+                continue;
+            }
+            $trimmed = trim($uuid);
+            if ($trimmed === '' || isset($normalizedUuids[$trimmed])) {
+                continue;
+            }
+            $normalizedUuids[$trimmed] = true;
+        }
+        $desiredOrder = array_keys($normalizedUuids);
+
+        $currentByMediaUuid = [];
         foreach ($product->getImages() as $image) {
-            $product->removeImage($image);
-            $this->entityManager->remove($image);
+            $currentByMediaUuid[$image->getMedia()->getUuid()->toString()] = $image;
         }
 
-        // Add new images in the given order
-        foreach ($mediaUuids as $sortOrder => $mediaUuid) {
+        // Remove images that are no longer selected.
+        $desiredLookup = array_fill_keys($desiredOrder, true);
+        foreach ($product->getImages() as $image) {
+            $mediaUuid = $image->getMedia()->getUuid()->toString();
+            if (!isset($desiredLookup[$mediaUuid])) {
+                $product->removeImage($image);
+                $this->entityManager->remove($image);
+            }
+        }
+
+        // Keep existing links and only add missing ones.
+        foreach ($desiredOrder as $sortOrder => $mediaUuid) {
+            if (isset($currentByMediaUuid[$mediaUuid])) {
+                $currentByMediaUuid[$mediaUuid]->setSortOrder($sortOrder);
+                continue;
+            }
+
             $media = $this->mediaRepository->findOneByUuidAndRestaurant($mediaUuid, $restaurant);
             if ($media === null) {
                 throw new EntityNotFoundException('Media', $mediaUuid);

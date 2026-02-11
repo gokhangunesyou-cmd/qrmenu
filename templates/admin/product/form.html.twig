@@ -1,6 +1,193 @@
 {% extends 'admin/base.html.twig' %}
 
-{% block title %}{{ product ? 'Ürün Düzenle' : 'Yeni Ürün' }}{% endblock %}
+{% set ui = {
+    tr: {
+        title_edit: 'Ürün Düzenle',
+        title_new: 'Yeni Ürün',
+        heading_new: 'Yeni Ürün Ekle',
+        back: 'Geri',
+        language: 'Dil',
+        name: 'Ad',
+        description: 'Açıklama',
+        price: 'Fiyat (₺)',
+        category: 'Kategori',
+        category_placeholder: 'Kategori Seçin',
+        calories: 'Kalori',
+        optional: 'Opsiyonel',
+        allergens: 'Alerjenler',
+        active: 'Aktif',
+        featured: 'Öne Çıkan',
+        images: 'Görseller',
+        upload_image: 'Görsel Yükle',
+        media_library: 'Medya Kütüphanesi',
+        update: 'Güncelle',
+        create: 'Oluştur',
+        cancel: 'İptal',
+        uploading: 'Yükleniyor...',
+        uploaded: 'Yüklendi',
+        upload_error: 'Yükleme hatası',
+        upload_missing: 'Yükleme yanıtı eksik',
+        allergens_list: {
+            gluten: 'Gluten',
+            sut: 'Süt',
+            yumurta: 'Yumurta',
+            fistik: 'Fıstık',
+            soya: 'Soya',
+            balik: 'Balık',
+            kabuklu_deniz_urunleri: 'Kabuklu Deniz Ürünleri',
+            kereviz: 'Kereviz'
+        }
+    },
+    en: {
+        title_edit: 'Edit Product',
+        title_new: 'New Product',
+        heading_new: 'Add New Product',
+        back: 'Back',
+        language: 'Language',
+        name: 'Name',
+        description: 'Description',
+        price: 'Price (₺)',
+        category: 'Category',
+        category_placeholder: 'Select Category',
+        calories: 'Calories',
+        optional: 'Optional',
+        allergens: 'Allergens',
+        active: 'Active',
+        featured: 'Featured',
+        images: 'Images',
+        upload_image: 'Upload Image',
+        media_library: 'Media Library',
+        update: 'Update',
+        create: 'Create',
+        cancel: 'Cancel',
+        uploading: 'Uploading...',
+        uploaded: 'Uploaded',
+        upload_error: 'Upload error',
+        upload_missing: 'Upload response missing',
+        allergens_list: {
+            gluten: 'Gluten',
+            sut: 'Milk',
+            yumurta: 'Egg',
+            fistik: 'Peanut',
+            soya: 'Soy',
+            balik: 'Fish',
+            kabuklu_deniz_urunleri: 'Shellfish',
+            kereviz: 'Celery'
+        }
+    },
+    ar: {
+        title_edit: 'تعديل المنتج',
+        title_new: 'منتج جديد',
+        heading_new: 'إضافة منتج جديد',
+        back: 'رجوع',
+        language: 'اللغة',
+        name: 'الاسم',
+        description: 'الوصف',
+        price: 'السعر (₺)',
+        category: 'الفئة',
+        category_placeholder: 'اختر فئة',
+        calories: 'السعرات',
+        optional: 'اختياري',
+        allergens: 'المواد المسببة للحساسية',
+        active: 'نشط',
+        featured: 'مميز',
+        images: 'الصور',
+        upload_image: 'رفع صورة',
+        media_library: 'مكتبة الوسائط',
+        update: 'تحديث',
+        create: 'إنشاء',
+        cancel: 'إلغاء',
+        uploading: 'جارٍ الرفع...',
+        uploaded: 'تم الرفع',
+        upload_error: 'خطأ في الرفع',
+        upload_missing: 'استجابة الرفع مفقودة',
+        allergens_list: {
+            gluten: 'غلوتين',
+            sut: 'حليب',
+            yumurta: 'بيض',
+            fistik: 'فول سوداني',
+            soya: 'صويا',
+            balik: 'سمك',
+            kabuklu_deniz_urunleri: 'محار',
+            kereviz: 'كرفس'
+        }
+    },
+    ru: {
+        title_edit: 'Редактировать продукт',
+        title_new: 'Новый продукт',
+        heading_new: 'Добавить продукт',
+        back: 'Назад',
+        language: 'Язык',
+        name: 'Название',
+        description: 'Описание',
+        price: 'Цена (₺)',
+        category: 'Категория',
+        category_placeholder: 'Выберите категорию',
+        calories: 'Калории',
+        optional: 'Опционально',
+        allergens: 'Аллергены',
+        active: 'Активно',
+        featured: 'Рекомендуемое',
+        images: 'Изображения',
+        upload_image: 'Загрузить изображение',
+        media_library: 'Медиатека',
+        update: 'Обновить',
+        create: 'Создать',
+        cancel: 'Отмена',
+        uploading: 'Загрузка...',
+        uploaded: 'Загружено',
+        upload_error: 'Ошибка загрузки',
+        upload_missing: 'Нет ответа при загрузке',
+        allergens_list: {
+            gluten: 'Глютен',
+            sut: 'Молоко',
+            yumurta: 'Яйцо',
+            fistik: 'Арахис',
+            soya: 'Соя',
+            balik: 'Рыба',
+            kabuklu_deniz_urunleri: 'Морепродукты',
+            kereviz: 'Сельдерей'
+        }
+    }
+}[currentLocale] ?? {
+    title_edit: 'Edit Product',
+    title_new: 'New Product',
+    heading_new: 'Add New Product',
+    back: 'Back',
+    language: 'Language',
+    name: 'Name',
+    description: 'Description',
+    price: 'Price (₺)',
+    category: 'Category',
+    category_placeholder: 'Select Category',
+    calories: 'Calories',
+    optional: 'Optional',
+    allergens: 'Allergens',
+    active: 'Active',
+    featured: 'Featured',
+    images: 'Images',
+    upload_image: 'Upload Image',
+    media_library: 'Media Library',
+    update: 'Update',
+    create: 'Create',
+    cancel: 'Cancel',
+    uploading: 'Uploading...',
+    uploaded: 'Uploaded',
+    upload_error: 'Upload error',
+    upload_missing: 'Upload response missing',
+    allergens_list: {
+        gluten: 'Gluten',
+        sut: 'Milk',
+        yumurta: 'Egg',
+        fistik: 'Peanut',
+        soya: 'Soy',
+        balik: 'Fish',
+        kabuklu_deniz_urunleri: 'Shellfish',
+        kereviz: 'Celery'
+    }
+} %}
+
+{% block title %}{{ product ? ui.title_edit : ui.title_new }}{% endblock %}
 
 {% block stylesheets %}
 <style>
@@ -54,38 +241,40 @@
     {% endfor %}
 
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>{{ product ? 'Ürün Düzenle' : 'Yeni Ürün Ekle' }}</h2>
-        <a href="{{ path('admin_product_web_index') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> Geri
+        <h2>{{ product ? ui.title_edit : ui.heading_new }}</h2>
+        <a href="{{ path('admin_product_web_index', {lang: currentLocale}) }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> {{ ui.back }}
         </a>
     </div>
+    <div class="small text-primary mb-3">{{ ui.language }}: {{ currentLocale|upper }}</div>
 
     <div class="card shadow-sm">
         <div class="card-body">
             <form method="post"
-                  action="{{ product ? path('admin_product_web_edit', {uuid: product.uuid}) : path('admin_product_web_create') }}">
+                  action="{{ product ? path('admin_product_web_edit', {uuid: product.uuid, lang: currentLocale}) : path('admin_product_web_create', {lang: currentLocale}) }}">
                 <input type="hidden" name="_token"
                        value="{{ product ? csrf_token('product_edit_' ~ product.uuid) : csrf_token('product_create') }}">
+                <input type="hidden" name="lang" value="{{ currentLocale }}">
 
                 <div class="row">
                     <div class="col-md-8">
                         {# Name #}
                         <div class="mb-3">
-                            <label for="name" class="form-label">Ad <span class="text-danger">*</span></label>
+                            <label for="name" class="form-label">{{ ui.name }} <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="name" name="name" required maxlength="200"
-                                   value="{{ formData.name is defined ? formData.name : (product ? product.name : '') }}">
+                                   value="{{ formData.name is defined ? formData.name : (localizedName is defined ? localizedName : (product ? product.name : '')) }}">
                         </div>
 
                         {# Description #}
                         <div class="mb-3">
-                            <label for="description" class="form-label">Açıklama</label>
-                            <textarea class="form-control" id="description" name="description" rows="3">{{ formData.description is defined ? formData.description : (product ? product.description : '') }}</textarea>
+                            <label for="description" class="form-label">{{ ui.description }}</label>
+                            <textarea class="form-control" id="description" name="description" rows="3">{{ formData.description is defined ? formData.description : (localizedDescription is defined ? localizedDescription : (product ? product.description : '')) }}</textarea>
                         </div>
 
                         <div class="row">
                             {# Price #}
                             <div class="col-md-4 mb-3">
-                                <label for="price" class="form-label">Fiyat (₺) <span class="text-danger">*</span></label>
+                                <label for="price" class="form-label">{{ ui.price }} <span class="text-danger">*</span></label>
                                 <input type="number" class="form-control" id="price" name="price" required
                                        step="0.01" min="0"
                                        value="{{ formData.price is defined ? formData.price : (product ? product.price : '') }}">
@@ -93,13 +282,14 @@
 
                             {# Category #}
                             <div class="col-md-4 mb-3">
-                                <label for="category_uuid" class="form-label">Kategori <span class="text-danger">*</span></label>
+                                <label for="category_uuid" class="form-label">{{ ui.category }} <span class="text-danger">*</span></label>
                                 <select class="form-select" id="category_uuid" name="category_uuid" required>
-                                    <option value="">Kategori Seçin</option>
+                                    <option value="">{{ ui.category_placeholder }}</option>
                                     {% for cat in categories %}
                                         {% set selectedCat = formData.category_uuid is defined ? formData.category_uuid : (product ? product.category.uuid : '') %}
+                                        {% set catLabel = categoryView[cat.id] ?? cat.name %}
                                         <option value="{{ cat.uuid }}" {{ selectedCat == cat.uuid ? 'selected' : '' }}>
-                                            {{ cat.name }}
+                                            {{ catLabel }}
                                         </option>
                                     {% endfor %}
                                 </select>
@@ -107,26 +297,17 @@
 
                             {# Calories #}
                             <div class="col-md-4 mb-3">
-                                <label for="calories" class="form-label">Kalori</label>
+                                <label for="calories" class="form-label">{{ ui.calories }}</label>
                                 <input type="number" class="form-control" id="calories" name="calories" min="0"
-                                       placeholder="Opsiyonel"
+                                       placeholder="{{ ui.optional }}"
                                        value="{{ formData.calories is defined ? formData.calories : (product ? product.calories : '') }}">
                             </div>
                         </div>
 
                         {# Allergens #}
                         <div class="mb-3">
-                            <label class="form-label">Alerjenler</label>
-                            {% set allergenList = {
-                                'gluten': 'Gluten',
-                                'sut': 'Süt',
-                                'yumurta': 'Yumurta',
-                                'fistik': 'Fıstık',
-                                'soya': 'Soya',
-                                'balik': 'Balık',
-                                'kabuklu_deniz_urunleri': 'Kabuklu Deniz Ürünleri',
-                                'kereviz': 'Kereviz'
-                            } %}
+                            <label class="form-label">{{ ui.allergens }}</label>
+                            {% set allergenList = ui.allergens_list %}
                             {% set currentAllergens = formData.allergens is defined ? formData.allergens : (product ? product.allergens : []) %}
                             <div class="allergen-grid">
                                 {% for key, label in allergenList %}
@@ -148,7 +329,7 @@
                                 {% set isActive = formData.is_active is defined ? formData.is_active : (product ? product.isActive : true) %}
                                 <input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1"
                                        {{ isActive ? 'checked' : '' }}>
-                                <label class="form-check-label" for="is_active">Aktif</label>
+                                <label class="form-check-label" for="is_active">{{ ui.active }}</label>
                             </div>
                         </div>
 
@@ -158,13 +339,13 @@
                                 {% set isFeatured = formData.is_featured is defined ? formData.is_featured : (product ? product.isFeatured : false) %}
                                 <input class="form-check-input" type="checkbox" id="is_featured" name="is_featured" value="1"
                                        {{ isFeatured ? 'checked' : '' }}>
-                                <label class="form-check-label" for="is_featured">Öne Çıkan</label>
+                                <label class="form-check-label" for="is_featured">{{ ui.featured }}</label>
                             </div>
                         </div>
 
                         {# Images #}
                         <div class="mb-3">
-                            <label class="form-label">Görseller</label>
+                            <label class="form-label">{{ ui.images }}</label>
                             <input type="hidden" name="image_media_uuids" id="imageMediaUuids"
                                    value="{{ product ? product.images|map(i => i.media.uuid)|join(',') : '' }}">
 
@@ -182,12 +363,12 @@
 
                             <div class="mt-2">
                                 <label class="btn btn-outline-secondary btn-sm">
-                                    <i class="bi bi-cloud-upload"></i> Görsel Yükle
+                                    <i class="bi bi-cloud-upload"></i> {{ ui.upload_image }}
                                     <input type="file" accept="image/jpeg,image/png,image/webp" class="d-none"
                                            id="imageUpload" multiple>
                                 </label>
-                                <a href="{{ path('admin_media_index') }}" target="_blank" class="btn btn-outline-secondary btn-sm">
-                                    <i class="bi bi-images"></i> Medya Kütüphanesi
+                                <a href="{{ path('admin_media_index', {lang: currentLocale}) }}" target="_blank" class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-images"></i> {{ ui.media_library }}
                                 </a>
                             </div>
                             <div id="uploadStatus" class="mt-2"></div>
@@ -198,9 +379,9 @@
                 <hr>
                 <div class="d-flex gap-2">
                     <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-lg"></i> {{ product ? 'Güncelle' : 'Oluştur' }}
+                        <i class="bi bi-check-lg"></i> {{ product ? ui.update : ui.create }}
                     </button>
-                    <a href="{{ path('admin_product_web_index') }}" class="btn btn-outline-secondary">İptal</a>
+                    <a href="{{ path('admin_product_web_index', {lang: currentLocale}) }}" class="btn btn-outline-secondary">{{ ui.cancel }}</a>
                 </div>
             </form>
         </div>
@@ -230,7 +411,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const formData = new FormData();
         formData.append('file', file);
 
-        uploadStatus.innerHTML = '<small class="text-muted"><i class="bi bi-hourglass-split"></i> Yükleniyor...</small>';
+        uploadStatus.innerHTML = '<small class="text-muted"><i class="bi bi-hourglass-split"></i> {{ ui.uploading }}</small>';
 
         fetch('{{ path("admin_media_upload") }}', {
             method: 'POST',
@@ -245,14 +426,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             if (!r.ok) {
-                throw new Error(data.error || data.message || 'Yükleme hatası');
+                throw new Error(data.error || data.message || '{{ ui.upload_error }}');
             }
 
             return data;
         })
         .then(data => {
             if (!data.uuid || !data.url) {
-                throw new Error(data.error || data.message || 'Yükleme yanıtı eksik');
+                throw new Error(data.error || data.message || '{{ ui.upload_missing }}');
             }
 
             // Add to preview
@@ -264,11 +445,11 @@ document.addEventListener('DOMContentLoaded', function() {
             imagePreviewList.appendChild(div);
 
             updateImageUuids();
-            uploadStatus.innerHTML = '<small class="text-success"><i class="bi bi-check"></i> Yüklendi</small>';
+            uploadStatus.innerHTML = '<small class="text-success"><i class="bi bi-check"></i> {{ ui.uploaded }}</small>';
             setTimeout(() => uploadStatus.innerHTML = '', 2000);
         })
         .catch((err) => {
-            uploadStatus.innerHTML = '<small class="text-danger">' + (err.message || 'Yükleme hatası') + '</small>';
+            uploadStatus.innerHTML = '<small class="text-danger">' + (err.message || '{{ ui.upload_error }}') + '</small>';
         });
     }
 });

@@ -1,0 +1,417 @@
+{% extends 'base.html.twig' %}
+
+{% set meta = {
+    tr: {
+        title: 'Blog | Altay QR Menu',
+        description: 'QR menu, karekod menu, restoran dijital menu yonetimi ve menu optimizasyonu hakkinda SEO uyumlu blog yazilari.',
+        keywords: 'qr menu blog, karekod menu blog, restoran dijital menu, qr menu nasil yapilir',
+        og_description: 'QR menu ve restoran operasyonu odakli guncel blog icerikleri.',
+        twitter_description: 'QR menu ve dijital menu yonetimi hakkinda rehber icerikler.'
+    },
+    en: {
+        title: 'Blog | Altay QR Menu',
+        description: 'SEO-friendly blog posts about QR menus, digital menus, restaurant operations, and menu optimization.',
+        keywords: 'qr menu blog, qr code menu blog, restaurant digital menu, how to make qr menu',
+        og_description: 'Up-to-date blog content focused on QR menus and restaurant operations.',
+        twitter_description: 'Guides about QR menus and digital menu management.'
+    },
+    ar: {
+        title: 'المدونة | Altay QR Menu',
+        description: 'مقالات متوافقة مع SEO حول قوائم QR والقوائم الرقمية وعمليات المطاعم وتحسين القوائم.',
+        keywords: 'مدونة قائمة qr، مدونة قائمة رمز qr، قائمة رقمية للمطاعم، كيف تنشئ قائمة qr',
+        og_description: 'محتوى مدونة حديث يركز على قوائم QR وعمليات المطاعم.',
+        twitter_description: 'أدلة حول قوائم QR وإدارة القوائم الرقمية.'
+    },
+    ru: {
+        title: 'Блог | Altay QR Menu',
+        description: 'SEO-статьи о QR-меню, цифровых меню, операциях ресторана и оптимизации меню.',
+        keywords: 'qr меню блог, блог меню с qr кодом, цифровое меню ресторана, как сделать qr меню',
+        og_description: 'Актуальный блог о QR-меню и операциях ресторана.',
+        twitter_description: 'Гайды по QR-меню и управлению цифровым меню.'
+    }
+}[currentLocale] ?? {
+    title: 'Blog | Altay QR Menu',
+    description: 'SEO-friendly blog posts about QR menus, digital menus, restaurant operations, and menu optimization.',
+    keywords: 'qr menu blog, qr code menu blog, restaurant digital menu, how to make qr menu',
+    og_description: 'Up-to-date blog content focused on QR menus and restaurant operations.',
+    twitter_description: 'Guides about QR menus and digital menu management.'
+} %}
+
+{% set ui = {
+    tr: {
+        features: 'Özellikler',
+        plans: 'Planlar',
+        blog: 'Blog',
+        contact: 'İletişim',
+        subtitle: 'Arama, detay ve okunma sayısı ile blog içerikleri.',
+        search_placeholder: 'Blogda ara...',
+        search: 'Ara',
+        reads: 'okunma',
+        read_detail: 'Detayı Oku',
+        empty: 'Sonuç bulunamadı.'
+    },
+    en: {
+        features: 'Features',
+        plans: 'Plans',
+        blog: 'Blog',
+        contact: 'Contact',
+        subtitle: 'Blog posts with search, detail view and view counters.',
+        search_placeholder: 'Search in blog...',
+        search: 'Search',
+        reads: 'views',
+        read_detail: 'Read Details',
+        empty: 'No results found.'
+    },
+    ar: {
+        features: 'الميزات',
+        plans: 'الخطط',
+        blog: 'المدونة',
+        contact: 'التواصل',
+        subtitle: 'مقالات مدونة مع البحث والعرض التفصيلي وعدّاد المشاهدات.',
+        search_placeholder: 'ابحث في المدونة...',
+        search: 'بحث',
+        reads: 'مشاهدة',
+        read_detail: 'اقرأ التفاصيل',
+        empty: 'لم يتم العثور على نتائج.'
+    },
+    ru: {
+        features: 'Функции',
+        plans: 'Тарифы',
+        blog: 'Блог',
+        contact: 'Контакты',
+        subtitle: 'Посты блога с поиском, подробным просмотром и счетчиком просмотров.',
+        search_placeholder: 'Поиск по блогу...',
+        search: 'Поиск',
+        reads: 'просмотров',
+        read_detail: 'Читать подробнее',
+        empty: 'Результаты не найдены.'
+    }
+}[currentLocale] ?? {
+    features: 'Features',
+    plans: 'Plans',
+    blog: 'Blog',
+    contact: 'Contact',
+    subtitle: 'Blog posts with search, detail view and view counters.',
+    search_placeholder: 'Search in blog...',
+    search: 'Search',
+    reads: 'views',
+    read_detail: 'Read Details',
+    empty: 'No results found.'
+} %}
+
+{% block title %}{{ meta.title }}{% endblock %}
+{% block meta_description %}{{ meta.description }}{% endblock %}
+{% block meta_keywords %}{{ meta.keywords }}{% endblock %}
+{% block canonical_url %}{{ absolute_url(path('site_blog_index', {lang: currentLocale})) }}{% endblock %}
+{% block meta_robots %}{{ q is not empty ? 'noindex,follow' : 'index,follow' }}{% endblock %}
+{% block og_title %}{{ meta.title }}{% endblock %}
+{% block og_description %}{{ meta.og_description }}{% endblock %}
+{% block og_url %}{{ absolute_url(path('site_blog_index', {lang: currentLocale})) }}{% endblock %}
+{% block og_image %}{{ absolute_url('/assets/slider/banner-2.svg') }}{% endblock %}
+{% block twitter_title %}{{ meta.title }}{% endblock %}
+{% block twitter_description %}{{ meta.twitter_description }}{% endblock %}
+{% block twitter_image %}{{ absolute_url('/assets/slider/banner-2.svg') }}{% endblock %}
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Blog",
+  "name": "Altay QR Menu Blog",
+  "url": "{{ absolute_url(path('site_blog_index', {lang: currentLocale})) }}",
+  "inLanguage": "{{ currentLocale }}"
+}
+</script>
+{% endblock %}
+
+{% block stylesheets %}
+<style>
+    :root {
+        --bg: #f6f7f4;
+        --panel: #ffffff;
+        --ink: #132020;
+        --muted: #4b5d5b;
+        --line: #d6dfdc;
+        --brand: #14532d;
+        --brand-soft: #dcfce7;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        color: var(--ink);
+        font-family: "Manrope", sans-serif;
+        background:
+            radial-gradient(circle at 8% 10%, rgba(20, 83, 45, 0.11) 0%, rgba(20, 83, 45, 0) 36%),
+            radial-gradient(circle at 90% 4%, rgba(15, 118, 110, 0.09) 0%, rgba(15, 118, 110, 0) 34%),
+            var(--bg);
+    }
+
+    .container {
+        width: min(1060px, 92vw);
+        margin: 0 auto;
+    }
+
+    .nav-wrap {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        backdrop-filter: blur(6px);
+        background: rgba(246, 247, 244, 0.85);
+        border-bottom: 1px solid var(--line);
+    }
+
+    .nav {
+        display: flex;
+        gap: 12px;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 0;
+    }
+
+    .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-family: "Plus Jakarta Sans", sans-serif;
+        font-weight: 700;
+    }
+
+    .brand-mark {
+        width: 30px;
+        height: 30px;
+        border-radius: 9px;
+        background: linear-gradient(140deg, var(--brand), #2d6a54);
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.78rem;
+        font-weight: 800;
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 14px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .nav-links a {
+        text-decoration: none;
+        color: var(--muted);
+        font-weight: 600;
+    }
+
+    .nav-cta {
+        background: var(--brand);
+        color: #fff !important;
+        padding: 8px 12px;
+        border-radius: 10px;
+    }
+
+    .lang-flags {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 6px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: #fff;
+    }
+
+    .lang-flag {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        text-decoration: none;
+        font-size: 1rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .lang-flag.active {
+        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.18);
+        transform: translateY(-1px);
+    }
+
+    .hero {
+        padding: 36px 0 20px;
+    }
+
+    h1 {
+        margin: 0;
+        font-family: "Plus Jakarta Sans", sans-serif;
+        font-size: clamp(1.8rem, 4vw, 2.8rem);
+        letter-spacing: -0.02em;
+    }
+
+    p { margin: 0; }
+
+    .muted {
+        color: var(--muted);
+        margin-top: 8px;
+    }
+
+    .search {
+        margin-top: 16px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .search input {
+        flex: 1;
+        min-width: 240px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 11px 13px;
+        background: #fff;
+    }
+
+    .search button {
+        border: 0;
+        border-radius: 12px;
+        padding: 11px 16px;
+        background: var(--brand);
+        color: #fff;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .grid {
+        padding: 12px 0 40px;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 16px;
+    }
+
+    .meta {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        color: var(--muted);
+        font-size: 0.85rem;
+        margin-bottom: 10px;
+    }
+
+    h3 {
+        margin: 0 0 10px;
+        font-family: "Plus Jakarta Sans", sans-serif;
+        font-size: 1.1rem;
+    }
+
+    .excerpt {
+        color: var(--muted);
+        line-height: 1.6;
+        min-height: 74px;
+    }
+
+    .cta {
+        display: inline-block;
+        margin-top: 12px;
+        padding: 8px 11px;
+        border-radius: 10px;
+        text-decoration: none;
+        background: var(--brand-soft);
+        color: var(--brand);
+        font-weight: 700;
+    }
+
+    .empty {
+        grid-column: 1 / -1;
+        border: 1px dashed var(--line);
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.6);
+        padding: 18px;
+        color: var(--muted);
+    }
+
+    footer {
+        margin: 18px 0 24px;
+        color: var(--muted);
+        font-size: 0.92rem;
+        border-top: 1px solid var(--line);
+        padding-top: 16px;
+    }
+
+    @media (max-width: 960px) {
+        .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 640px) {
+        .grid { grid-template-columns: 1fr; }
+    }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+<div class="nav-wrap">
+    <div class="container">
+        <nav class="nav">
+            <a class="brand" href="{{ path('site_home', {lang: currentLocale}) }}">
+                <span class="brand-mark">AQ</span>
+                <span>{{ cms.headerBrand }}</span>
+            </a>
+            <div class="nav-links">
+                <a href="{{ path('site_home', {lang: currentLocale}) }}#ozellikler">{{ ui.features }}</a>
+                <a href="{{ path('site_home', {lang: currentLocale}) }}#plans">{{ ui.plans }}</a>
+                <a href="{{ path('site_blog_index', {lang: currentLocale}) }}">{{ ui.blog }}</a>
+                <a href="{{ path('site_home', {lang: currentLocale}) }}#contact">{{ ui.contact }}</a>
+                <div class="lang-flags" role="group" aria-label="Language">
+                    {% for localeCode, localeLabel in availableLocales %}
+                        <a class="lang-flag {{ localeCode == currentLocale ? 'active' : '' }}" href="{{ path('site_blog_index', {lang: localeCode, q: q}) }}" title="{{ localeLabel }}">
+                            {% if localeCode == 'tr' %}🇹🇷{% elseif localeCode == 'en' %}🇬🇧{% elseif localeCode == 'ar' %}🇸🇦{% elseif localeCode == 'ru' %}🇷🇺{% else %}🌐{% endif %}
+                        </a>
+                    {% endfor %}
+                </div>
+                <a href="{{ cms.headerCtaUrl }}" class="nav-cta">{{ cms.headerCtaText }}</a>
+            </div>
+        </nav>
+    </div>
+</div>
+
+<div class="container">
+    <section class="hero">
+        <h1>{{ ui.blog }}</h1>
+        <p class="muted">{{ ui.subtitle }}</p>
+
+        <form method="get" action="{{ path('site_blog_index') }}" class="search">
+            <input type="hidden" name="lang" value="{{ currentLocale }}">
+            <input type="search" name="q" value="{{ q }}" placeholder="{{ ui.search_placeholder }}">
+            <button type="submit">{{ ui.search }}</button>
+        </form>
+    </section>
+
+    <section class="grid">
+        {% for post in posts %}
+            {% set postItem = postView[post.id] ?? {'title': post.title, 'body': post.body, 'metaDescription': post.metaDescription} %}
+            <article class="card">
+                <div class="meta">
+                    <span>{{ post.publishedAt ? post.publishedAt|date('d.m.Y') : '-' }}</span>
+                    <span>{{ post.viewCount }} {{ ui.reads }}</span>
+                </div>
+                <h3>{{ postItem.title }}</h3>
+                <p class="excerpt">{{ (postItem.metaDescription ?: postItem.body)|striptags|slice(0, 180) ~ (((postItem.metaDescription ?: postItem.body)|striptags|length > 180) ? '...' : '') }}</p>
+                <a class="cta" href="{{ path('site_blog_detail', {slug: post.slug, lang: currentLocale}) }}">{{ ui.read_detail }}</a>
+            </article>
+        {% else %}
+            <div class="empty">{{ ui.empty }}</div>
+        {% endfor %}
+    </section>
+
+    <footer>
+        {{ cms.footerText }}
+    </footer>
+</div>
+{% endblock %}

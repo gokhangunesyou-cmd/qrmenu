@@ -1,6 +1,88 @@
 {% extends 'admin/base.html.twig' %}
 
-{% block title %}{{ category ? 'Kategori Düzenle' : 'Yeni Kategori' }}{% endblock %}
+{% set ui = {
+    tr: {
+        title_edit: 'Kategori Düzenle',
+        title_new: 'Yeni Kategori',
+        subtitle: 'Kategori bilgilerini yönetin',
+        language: 'Dil',
+        back: 'Geri',
+        name: 'Kategori Adı',
+        icon_optional: 'İkon (opsiyonel)',
+        icon_hint: 'Bootstrap icon sınıfı yazabilirsiniz.',
+        description: 'Açıklama',
+        sort: 'Sıra',
+        active: 'Aktif',
+        cancel: 'İptal',
+        save: 'Kaydet',
+        update: 'Güncelle'
+    },
+    en: {
+        title_edit: 'Edit Category',
+        title_new: 'New Category',
+        subtitle: 'Manage category details',
+        language: 'Language',
+        back: 'Back',
+        name: 'Category Name',
+        icon_optional: 'Icon (optional)',
+        icon_hint: 'You can enter a Bootstrap icon class.',
+        description: 'Description',
+        sort: 'Order',
+        active: 'Active',
+        cancel: 'Cancel',
+        save: 'Save',
+        update: 'Update'
+    },
+    ar: {
+        title_edit: 'تعديل الفئة',
+        title_new: 'فئة جديدة',
+        subtitle: 'إدارة تفاصيل الفئة',
+        language: 'اللغة',
+        back: 'رجوع',
+        name: 'اسم الفئة',
+        icon_optional: 'أيقونة (اختياري)',
+        icon_hint: 'يمكنك إدخال فئة أيقونات Bootstrap.',
+        description: 'الوصف',
+        sort: 'الترتيب',
+        active: 'نشط',
+        cancel: 'إلغاء',
+        save: 'حفظ',
+        update: 'تحديث'
+    },
+    ru: {
+        title_edit: 'Редактировать категорию',
+        title_new: 'Новая категория',
+        subtitle: 'Управление данными категории',
+        language: 'Язык',
+        back: 'Назад',
+        name: 'Название категории',
+        icon_optional: 'Иконка (необязательно)',
+        icon_hint: 'Можно указать класс иконки Bootstrap.',
+        description: 'Описание',
+        sort: 'Порядок',
+        active: 'Активно',
+        cancel: 'Отмена',
+        save: 'Сохранить',
+        update: 'Обновить'
+    }
+}[currentLocale] ?? {
+    title_edit: 'Edit Category',
+    title_new: 'New Category',
+    subtitle: 'Manage category details',
+    language: 'Language',
+    back: 'Back',
+    name: 'Category Name',
+    icon_optional: 'Icon (optional)',
+    icon_hint: 'You can enter a Bootstrap icon class.',
+    description: 'Description',
+    sort: 'Order',
+    active: 'Active',
+    cancel: 'Cancel',
+    save: 'Save',
+    update: 'Update'
+} %}
+
+{% block title %}{{ category ? ui.title_edit : ui.title_new }}{% endblock %}
 
 {% block body %}
 <div class="container-fluid">
@@ -16,11 +98,12 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="mb-1">{{ category ? 'Kategori Düzenle' : 'Yeni Kategori' }}</h2>
-            <small class="text-muted">Kategori bilgilerini yönetin</small>
+            <h2 class="mb-1">{{ category ? ui.title_edit : ui.title_new }}</h2>
+            <small class="text-muted">{{ ui.subtitle }}</small>
+            <div class="small text-primary mt-1">{{ ui.language }}: {{ currentLocale|upper }}</div>
         </div>
-        <a href="{{ path('admin_category_index') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> Geri
+        <a href="{{ path('admin_category_index', {lang: currentLocale}) }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> {{ ui.back }}
         </a>
     </div>
 
@@ -32,26 +115,27 @@
                 {% else %}
                     <input type="hidden" name="_token" value="{{ csrf_token('category_create') }}">
                 {% endif %}
+                <input type="hidden" name="lang" value="{{ currentLocale }}">
 
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label for="name" class="form-label">Kategori Adı <span class="text-danger">*</span></label>
+                        <label for="name" class="form-label">{{ ui.name }} <span class="text-danger">*</span></label>
                         <input type="text" id="name" name="name" class="form-control" required
-                               value="{{ formData.name is defined ? formData.name : (category ? category.name : '') }}">
+                               value="{{ formData.name is defined ? formData.name : (localizedName is defined ? localizedName : (category ? category.name : '')) }}">
                     </div>
                     <div class="col-md-6">
-                        <label for="icon" class="form-label">İkon (opsiyonel)</label>
+                        <label for="icon" class="form-label">{{ ui.icon_optional }}</label>
                         <input type="text" id="icon" name="icon" class="form-control"
                                placeholder="bi bi-cup-hot"
                                value="{{ formData.icon is defined ? formData.icon : (category ? category.icon : '') }}">
-                        <small class="text-muted">Bootstrap icon sınıfı yazabilirsiniz.</small>
+                        <small class="text-muted">{{ ui.icon_hint }}</small>
                     </div>
                     <div class="col-12">
-                        <label for="description" class="form-label">Açıklama</label>
-                        <textarea id="description" name="description" class="form-control" rows="3">{{ formData.description is defined ? formData.description : (category ? category.description : '') }}</textarea>
+                        <label for="description" class="form-label">{{ ui.description }}</label>
+                        <textarea id="description" name="description" class="form-control" rows="3">{{ formData.description is defined ? formData.description : (localizedDescription is defined ? localizedDescription : (category ? category.description : '')) }}</textarea>
                     </div>
                     <div class="col-md-3">
-                        <label for="sort_order" class="form-label">Sıra</label>
+                        <label for="sort_order" class="form-label">{{ ui.sort }}</label>
                         <input type="number" id="sort_order" name="sort_order" class="form-control"
                                value="{{ formData.sort_order is defined ? formData.sort_order : (category ? category.sortOrder : 0) }}">
                     </div>
@@ -59,14 +143,14 @@
                         {% set isActiveValue = formData.is_active is defined ? formData.is_active : (category ? category.isActive : true) %}
                         <div class="form-check form-switch mt-4">
                             <input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" {{ isActiveValue ? 'checked' : '' }}>
-                            <label class="form-check-label" for="is_active">Aktif</label>
+                            <label class="form-check-label" for="is_active">{{ ui.active }}</label>
                         </div>
                     </div>
                 </div>
 
                 <div class="d-flex justify-content-end mt-4 gap-2">
-                    <a href="{{ path('admin_category_index') }}" class="btn btn-outline-secondary">İptal</a>
-                    <button type="submit" class="btn btn-primary">{{ category ? 'Güncelle' : 'Kaydet' }}</button>
+                    <a href="{{ path('admin_category_index', {lang: currentLocale}) }}" class="btn btn-outline-secondary">{{ ui.cancel }}</a>
+                    <button type="submit" class="btn btn-primary">{{ category ? ui.update : ui.save }}</button>
                 </div>
             </form>
         </div>

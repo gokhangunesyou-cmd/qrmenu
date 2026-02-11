@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 480">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#f5f0e6"/>
+      <stop offset="1" stop-color="#e9e1d3"/>
+    </linearGradient>
+  </defs>
+  <rect width="720" height="480" fill="url(#bg)"/>
+  <rect x="50" y="70" width="620" height="340" rx="22" fill="#ffffff" stroke="#d2c9b8" stroke-width="2"/>
+  <rect x="90" y="115" width="260" height="240" rx="14" fill="#f6f1e7"/>
+  <rect x="380" y="120" width="250" height="24" rx="10" fill="#dcd2c2"/>
+  <rect x="380" y="160" width="220" height="18" rx="8" fill="#e6ddce"/>
+  <rect x="380" y="195" width="200" height="18" rx="8" fill="#e6ddce"/>
+  <rect x="380" y="230" width="190" height="18" rx="8" fill="#e6ddce"/>
+  <rect x="380" y="280" width="160" height="18" rx="8" fill="#e6ddce"/>
+  <text x="90" y="102" font-family="Manrope, Arial, sans-serif" font-size="18" fill="#74685a">Menu Editor</text>
+  <text x="380" y="105" font-family="Manrope, Arial, sans-serif" font-size="13" fill="#958a7b">Visual placeholder</text>
+</svg>

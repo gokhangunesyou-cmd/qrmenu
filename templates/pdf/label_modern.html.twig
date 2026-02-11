@@ -3,41 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <style>
-        body { font-family: Helvetica, Arial, sans-serif; margin: 0; padding: 15px; background: #f5f5f5; }
-        .grid { display: flex; flex-wrap: wrap; gap: 15px; }
-        .label {
-            width: 45%;
-            background: #fff;
-            border-radius: 16px;
-            padding: 24px;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            page-break-inside: avoid;
+        @page { margin: 8mm; }
+        body {
+            margin: 0;
+            font-family: Helvetica, Arial, sans-serif;
+            background: linear-gradient(180deg, {{ theme.background }}, {{ theme.surface }});
         }
-        .restaurant-name { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: #999; margin-bottom: 15px; }
-        .qr-image { width: 140px; height: 140px; margin: 0 auto; }
-        .table-number { font-size: 28px; font-weight: 300; margin-top: 15px; color: #222; }
-        .table-label { font-size: 11px; color: #888; margin-top: 4px; }
-        .scan-text { font-size: 9px; color: #aaa; margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        .grid { font-size: 0; }
+        .label {
+            display: inline-block;
+            vertical-align: top;
+            width: 62mm;
+            height: 91mm;
+            margin: 2mm;
+            border-radius: 7mm;
+            overflow: hidden;
+            background: #ffffff;
+            border: 0.8mm solid {{ theme.divider }};
+            box-sizing: border-box;
+            page-break-inside: avoid;
+            position: relative;
+        }
+        .top {
+            height: 20mm;
+            background: {{ theme.primary }};
+            color: #ffffff;
+            text-align: center;
+            padding-top: 3mm;
+            box-sizing: border-box;
+        }
+        .logo { width: 10mm; height: 10mm; object-fit: contain; display: block; margin: 0 auto 1.5mm; }
+        .name { font-size: 8.5pt; font-weight: 700; letter-spacing: 0.2mm; }
+        .content { padding: 4mm; text-align: center; }
+        .qr-box {
+            width: 38mm;
+            height: 38mm;
+            margin: 0 auto;
+            border: 1mm solid {{ theme.primaryLight }};
+            border-radius: 4mm;
+            padding: 1.5mm;
+            box-sizing: border-box;
+            background: #fff;
+        }
+        .qr { width: 100%; height: 100%; display: block; }
+        .table {
+            position: absolute;
+            left: {{ theme.tableBadge.posX }}%;
+            top: {{ theme.tableBadge.posY }}%;
+            transform: translate(-50%, -50%);
+            margin: 0;
+            font-size: 12pt;
+            font-weight: 700;
+            color: {{ theme.tableBadge.textColor }};
+            background: {{ theme.tableBadge.bgColor }};
+            border: {{ theme.tableBadge.borderWidth }}px solid {{ theme.tableBadge.borderColor }};
+            border-radius: {{ theme.tableBadge.borderRadius }}px;
+            padding: 2mm 4mm;
+        }
+        .small { margin-top: 1mm; font-size: 8pt; color: {{ theme.text }}; }
+        .footer { margin-top: 2.5mm; font-size: 7pt; color: {{ theme.muted }}; text-transform: uppercase; letter-spacing: 0.4mm; }
     </style>
 </head>
 <body>
-    <div class="grid">
-        {% for qr in qrCodes %}
-        <div class="label">
-            <div class="restaurant-name">{{ restaurant.name }}</div>
-            <div class="qr-image">
-                <img src="{{ qr.encodedUrl }}" alt="QR" style="width:140px;height:140px;">
+<div class="grid">
+    {% for qr in qrCodes %}
+        <div class="label" {% if labelBackgroundDataMap[qr.uuid.toString] ?? null %}style="background-image:url('{{ labelBackgroundDataMap[qr.uuid.toString] }}');background-size:cover;background-position:center;"{% endif %}>
+            <div class="top">
+                {% if restaurantLogoDataUri %}
+                    <img class="logo" src="{{ restaurantLogoDataUri }}" alt="Logo">
+                {% endif %}
+                <div class="name">{{ restaurant.name }}</div>
             </div>
-            {% if qr.tableNumber %}
-                <div class="table-number">#{{ qr.tableNumber }}</div>
-            {% endif %}
-            {% if qr.tableLabel %}
-                <div class="table-label">{{ qr.tableLabel }}</div>
-            {% endif %}
-            <div class="scan-text">Scan for menu</div>
+            <div class="content">
+                <div class="qr-box">
+                    <img class="qr" src="{{ qrImageDataMap[qr.uuid.toString] ?? '' }}" alt="QR">
+                </div>
+                <div class="table">{{ qr.tableNumber ? 'Table ' ~ qr.tableNumber : 'Main Menu' }}</div>
+                <div class="small">{{ qr.tableLabel ?? 'Masa menusu' }}</div>
+                <div class="footer">Tap + Scan + Order</div>
+            </div>
         </div>
-        {% endfor %}
-    </div>
+    {% endfor %}
+</div>
 </body>
 </html>

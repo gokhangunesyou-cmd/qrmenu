@@ -2,7 +2,6 @@
 
 namespace App\Fixtures;
 
-use App\Entity\Restaurant;
 use App\Entity\Role;
 use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
@@ -37,18 +36,6 @@ class SuperAdminFixtures extends Fixture implements DependentFixtureInterface
         $user->addRole($superAdminRole);
         $user->addRole($ownerRole);
 
-        $restaurant = $manager->getRepository(Restaurant::class)->findOneBy(['slug' => 'demo-restoran']);
-        if ($restaurant === null) {
-            $theme = $this->getReference(ThemeFixtures::THEME_CLASSIC, \App\Entity\Theme::class);
-            $restaurant = new Restaurant('Demo Restoran', 'demo-restoran', $theme);
-            $restaurant->setIsActive(true);
-            $manager->persist($restaurant);
-        }
-
-        if ($user->getRestaurant() === null) {
-            $user->setRestaurant($restaurant);
-        }
-
         $manager->persist($user);
         $manager->flush();
     }
@@ -57,7 +44,6 @@ class SuperAdminFixtures extends Fixture implements DependentFixtureInterface
     {
         return [
             RoleFixtures::class,
-            ThemeFixtures::class,
         ];
     }
 }
