@@ -55,7 +55,11 @@ class MediaRepository extends ServiceEntityRepository
 
         // Count total
         $countQb = clone $qb;
-        $total = (int) $countQb->select('COUNT(m.id)')->getQuery()->getSingleScalarResult();
+        $total = (int) $countQb
+            ->resetDQLPart('orderBy')
+            ->select('COUNT(m.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
 
         // Paginate
         $items = $qb

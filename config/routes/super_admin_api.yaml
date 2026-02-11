@@ -1,3 +1,0 @@
-super_admin_controllers:
-    resource: ../../src/Controller/SuperAdmin/
-    type: attribute

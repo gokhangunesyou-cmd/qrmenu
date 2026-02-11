@@ -1,14 +1,12 @@
 parameters:
-    app.jwt_secret: '%env(JWT_SECRET_KEY)%'
-    app.jwt_access_ttl: '%env(int:JWT_ACCESS_TTL)%'
-    app.jwt_refresh_ttl: '%env(int:JWT_REFRESH_TTL)%'
     app.public_menu_url: '%env(PUBLIC_MENU_URL)%'
-    app.revalidation_secret: '%env(REVALIDATION_SECRET)%'
 
 services:
     _defaults:
         autowire: true
         autoconfigure: true
+        bind:
+            $publicMenuUrl: '%app.public_menu_url%'
 
     App\:
         resource: '../src/'
@@ -38,8 +36,9 @@ services:
             - { name: kernel.event_listener, event: kernel.exception, priority: -10 }
 
     # Infrastructure bindings
-    App\Infrastructure\Storage\StorageInterface:
-        alias: App\Infrastructure\Storage\S3Storage
+    App\Infrastructure\Storage\LocalStorage:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
 
     App\Infrastructure\Storage\S3Storage:
         arguments:
@@ -47,23 +46,9 @@ services:
             $bucket: '%env(S3_BUCKET)%'
             $endpoint: '%env(S3_ENDPOINT)%'
 
-    App\Security\JwtTokenManager:
-        arguments:
-            $secretKey: '%app.jwt_secret%'
-            $accessTtl: '%app.jwt_access_ttl%'
-            $refreshTtl: '%app.jwt_refresh_ttl%'
+    App\Infrastructure\Storage\StorageInterface:
+        alias: App\Infrastructure\Storage\LocalStorage
 
-    App\Service\AuthService:
-        arguments:
-            $accessTtl: '%app.jwt_access_ttl%'
-
-    App\Service\QrCodeService:
-        arguments:
-            $publicMenuUrl: '%app.public_menu_url%'
-
-    App\Controller\Public\RevalidateController:
-        arguments:
-            $revalidationSecret: '%app.revalidation_secret%'
 
     # S3 Client
     s3_client:

@@ -97,8 +97,8 @@
                                 <select class="form-select" id="category_uuid" name="category_uuid" required>
                                     <option value="">Kategori Seçin</option>
                                     {% for cat in categories %}
-                                        {% set selectedCat = formData.category_uuid is defined ? formData.category_uuid : (product ? product.category.uuid|string : '') %}
-                                        <option value="{{ cat.uuid }}" {{ selectedCat == cat.uuid|string ? 'selected' : '' }}>
+                                        {% set selectedCat = formData.category_uuid is defined ? formData.category_uuid : (product ? product.category.uuid : '') %}
+                                        <option value="{{ cat.uuid }}" {{ selectedCat == cat.uuid ? 'selected' : '' }}>
                                             {{ cat.name }}
                                         </option>
                                     {% endfor %}
@@ -236,11 +236,23 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'POST',
             body: formData
         })
-        .then(r => r.json())
+        .then(async (r) => {
+            let data = {};
+            try {
+                data = await r.json();
+            } catch (e) {
+                // Keep a stable error message when API doesn't return JSON.
+            }
+
+            if (!r.ok) {
+                throw new Error(data.error || data.message || 'Yükleme hatası');
+            }
+
+            return data;
+        })
         .then(data => {
-            if (data.error) {
-                uploadStatus.innerHTML = '<small class="text-danger">' + data.error + '</small>';
-                return;
+            if (!data.uuid || !data.url) {
+                throw new Error(data.error || data.message || 'Yükleme yanıtı eksik');
             }
 
             // Add to preview
@@ -255,8 +267,8 @@ document.addEventListener('DOMContentLoaded', function() {
             uploadStatus.innerHTML = '<small class="text-success"><i class="bi bi-check"></i> Yüklendi</small>';
             setTimeout(() => uploadStatus.innerHTML = '', 2000);
         })
-        .catch(() => {
-            uploadStatus.innerHTML = '<small class="text-danger">Yükleme hatası</small>';
+        .catch((err) => {
+            uploadStatus.innerHTML = '<small class="text-danger">' + (err.message || 'Yükleme hatası') + '</small>';
         });
     }
 });
@@ -267,7 +279,9 @@ function removeImage(btn) {
 }
 
 function updateImageUuids() {
-    const uuids = Array.from(document.querySelectorAll('.image-preview')).map(el => el.dataset.uuid);
+    const uuids = Array.from(document.querySelectorAll('.image-preview'))
+        .map(el => el.dataset.uuid)
+        .filter(uuid => uuid && uuid !== 'undefined');
     document.getElementById('imageMediaUuids').value = uuids.join(',');
 }
 </script>

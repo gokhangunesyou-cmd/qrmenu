@@ -1,69 +1,275 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Admin Panel{% endblock %} | QR Menu</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink-900: #0f172a;
+            --ink-700: #334155;
+            --ink-500: #64748b;
+            --surface-0: #f8fafc;
+            --surface-1: #ffffff;
+            --surface-2: #f1f5f9;
+            --brand-500: #2563eb;
+            --brand-400: #3b82f6;
+            --accent-500: #f97316;
+            --success-500: #16a34a;
+            --danger-500: #dc2626;
+            --border-soft: rgba(148, 163, 184, 0.3);
+            --shadow-soft: 0 16px 40px rgba(15, 23, 42, 0.08);
+            --shadow-card: 0 10px 24px rgba(15, 23, 42, 0.08);
+        }
+
+        body {
+            font-family: 'Work Sans', sans-serif;
+            background: radial-gradient(circle at top left, #eef2ff 0%, #f8fafc 40%, #ffffff 100%);
+            color: var(--ink-900);
+            min-height: 100vh;
+        }
+
+        h1, h2, h3, h4, h5, .brand-title {
+            font-family: 'Space Grotesk', sans-serif;
+            letter-spacing: -0.02em;
+        }
+
+        .admin-shell {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
+            color: #e2e8f0;
+            padding: 1.75rem 1.5rem;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+        }
+
+        .sidebar .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+        }
+
+        .brand-mark {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #2563eb, #22d3ee);
+            display: grid;
+            place-items: center;
+            color: #fff;
+            font-size: 1.2rem;
+        }
+
+        .nav-section {
+            margin-top: 1.5rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(226, 232, 240, 0.6);
+        }
+
+        .nav-link {
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.6rem 0.8rem;
+            border-radius: 12px;
+            margin-top: 0.35rem;
+        }
+
+        .nav-link i {
+            font-size: 1.1rem;
+        }
+
+        .nav-link.active,
+        .nav-link:hover {
+            background: rgba(59, 130, 246, 0.18);
+            color: #fff;
+        }
+
+        .content {
+            flex: 1;
+            padding: 2rem 2.5rem 3rem;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--surface-1);
+            border-radius: 20px;
+            padding: 1rem 1.5rem;
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 2rem;
+        }
+
+        .topbar .pill {
+            background: var(--surface-2);
+            padding: 0.45rem 0.9rem;
+            border-radius: 999px;
+            color: var(--ink-700);
+            font-size: 0.85rem;
+        }
+
+        .card {
+            border: 1px solid var(--border-soft);
+            border-radius: 20px;
+            box-shadow: var(--shadow-card);
+        }
+
+        .card-header {
+            background: transparent;
+            border-bottom: 1px solid var(--border-soft);
+            padding: 1rem 1.25rem;
+        }
+
+        .card-body {
+            padding: 1.25rem;
+        }
+
+        .btn-primary {
+            background: var(--brand-500);
+            border-color: var(--brand-500);
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .btn-outline-secondary {
+            border-radius: 12px;
+        }
+
+        .badge {
+            border-radius: 999px;
+        }
+
+        .table thead th {
+            color: var(--ink-500);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.75rem;
+        }
+
+        .page-title {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .page-title .title-chip {
+            background: rgba(37, 99, 235, 0.12);
+            color: var(--brand-500);
+            border-radius: 999px;
+            padding: 0.35rem 0.9rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        @media (max-width: 992px) {
+            .admin-shell {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            .content {
+                padding: 1.5rem;
+            }
+
+            .topbar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.75rem;
+            }
+        }
+    </style>
     {% block stylesheets %}{% endblock %}
 </head>
-<body class="bg-light">
-    {% if app.user %}
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-            <div class="container">
-                <a class="navbar-brand" href="#">QR Menu Admin</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="adminNav">
-                    <ul class="navbar-nav me-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('admin_dashboard') }}">
-                                <i class="bi bi-house"></i> Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('admin_restaurant_show') }}">
-                                <i class="bi bi-shop"></i> Restoran
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('admin_product_web_index') }}">
-                                <i class="bi bi-box-seam"></i> Ürünler
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('admin_qrcode_index') }}">
-                                <i class="bi bi-qr-code"></i> QR Kodları
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('admin_media_index') }}">
-                                <i class="bi bi-images"></i> Medya
-                            </a>
-                        </li>
-                    </ul>
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item">
-                            <span class="nav-link text-light">{{ app.user.email }}</span>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('admin_logout') }}">
-                                <i class="bi bi-box-arrow-right"></i> Çıkış
-                            </a>
-                        </li>
-                    </ul>
+<body>
+{% if app.user %}
+    {% set currentRoute = app.request.attributes.get('_route') %}
+    <div class="admin-shell">
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-mark"><i class="bi bi-qr-code-scan"></i></div>
+                <div>
+                    <div class="brand-title fw-semibold">QR Menu</div>
+                    <div class="small text-white-50">Admin Console</div>
                 </div>
             </div>
-        </nav>
-    {% endif %}
 
-    <main class="py-4">
-        {% block body %}{% endblock %}
-    </main>
+            <div class="nav-section">Navigasyon</div>
+            <a class="nav-link {{ currentRoute == 'admin_dashboard' ? 'active' : '' }}" href="{{ path('admin_dashboard') }}">
+                <i class="bi bi-grid-1x2"></i> Dashboard
+            </a>
+            <a class="nav-link {{ currentRoute starts with 'admin_restaurant' ? 'active' : '' }}" href="{{ path('admin_restaurant_show') }}">
+                <i class="bi bi-shop-window"></i> Restoran
+            </a>
+            <a class="nav-link {{ currentRoute starts with 'admin_category' ? 'active' : '' }}" href="{{ path('admin_category_index') }}">
+                <i class="bi bi-tags"></i> Kategoriler
+            </a>
+            <a class="nav-link {{ currentRoute starts with 'admin_product_web' ? 'active' : '' }}" href="{{ path('admin_product_web_index') }}">
+                <i class="bi bi-box-seam"></i> Ürünler
+            </a>
+            <a class="nav-link {{ currentRoute starts with 'admin_qrcode' ? 'active' : '' }}" href="{{ path('admin_qrcode_index') }}">
+                <i class="bi bi-qr-code"></i> QR Kodları
+            </a>
+            <a class="nav-link {{ currentRoute starts with 'admin_media' ? 'active' : '' }}" href="{{ path('admin_media_index') }}">
+                <i class="bi bi-image"></i> Medya
+            </a>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    {% block javascripts %}{% endblock %}
+            <div class="nav-section mt-4">Hesap</div>
+            <div class="d-flex align-items-center gap-2 mt-2 mb-3">
+                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                    <i class="bi bi-person"></i>
+                </div>
+                <div class="small">
+                    <div class="fw-semibold text-white">{{ app.user.email }}</div>
+                    <div class="text-white-50">Aktif oturum</div>
+                </div>
+            </div>
+            <a class="nav-link" href="{{ path('admin_logout') }}">
+                <i class="bi bi-box-arrow-right"></i> Çıkış
+            </a>
+        </aside>
+
+        <div class="content">
+            <div class="topbar">
+                <div class="page-title">
+                    <div class="title-chip">MVP Admin</div>
+                    <div>
+                        <div class="fw-semibold">Hoş geldiniz</div>
+                        <div class="text-muted small">Restoran yönetimini buradan takip edin.</div>
+                    </div>
+                </div>
+                <div class="pill">
+                    {{ "now"|date("d.m.Y H:i") }}
+                </div>
+            </div>
+
+            {{ block('body') }}
+        </div>
+    </div>
+{% else %}
+    {{ block('body') }}
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+{% block javascripts %}{% endblock %}
 </body>
 </html>

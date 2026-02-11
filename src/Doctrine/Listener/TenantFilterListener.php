@@ -24,11 +24,6 @@ class TenantFilterListener
         $request = $event->getRequest();
         $path = $request->getPathInfo();
 
-        // Public API and Super Admin API do not use tenant filter
-        if (str_starts_with($path, '/api/public') || str_starts_with($path, '/api/super-admin')) {
-            return;
-        }
-
         $user = $this->security->getUser();
 
         if (!$user instanceof User) {

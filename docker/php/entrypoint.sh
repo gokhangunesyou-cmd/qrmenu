@@ -11,4 +11,8 @@ fi
 mkdir -p var/cache var/log
 chmod -R 777 var
 
+# Ensure local upload directory is writable by php-fpm (www-data)
+mkdir -p public/uploads
+chmod -R 777 public/uploads
+
 exec "$@"

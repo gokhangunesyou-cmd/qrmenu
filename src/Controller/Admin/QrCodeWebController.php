@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin;
 
+use App\Entity\Restaurant;
 use App\Entity\QrCode;
+use App\Entity\User;
 use App\Enum\QrCodeType;
 use App\Infrastructure\QrCode\QrCodeGenerator;
 use App\Infrastructure\Storage\StorageInterface;
@@ -31,13 +33,7 @@ class QrCodeWebController extends AbstractController
     #[Route('', name: 'admin_qrcode_index', methods: ['GET'])]
     public function index(): Response
     {
-        /** @var \App\Entity\User $user */
-        $user = $this->getUser();
-        $restaurant = $user->getRestaurant();
-
-        if (!$restaurant) {
-            throw $this->createNotFoundException('Restaurant not found');
-        }
+        $restaurant = $this->getRestaurantOrThrow();
 
         $qrCodes = $this->qrCodeRepository->findByRestaurant($restaurant);
 
@@ -50,13 +46,7 @@ class QrCodeWebController extends AbstractController
     #[Route('/create', name: 'admin_qrcode_create', methods: ['GET', 'POST'])]
     public function create(Request $request): Response
     {
-        /** @var \App\Entity\User $user */
-        $user = $this->getUser();
-        $restaurant = $user->getRestaurant();
-
-        if (!$restaurant) {
-            throw $this->createNotFoundException('Restaurant not found');
-        }
+        $restaurant = $this->getRestaurantOrThrow();
 
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('qrcode_create', $request->request->getString('_token'))) {
@@ -153,13 +143,7 @@ class QrCodeWebController extends AbstractController
     #[Route('/{uuid}/download/{format}/{size}', name: 'admin_qrcode_download', methods: ['GET'])]
     public function download(string $uuid, string $format = 'png', int $size = 512): Response
     {
-        /** @var \App\Entity\User $user */
-        $user = $this->getUser();
-        $restaurant = $user->getRestaurant();
-
-        if (!$restaurant) {
-            throw $this->createNotFoundException('Restaurant not found');
-        }
+        $restaurant = $this->getRestaurantOrThrow();
 
         $qrCode = $this->qrCodeRepository->findOneByUuidAndRestaurant($uuid, $restaurant);
         if ($qrCode === null) {
@@ -222,13 +206,7 @@ class QrCodeWebController extends AbstractController
     #[Route('/{uuid}/preview', name: 'admin_qrcode_preview', methods: ['GET'])]
     public function preview(string $uuid): Response
     {
-        /** @var \App\Entity\User $user */
-        $user = $this->getUser();
-        $restaurant = $user->getRestaurant();
-
-        if (!$restaurant) {
-            throw $this->createNotFoundException('Restaurant not found');
-        }
+        $restaurant = $this->getRestaurantOrThrow();
 
         $qrCode = $this->qrCodeRepository->findOneByUuidAndRestaurant($uuid, $restaurant);
         if ($qrCode === null) {
@@ -250,13 +228,7 @@ class QrCodeWebController extends AbstractController
     #[Route('/preview-generate', name: 'admin_qrcode_preview_generate', methods: ['POST'])]
     public function previewGenerate(Request $request): Response
     {
-        /** @var \App\Entity\User $user */
-        $user = $this->getUser();
-        $restaurant = $user->getRestaurant();
-
-        if (!$restaurant) {
-            return new Response('', 404);
-        }
+        $restaurant = $this->getRestaurantOrThrow();
 
         $type = $request->request->getString('type', 'restaurant');
         $tableNumber = $request->request->getInt('table_number', 0);
@@ -278,13 +250,7 @@ class QrCodeWebController extends AbstractController
     #[Route('/{uuid}/delete', name: 'admin_qrcode_delete', methods: ['POST'])]
     public function delete(string $uuid, Request $request): Response
     {
-        /** @var \App\Entity\User $user */
-        $user = $this->getUser();
-        $restaurant = $user->getRestaurant();
-
-        if (!$restaurant) {
-            throw $this->createNotFoundException('Restaurant not found');
-        }
+        $restaurant = $this->getRestaurantOrThrow();
 
         if (!$this->isCsrfTokenValid('qrcode_delete_' . $uuid, $request->request->getString('_token'))) {
             $this->addFlash('error', 'Geçersiz CSRF token.');
@@ -315,5 +281,20 @@ class QrCodeWebController extends AbstractController
         }
 
         return $this->redirectToRoute('admin_qrcode_index');
+    }
+
+    private function getRestaurantOrThrow(): Restaurant
+    {
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException('Authentication required.');
+        }
+
+        $restaurant = $user->getRestaurant();
+        if (!$restaurant) {
+            throw $this->createNotFoundException('Restaurant not found');
+        }
+
+        return $restaurant;
     }
 }

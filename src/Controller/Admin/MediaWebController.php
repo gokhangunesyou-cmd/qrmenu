@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace App\Controller\Admin;
 
 use App\Entity\Media;
+use App\Entity\Restaurant;
+use App\Entity\User;
 use App\Infrastructure\Storage\StorageInterface;
 use App\Repository\MediaRepository;
 use App\Service\MediaService;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -24,19 +27,14 @@ class MediaWebController extends AbstractController
         private readonly MediaService $mediaService,
         private readonly StorageInterface $storage,
         private readonly EntityManagerInterface $em,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
     #[Route('', name: 'admin_media_index', methods: ['GET'])]
     public function index(Request $request): Response
     {
-        /** @var \App\Entity\User $user */
-        $user = $this->getUser();
-        $restaurant = $user->getRestaurant();
-
-        if (!$restaurant) {
-            throw $this->createNotFoundException('Restaurant not found');
-        }
+        $restaurant = $this->getRestaurantOrThrow();
 
         $search = $request->query->getString('search', '');
         $page = max(1, $request->query->getInt('page', 1));
@@ -61,13 +59,7 @@ class MediaWebController extends AbstractController
     #[Route('/upload', name: 'admin_media_upload', methods: ['POST'])]
     public function upload(Request $request): JsonResponse
     {
-        /** @var \App\Entity\User $user */
-        $user = $this->getUser();
-        $restaurant = $user->getRestaurant();
-
-        if (!$restaurant) {
-            return new JsonResponse(['error' => 'Restaurant not found'], 404);
-        }
+        $restaurant = $this->getRestaurantOrThrow();
 
         /** @var UploadedFile|null $file */
         $file = $request->files->get('file');
@@ -76,9 +68,12 @@ class MediaWebController extends AbstractController
             return new JsonResponse(['error' => 'Geçersiz dosya.'], 422);
         }
 
+        $imageSize = @getimagesize($file->getPathname());
+        $mimeType = $imageSize['mime'] ?? $file->getClientMimeType() ?? '';
+
         // Validate mime type
         $allowedMimes = ['image/jpeg', 'image/png', 'image/webp'];
-        if (!in_array($file->getMimeType(), $allowedMimes, true)) {
+        if (!in_array($mimeType, $allowedMimes, true)) {
             return new JsonResponse([
                 'error' => 'Sadece JPEG, PNG ve WebP dosyaları yüklenebilir.',
             ], 422);
@@ -92,7 +87,20 @@ class MediaWebController extends AbstractController
             ], 422);
         }
 
-        $media = $this->uploadAndCreateMedia($file, $restaurant);
+        try {
+            $media = $this->uploadAndCreateMedia($file, $restaurant, $mimeType);
+        } catch (\Throwable $e) {
+            $this->logger->error('Media upload failed', [
+                'exception' => $e,
+                'filename' => $file->getClientOriginalName(),
+                'mimeType' => $mimeType,
+                'size' => $file->getSize(),
+            ]);
+
+            return new JsonResponse([
+                'error' => 'Dosya yüklenirken bir hata oluştu.',
+            ], 500);
+        }
 
         return new JsonResponse([
             'uuid' => $media->getUuid()->toString(),
@@ -109,13 +117,7 @@ class MediaWebController extends AbstractController
     #[Route('/{uuid}/delete', name: 'admin_media_web_delete', methods: ['POST'])]
     public function delete(string $uuid, Request $request): Response
     {
-        /** @var \App\Entity\User $user */
-        $user = $this->getUser();
-        $restaurant = $user->getRestaurant();
-
-        if (!$restaurant) {
-            throw $this->createNotFoundException('Restaurant not found');
-        }
+        $restaurant = $this->getRestaurantOrThrow();
 
         // CSRF protection
         if (!$this->isCsrfTokenValid('media_delete_' . $uuid, $request->request->getString('_token'))) {
@@ -139,13 +141,7 @@ class MediaWebController extends AbstractController
     #[Route('/{uuid}/delete-ajax', name: 'admin_media_web_delete_ajax', methods: ['POST'])]
     public function deleteAjax(string $uuid, Request $request): JsonResponse
     {
-        /** @var \App\Entity\User $user */
-        $user = $this->getUser();
-        $restaurant = $user->getRestaurant();
-
-        if (!$restaurant) {
-            return new JsonResponse(['error' => 'Restaurant not found'], 404);
-        }
+        $restaurant = $this->getRestaurantOrThrow();
 
         if (!$this->isCsrfTokenValid('media_delete_' . $uuid, $request->request->getString('_token'))) {
             return new JsonResponse(['error' => 'Geçersiz CSRF token.'], 403);
@@ -162,14 +158,29 @@ class MediaWebController extends AbstractController
         }
     }
 
-    private function uploadAndCreateMedia(UploadedFile $file, \App\Entity\Restaurant $restaurant): Media
+    private function uploadAndCreateMedia(
+        UploadedFile $file,
+        \App\Entity\Restaurant $restaurant,
+        string $mimeType,
+    ): Media
     {
-        $extension = $file->guessExtension() ?? 'jpg';
+        $extension = strtolower($file->getClientOriginalExtension());
+        if (!in_array($extension, ['jpg', 'jpeg', 'png', 'webp'], true)) {
+            $extension = match ($mimeType) {
+                'image/jpeg' => 'jpg',
+                'image/png' => 'png',
+                'image/webp' => 'webp',
+                default => 'jpg',
+            };
+        }
+
         $mediaUuid = \Ramsey\Uuid\Uuid::uuid7()->toString();
         $storagePath = sprintf('media/%s/%s.%s', $restaurant->getUuid()->toString(), $mediaUuid, $extension);
 
+        $fileContent = (string) file_get_contents($file->getPathname());
+
         // Upload original to storage
-        $this->storage->put($storagePath, $file->getContent(), $file->getMimeType());
+        $this->storage->put($storagePath, $fileContent, $mimeType);
 
         // Get image dimensions
         $imageSize = @getimagesize($file->getPathname());
@@ -177,13 +188,13 @@ class MediaWebController extends AbstractController
         $height = $imageSize ? $imageSize[1] : null;
 
         // Create thumbnail
-        $this->createThumbnail($file, $restaurant->getUuid()->toString(), $mediaUuid, $extension);
+        $this->createThumbnail($file, $restaurant->getUuid()->toString(), $mediaUuid, $extension, $mimeType);
 
         // Create media entity
         $media = new Media(
             $file->getClientOriginalName(),
             $storagePath,
-            $file->getMimeType(),
+            $mimeType,
             $file->getSize(),
             $restaurant,
         );
@@ -206,6 +217,7 @@ class MediaWebController extends AbstractController
         string $restaurantUuid,
         string $mediaUuid,
         string $extension,
+        string $mimeType,
     ): void {
         $maxThumbWidth = 300;
         $maxThumbHeight = 300;
@@ -221,15 +233,18 @@ class MediaWebController extends AbstractController
         $ratio = min($maxThumbWidth / $origWidth, $maxThumbHeight / $origHeight);
         if ($ratio >= 1.0) {
             // Image is already small enough, use original as thumbnail
-            $thumbContent = $file->getContent();
+            $thumbContent = (string) file_get_contents($file->getPathname());
         } else {
+            if (!function_exists('imagecreatetruecolor')) {
+                return;
+            }
             $newWidth = (int) round($origWidth * $ratio);
             $newHeight = (int) round($origHeight * $ratio);
 
-            $source = match ($file->getMimeType()) {
-                'image/jpeg' => @imagecreatefromjpeg($file->getPathname()),
-                'image/png' => @imagecreatefrompng($file->getPathname()),
-                'image/webp' => @imagecreatefromwebp($file->getPathname()),
+            $source = match ($mimeType) {
+                'image/jpeg' => function_exists('imagecreatefromjpeg') ? @imagecreatefromjpeg($file->getPathname()) : false,
+                'image/png' => function_exists('imagecreatefrompng') ? @imagecreatefrompng($file->getPathname()) : false,
+                'image/webp' => function_exists('imagecreatefromwebp') ? @imagecreatefromwebp($file->getPathname()) : false,
                 default => false,
             };
 
@@ -240,7 +255,7 @@ class MediaWebController extends AbstractController
             $thumb = imagecreatetruecolor($newWidth, $newHeight);
 
             // Preserve transparency for PNG and WebP
-            if (in_array($file->getMimeType(), ['image/png', 'image/webp'], true)) {
+            if (in_array($mimeType, ['image/png', 'image/webp'], true)) {
                 imagealphablending($thumb, false);
                 imagesavealpha($thumb, true);
             }
@@ -248,12 +263,13 @@ class MediaWebController extends AbstractController
             imagecopyresampled($thumb, $source, 0, 0, 0, 0, $newWidth, $newHeight, $origWidth, $origHeight);
 
             ob_start();
-            match ($file->getMimeType()) {
-                'image/jpeg' => imagejpeg($thumb, null, 80),
-                'image/png' => imagepng($thumb, null, 6),
-                'image/webp' => imagewebp($thumb, null, 80),
-                default => null,
-            };
+            if ($mimeType === 'image/jpeg' && function_exists('imagejpeg')) {
+                imagejpeg($thumb, null, 80);
+            } elseif ($mimeType === 'image/png' && function_exists('imagepng')) {
+                imagepng($thumb, null, 6);
+            } elseif ($mimeType === 'image/webp' && function_exists('imagewebp')) {
+                imagewebp($thumb, null, 80);
+            }
             $thumbContent = ob_get_clean();
 
             imagedestroy($source);
@@ -262,7 +278,22 @@ class MediaWebController extends AbstractController
 
         if (!empty($thumbContent)) {
             $thumbPath = sprintf('media/%s/thumbs/%s.%s', $restaurantUuid, $mediaUuid, $extension);
-            $this->storage->put($thumbPath, $thumbContent, $file->getMimeType());
+            $this->storage->put($thumbPath, $thumbContent, $mimeType);
         }
+    }
+
+    private function getRestaurantOrThrow(): Restaurant
+    {
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException('Authentication required.');
+        }
+
+        $restaurant = $user->getRestaurant();
+        if (!$restaurant) {
+            throw $this->createNotFoundException('Restaurant not found');
+        }
+
+        return $restaurant;
     }
 }

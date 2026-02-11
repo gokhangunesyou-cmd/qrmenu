@@ -59,15 +59,23 @@ class RestaurantWebController extends AbstractController
             // Handle logo upload
             $logoFile = $form->get('logoFile')->getData();
             if ($logoFile instanceof UploadedFile) {
-                $media = $this->uploadMedia($logoFile, $restaurant);
-                $restaurant->setLogoMedia($media);
+                try {
+                    $media = $this->uploadMedia($logoFile, $restaurant);
+                    $restaurant->setLogoMedia($media);
+                } catch (\Throwable $e) {
+                    $this->addFlash('error', 'Logo yüklenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.');
+                }
             }
 
             // Handle cover upload
             $coverFile = $form->get('coverFile')->getData();
             if ($coverFile instanceof UploadedFile) {
-                $media = $this->uploadMedia($coverFile, $restaurant);
-                $restaurant->setCoverMedia($media);
+                try {
+                    $media = $this->uploadMedia($coverFile, $restaurant);
+                    $restaurant->setCoverMedia($media);
+                } catch (\Throwable $e) {
+                    $this->addFlash('error', 'Kapak fotoğrafı yüklenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.');
+                }
             }
 
             $this->em->flush();
@@ -90,7 +98,8 @@ class RestaurantWebController extends AbstractController
         $storagePath = sprintf('media/%s/%s.%s', $restaurant->getUuid()->toString(), $mediaUuid, $extension);
 
         // Upload to storage
-        $this->storage->put($storagePath, $file->getContent(), $file->getMimeType());
+        $fileContent = (string) file_get_contents($file->getPathname());
+        $this->storage->put($storagePath, $fileContent, $file->getMimeType());
 
         // Create media entity
         $media = new Media(
