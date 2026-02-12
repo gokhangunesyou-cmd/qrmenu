@@ -10,7 +10,7 @@
 {% block stylesheets %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
     --primary: {{ theme.primary }};
@@ -21,6 +21,7 @@
     --accent: {{ theme.accent }};
     --muted: {{ theme.muted }};
     --border: {{ theme.border }};
+    --phone-shadow: 0 34px 70px rgba(17, 24, 39, 0.22);
 }
 
 * {
@@ -29,79 +30,101 @@
 
 body {
     margin: 0;
-    font-family: 'Manrope', sans-serif;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    line-height: 1.35;
     background:
-        radial-gradient(circle at 8% -10%, color-mix(in srgb, var(--accent) 28%, transparent), transparent 35%),
-        radial-gradient(circle at 90% 10%, color-mix(in srgb, var(--secondary) 18%, transparent), transparent 40%),
-        var(--background);
+        radial-gradient(circle at 6% -12%, color-mix(in srgb, var(--accent) 34%, transparent), transparent 36%),
+        radial-gradient(circle at 94% 6%, color-mix(in srgb, var(--secondary) 22%, transparent), transparent 38%),
+        linear-gradient(180deg, color-mix(in srgb, var(--background) 92%, #fff), var(--background));
     color: var(--text);
 }
 
-.hero {
-    max-width: 1100px;
-    margin: 24px auto 0;
-    border-radius: 30px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.15);
+.menu-app-shell {
+    min-height: 100vh;
+    padding: 16px 12px 24px;
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
 }
 
-.hero-cover {
-    min-height: 280px;
-    padding: 28px;
+.menu-app {
+    width: min(100%, 460px);
+    height: calc(100vh - 32px);
+    border-radius: 34px;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--border) 80%, #fff);
+    background: var(--surface);
+    box-shadow: var(--phone-shadow);
+    display: flex;
+    flex-direction: column;
+}
+
+.app-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.app-hero {
+    min-height: 122px;
+    padding: 10px 12px;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
     background:
-        linear-gradient(180deg, rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.62)),
+        linear-gradient(178deg, rgba(17, 24, 39, 0.06), rgba(17, 24, 39, 0.76)),
         {% if restaurant.coverMedia %}url('{{ media_url(restaurant.coverMedia.storagePath) }}'){% else %}linear-gradient(130deg, var(--secondary), var(--primary)){% endif %};
     background-size: cover;
     background-position: center;
 }
 
-.hero-badge {
+.hero-table {
     align-self: flex-start;
-    background: color-mix(in srgb, var(--accent) 90%, #fff 10%);
-    color: #1f2937;
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
+    background: color-mix(in srgb, var(--accent) 84%, #fff 16%);
+    color: #7c2d12;
+    font-size: 11px;
+    font-weight: 700;
     border-radius: 999px;
-    padding: 8px 14px;
-    margin-bottom: 12px;
+    padding: 4px 10px;
+    margin-bottom: 8px;
+}
+
+.hero-title-wrap {
+    margin-top: auto;
 }
 
 .hero-title {
     margin: 0;
     color: #fff;
-    font-family: 'Playfair Display', serif;
+    font-family: 'Fraunces', serif;
     font-weight: 700;
-    font-size: clamp(30px, 4vw, 46px);
-    line-height: 1.1;
+    font-size: clamp(20px, 5.8vw, 28px);
+    line-height: 1.05;
 }
 
 .hero-subtitle {
-    margin: 10px 0 0;
-    color: rgba(255, 255, 255, 0.9);
-    max-width: 640px;
-    font-size: 15px;
+    margin: 6px 0 0;
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 11px;
+    max-width: 260px;
+    line-height: 1.35;
 }
 
-.hero-meta {
+.app-profile {
     display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    align-items: center;
-    padding: 18px 24px 24px;
+    gap: 8px;
+    align-items: flex-start;
+    padding: 8px 10px;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, #fff);
+    background: color-mix(in srgb, var(--surface) 70%, #fff);
 }
 
 .logo-wrap {
-    width: 72px;
-    height: 72px;
-    border-radius: 20px;
-    border: 1px solid var(--border);
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    border: 1px solid color-mix(in srgb, var(--border) 75%, #fff);
     background: #fff;
     display: grid;
     place-items: center;
@@ -116,130 +139,142 @@ body {
 }
 
 .hero-info {
-    flex: 1;
-    min-width: 220px;
+    width: 100%;
+    min-width: 0;
 }
 
 .hero-info h2 {
-    margin: 0 0 4px;
-    font-size: 22px;
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
 }
 
 .hero-info p {
-    margin: 0;
+    margin: 2px 0 0;
     color: var(--muted);
-    font-size: 14px;
+    font-size: 11px;
+    line-height: 1.3;
 }
 
-.social-list {
+.profile-social-links {
+    margin-top: 6px;
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-}
-
-.social-list a {
-    text-decoration: none;
-    color: var(--primary);
-    border: 1px solid color-mix(in srgb, var(--primary) 25%, transparent);
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 700;
-    padding: 7px 12px;
-}
-
-.lang-switch {
-    display: inline-flex;
     gap: 6px;
-    flex-wrap: wrap;
 }
 
-.lang-switch a {
+.profile-social-links a {
     text-decoration: none;
-    color: var(--text);
-    border: 1px solid var(--border);
+    border: 1px solid color-mix(in srgb, var(--primary) 28%, transparent);
+    background: #fff;
+    color: color-mix(in srgb, var(--primary) 84%, #000);
     border-radius: 999px;
-    font-size: 12px;
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-social-links svg {
+    width: 13px;
+    height: 13px;
+}
+
+.profile-social-links .social-fallback {
+    font-size: 9px;
     font-weight: 700;
-    padding: 6px 10px;
+    text-transform: uppercase;
+}
+
+.screen-topbar {
+    padding: 8px 10px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 74%, #fff);
     background: #fff;
 }
 
-.lang-switch a.active {
-    border-color: transparent;
-    background: color-mix(in srgb, var(--primary) 90%, #fff);
-    color: #fff;
-}
-
-.menu-shell {
-    max-width: 1100px;
-    margin: 22px auto 42px;
+.icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    border: 1px solid color-mix(in srgb, var(--border) 80%, #fff);
     display: grid;
-    gap: 16px;
+    place-items: center;
+    background: #fff;
+    color: color-mix(in srgb, var(--text) 84%, #000);
+    cursor: pointer;
+    flex-shrink: 0;
 }
 
-.info-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 12px;
+.icon-btn.is-hidden {
+    opacity: 0;
+    pointer-events: none;
 }
 
-.info-card {
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    background: var(--surface);
-    padding: 16px;
-    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+.screen-kicker {
+    margin: 0;
+    color: var(--muted);
+    font-size: 9px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-weight: 700;
 }
 
-.info-card h3 {
-    margin: 0 0 12px;
-    font-size: 18px;
-    font-weight: 800;
+.screen-title {
+    margin: 2px 0 0;
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    line-height: 1.1;
 }
 
-.contact-list {
+.menu-scroll {
+    padding: 10px 10px 16px;
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--surface) 65%, #fff), var(--background));
+}
+
+.screen {
+    display: none;
+}
+
+.screen.is-active {
+    display: block;
+}
+
+.category-list {
     display: grid;
     gap: 8px;
 }
 
-.contact-item {
-    font-size: 14px;
-    color: var(--text);
-    line-height: 1.35;
-}
-
-.contact-item b {
-    font-size: 12px;
-    color: var(--muted);
-    margin-right: 6px;
-}
-
-.contact-item a {
-    color: inherit;
-}
-
-.category-card {
-    border: 1px solid var(--border);
-    background: var(--surface);
-    border-radius: 24px;
-    padding: 20px;
-    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
-}
-
-.category-head {
+.category-button {
+    border: 1px solid color-mix(in srgb, var(--border) 86%, #fff);
+    border-radius: 16px;
+    background: #fff;
+    padding: 8px;
     display: flex;
-    gap: 14px;
+    gap: 10px;
     align-items: center;
-    margin-bottom: 16px;
+    text-align: left;
+    cursor: pointer;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+}
+
+.category-button:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--primary) 65%, #fff);
+    outline-offset: 1px;
 }
 
 .category-media {
-    width: 72px;
-    height: 72px;
-    border-radius: 18px;
+    width: 54px;
+    height: 54px;
+    border-radius: 12px;
     overflow: hidden;
     flex-shrink: 0;
-    background: color-mix(in srgb, var(--secondary) 10%, #fff);
+    background: color-mix(in srgb, var(--secondary) 15%, #fff);
+    border: 1px solid color-mix(in srgb, var(--border) 66%, #fff);
 }
 
 .category-media img {
@@ -248,39 +283,90 @@ body {
     object-fit: cover;
 }
 
-.category-head h3 {
+.category-name {
     margin: 0;
-    font-size: 26px;
-    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    font-weight: 700;
 }
 
-.category-head p {
-    margin: 6px 0 0;
+.category-meta {
+    margin-top: 4px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
     color: var(--muted);
-    font-size: 14px;
+    font-size: 11px;
+    font-weight: 600;
 }
 
-.product-grid {
+.category-count {
+    border: 1px solid color-mix(in srgb, var(--secondary) 22%, transparent);
+    background: color-mix(in srgb, var(--secondary) 14%, #fff);
+    color: color-mix(in srgb, var(--text) 88%, #000);
+    border-radius: 999px;
+    padding: 2px 7px;
+    font-size: 10px;
+}
+
+.category-chevron {
+    margin-left: auto;
+    color: color-mix(in srgb, var(--muted) 80%, #000);
+}
+
+.category-note {
+    margin-bottom: 12px;
+    border: 1px solid color-mix(in srgb, var(--accent) 42%, transparent);
+    background: color-mix(in srgb, var(--accent) 13%, #fff);
+    border-radius: 14px;
+    padding: 8px 10px;
+    font-size: 12px;
+    color: color-mix(in srgb, var(--text) 80%, #000);
+    line-height: 1.35;
+}
+
+.category-note.is-hidden {
+    display: none;
+}
+
+.product-group {
+    display: none;
+}
+
+.product-group.is-active {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 12px;
+    gap: 8px;
 }
 
 .product-item {
-    border: 1px solid color-mix(in srgb, var(--secondary) 14%, transparent);
-    border-radius: 16px;
+    border: 1px solid color-mix(in srgb, var(--border) 78%, #fff);
+    border-radius: 14px;
     background: #fff;
-    overflow: hidden;
+    padding: 8px;
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+    box-shadow: 0 7px 18px rgba(17, 24, 39, 0.05);
 }
 
-.product-item img {
+.product-thumb {
+    width: 64px;
+    height: 64px;
+    border-radius: 11px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: color-mix(in srgb, var(--secondary) 10%, #fff);
+    border: 1px solid color-mix(in srgb, var(--border) 66%, #fff);
+}
+
+.product-thumb img {
     width: 100%;
-    height: 132px;
+    height: 100%;
     object-fit: cover;
 }
 
 .product-body {
-    padding: 12px 13px 14px;
+    flex: 1;
+    min-width: 0;
 }
 
 .product-top {
@@ -292,196 +378,895 @@ body {
 
 .product-name {
     margin: 0;
-    font-size: 16px;
-    font-weight: 800;
+    font-size: 13px;
+    font-weight: 700;
     line-height: 1.25;
 }
 
 .product-price {
-    background: color-mix(in srgb, var(--accent) 22%, #fff);
+    background: color-mix(in srgb, var(--accent) 18%, #fff);
     color: #92400e;
     border-radius: 999px;
-    padding: 5px 10px;
-    font-size: 12px;
-    font-weight: 800;
+    padding: 3px 7px;
+    font-size: 10px;
+    font-weight: 700;
     white-space: nowrap;
 }
 
 .product-desc {
-    margin: 8px 0 0;
+    margin: 6px 0 0;
     color: var(--muted);
-    font-size: 13px;
+    font-size: 11px;
+    line-height: 1.35;
 }
 
-.product-meta {
+.product-actions {
     margin-top: 9px;
     display: flex;
     gap: 6px;
     flex-wrap: wrap;
 }
 
+.btn {
+    text-decoration: none;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 5px 9px;
+    cursor: pointer;
+}
+
+.btn-secondary {
+    border: 1px solid color-mix(in srgb, var(--primary) 24%, transparent);
+    color: color-mix(in srgb, var(--primary) 84%, #000);
+    background: #fff;
+}
+
+.btn-primary {
+    border: 1px solid transparent;
+    color: #fff;
+    background: color-mix(in srgb, var(--primary) 86%, #000);
+}
+
+.meta-row {
+    margin-top: 6px;
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
 .meta-pill {
     border-radius: 999px;
-    padding: 3px 8px;
-    font-size: 11px;
+    padding: 2px 7px;
+    font-size: 10px;
     font-weight: 700;
     background: #f8fafc;
     color: #334155;
     border: 1px solid #e2e8f0;
 }
 
-.menu-empty {
-    text-align: center;
-    border-radius: 18px;
-    border: 1px dashed var(--border);
-    background: var(--surface);
+.info-card {
+    margin-top: 10px;
+    border: 1px solid color-mix(in srgb, var(--border) 78%, #fff);
+    border-radius: 14px;
+    background: #fff;
+    padding: 10px;
+}
+
+.info-card h3 {
+    margin: 0 0 6px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.contact-list {
+    display: grid;
+    gap: 7px;
+}
+
+.contact-item {
+    font-size: 12px;
+    color: color-mix(in srgb, var(--text) 90%, #000);
+}
+
+.contact-item b {
     color: var(--muted);
-    padding: 28px 16px;
+    margin-right: 6px;
+}
+
+.contact-item a {
+    color: inherit;
+}
+
+.social-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.social-list a {
+    text-decoration: none;
+    font-size: 10px;
+    font-weight: 700;
+    color: color-mix(in srgb, var(--primary) 85%, #000);
+    border: 1px solid color-mix(in srgb, var(--primary) 24%, transparent);
+    border-radius: 999px;
+    padding: 5px 10px;
+}
+
+.language-list {
+    display: grid;
+    gap: 7px;
+}
+
+.locale-link {
+    text-decoration: none;
+    border: 1px solid color-mix(in srgb, var(--border) 82%, #fff);
+    border-radius: 12px;
+    background: #fff;
+    padding: 8px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: inherit;
+}
+
+.locale-link span {
+    font-weight: 700;
+}
+
+.locale-link small {
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.locale-link.is-active {
+    border-color: transparent;
+    background: color-mix(in srgb, var(--primary) 86%, #fff);
+    color: #fff;
+}
+
+.locale-link.is-active small {
+    color: rgba(255, 255, 255, 0.86);
+}
+
+.cart-list {
+    display: grid;
+    gap: 7px;
+}
+
+.cart-item {
+    border: 1px solid color-mix(in srgb, var(--border) 78%, #fff);
+    border-radius: 12px;
+    background: #fff;
+    padding: 8px;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.cart-name {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.cart-meta {
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.cart-remove {
+    width: 24px;
+    height: 24px;
+    border-radius: 8px;
+    border: 1px solid color-mix(in srgb, var(--border) 84%, #fff);
+    background: #fff;
+    color: var(--muted);
+    cursor: pointer;
+}
+
+.cart-summary {
+    margin-top: 10px;
+    border: 1px solid color-mix(in srgb, var(--border) 75%, #fff);
+    border-radius: 12px;
+    background: #fff;
+    padding: 10px;
+}
+
+.cart-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.cart-actions {
+    margin-top: 9px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 7px;
+    flex-wrap: wrap;
+}
+
+.cart-actions .btn {
+    min-height: 30px;
+}
+
+.cart-whatsapp {
+    width: 100%;
+    justify-content: center;
+    display: inline-flex;
+    align-items: center;
+}
+
+.cart-whatsapp.is-disabled {
+    pointer-events: none;
+    opacity: 0.55;
+}
+
+.cart-warning {
+    margin-top: 8px;
+    font-size: 11px;
+    color: #9f1239;
+}
+
+.empty-card {
+    text-align: center;
+    border-radius: 12px;
+    border: 1px dashed color-mix(in srgb, var(--border) 74%, #fff);
+    background: #fff;
+    color: var(--muted);
+    padding: 16px 12px;
+    font-size: 12px;
+}
+
+.bottom-nav {
+    margin-top: auto;
+    border-top: 1px solid color-mix(in srgb, var(--border) 76%, #fff);
+    background: #fff;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+    padding: 7px;
+}
+
+.nav-btn {
+    border: none;
+    background: transparent;
+    border-radius: 12px;
+    padding: 7px 5px;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 700;
+    display: grid;
+    gap: 3px;
+    place-items: center;
+    position: relative;
+    cursor: pointer;
+}
+
+.nav-btn.is-active {
+    color: color-mix(in srgb, var(--primary) 84%, #000);
+    background: color-mix(in srgb, var(--primary) 12%, #fff);
+}
+
+.cart-count {
+    position: absolute;
+    top: 2px;
+    right: 14px;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent) 92%, #fff);
+    color: #7c2d12;
+    font-size: 9px;
+    font-weight: 700;
+    display: grid;
+    place-items: center;
+    border: 1px solid color-mix(in srgb, var(--accent) 66%, #fff);
+    padding: 0 2px;
 }
 
 @media (max-width: 900px) {
-    .hero,
-    .menu-shell {
-        margin-left: 14px;
-        margin-right: 14px;
+    .menu-app-shell {
+        padding: 0;
     }
 
-    .category-head h3 {
-        font-size: 22px;
+    .menu-app {
+        width: 100%;
+        height: 100vh;
+        border-radius: 0;
+        border: none;
+        box-shadow: none;
+    }
+
+    .app-hero {
+        min-height: 108px;
+    }
+
+    .hero-title {
+        font-size: clamp(18px, 5.6vw, 24px);
+    }
+
+    .hero-subtitle {
+        display: none;
+    }
+}
+
+@media (min-width: 980px) {
+    .menu-app-shell {
+        padding: 28px 20px;
+    }
+
+    .menu-app {
+        width: min(100%, 920px);
+        height: calc(100vh - 56px);
+        border-radius: 26px;
+    }
+
+    .app-hero {
+        min-height: 146px;
+        padding: 16px 18px;
+    }
+
+    .hero-title {
+        font-size: clamp(24px, 2.7vw, 34px);
+    }
+
+    .hero-subtitle {
+        display: block;
+        font-size: 12px;
+        max-width: 460px;
+    }
+
+    .app-profile {
+        padding: 12px 14px;
+    }
+
+    .menu-scroll {
+        padding: 14px 14px 18px;
+    }
+
+    .category-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .product-group.is-active {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .language-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 </style>
 {% endblock %}
 
 {% block body %}
-<section class="hero">
-    <div class="hero-cover">
-        {% if tableNumber %}
-            <div class="hero-badge">{{ ui.table }} {{ tableNumber }}</div>
-        {% endif %}
-        <h1 class="hero-title">{{ restaurant.name }}</h1>
-        {% if restaurant.description %}
-            <p class="hero-subtitle">{{ restaurant.description }}</p>
-        {% endif %}
-    </div>
-    <div class="hero-meta">
-        <div class="logo-wrap">
-            {% if restaurant.logoMedia %}
-                <img src="{{ media_url(restaurant.logoMedia.storagePath) }}" alt="{{ restaurant.name }}">
-            {% else %}
-                <span>{{ restaurant.name|slice(0, 1)|upper }}</span>
-            {% endif %}
-        </div>
-        <div class="hero-info">
-            <h2>{{ restaurant.name }}</h2>
-            <p>
-                {% if restaurant.city %}{{ restaurant.city }}{% endif %}
-                {% if restaurant.address %}{{ restaurant.city ? ' • ' : '' }}{{ restaurant.address|slice(0, 70) }}{% endif %}
-            </p>
-        </div>
-        {% if availableLocales|length > 1 %}
-            <div class="lang-switch" aria-label="{{ ui.language }}">
-                {% for localeCode, localeLabel in availableLocales %}
-                    {% set localeRouteParams = {slug: restaurant.slug, id: restaurant.id, lang: localeCode} %}
-                    {% if tableNumber %}
-                        {% set localeRouteParams = localeRouteParams|merge({table: tableNumber}) %}
-                    {% endif %}
-                    <a href="{{ path('site_menu_show', localeRouteParams) }}" class="{{ localeCode == currentLocale ? 'active' : '' }}" title="{{ localeLabel }}">{{ localeCode|upper }}</a>
-                {% endfor %}
-            </div>
-        {% endif %}
-    </div>
-</section>
-
-<main class="menu-shell">
-    {% set hasContactInfo = restaurant.phone or restaurant.email or restaurant.city or restaurant.address %}
-    {% if hasContactInfo or socialLinks is not empty %}
-        <section class="info-cards">
-            <article class="info-card">
-                <h3>{{ ui.contact }}</h3>
-                {% if hasContactInfo %}
-                    <div class="contact-list">
-                        {% if restaurant.phone %}
-                            <div class="contact-item"><b>{{ ui.phone }}:</b><a href="tel:{{ restaurant.phone|replace({' ': ''}) }}">{{ restaurant.phone }}</a></div>
-                        {% endif %}
-                        {% if restaurant.email %}
-                            <div class="contact-item"><b>{{ ui.email }}:</b><a href="mailto:{{ restaurant.email }}">{{ restaurant.email }}</a></div>
-                        {% endif %}
-                        {% if restaurant.city %}
-                            <div class="contact-item"><b>{{ ui.city }}:</b>{{ restaurant.city }}</div>
-                        {% endif %}
-                        {% if restaurant.address %}
-                            <div class="contact-item"><b>{{ ui.address }}:</b>{{ restaurant.address }}</div>
-                        {% endif %}
-                    </div>
-                {% else %}
-                    <div class="contact-item">{{ ui.no_contact }}</div>
+<div class="menu-app-shell">
+    <div class="menu-app" data-menu-app data-cart-key="qrmenu_cart_{{ restaurant.id }}">
+        <div class="app-scroll">
+            <header class="app-hero">
+                {% if tableNumber %}
+                    <div class="hero-table">{{ ui.table }} {{ tableNumber }}</div>
                 {% endif %}
-            </article>
-            {% if socialLinks is not empty %}
-                <article class="info-card">
-                    <h3>{{ ui.social }}</h3>
-                    <div class="social-list">
-                        {% for link in socialLinks %}
-                            <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer">{{ socialPlatformLabels[link.platform.value] ?? link.platform.value|replace({'_': ' '})|title }}</a>
-                        {% endfor %}
-                    </div>
-                </article>
-            {% endif %}
-        </section>
-    {% endif %}
-
-    {% if categories is empty %}
-        <div class="menu-empty">{{ ui.empty }}</div>
-    {% endif %}
-
-    {% for category in categories %}
-        {% set categoryName = localizedCategoryNames[category.id] ?? category.name %}
-        {% set categoryDescription = localizedCategoryDescriptions[category.id] ?? category.description %}
-        <section class="category-card" id="category-{{ category.uuid }}">
-            <header class="category-head">
-                {% if category.imageMedia %}
-                    <div class="category-media">
-                        <img src="{{ media_url(category.imageMedia.storagePath) }}" alt="{{ categoryName }}">
-                    </div>
-                {% endif %}
-                <div>
-                    <h3>{{ categoryName }}</h3>
-                    {% if categoryDescription %}
-                        <p>{{ categoryDescription }}</p>
+                <div class="hero-title-wrap">
+                    <h1 class="hero-title">{{ restaurant.name }}</h1>
+                    {% if restaurant.description %}
+                        <p class="hero-subtitle">{{ restaurant.description|slice(0, 120) }}</p>
                     {% endif %}
                 </div>
             </header>
-            <div class="product-grid">
-                {% for product in category.products %}
-                    {% set productName = localizedProductNames[product.id] ?? product.name %}
-                    {% set productDescription = localizedProductDescriptions[product.id] ?? product.description %}
-                    {% set productImage = product.images|length > 0 ? product.images|first : null %}
-                    <article class="product-item">
-                        {% if productImage and productImage.media %}
-                            <img src="{{ media_thumb_url(productImage.media.storagePath) }}" alt="{{ productName }}">
-                        {% endif %}
-                        <div class="product-body">
-                            <div class="product-top">
-                                <h4 class="product-name">{{ productName }}</h4>
-                                <div class="product-price">{{ currencySymbol }} {{ product.price|number_format(2, '.', ',') }}</div>
-                            </div>
-                            {% if productDescription %}
-                                <p class="product-desc">{{ productDescription }}</p>
-                            {% endif %}
-                            <div class="product-meta">
-                                {% if product.isFeatured %}
-                                    <span class="meta-pill">{{ ui.featured }}</span>
-                                {% endif %}
-                                {% if product.calories %}
-                                    <span class="meta-pill">{{ product.calories }} kcal</span>
-                                {% endif %}
-                            </div>
+
+            <section class="app-profile">
+                <div class="logo-wrap">
+                    {% if restaurant.logoMedia %}
+                        <img src="{{ media_url(restaurant.logoMedia.storagePath) }}" alt="{{ restaurant.name }}">
+                    {% else %}
+                        <span>{{ restaurant.name|slice(0, 1)|upper }}</span>
+                                    {% endif %}
+                </div>
+                <div class="hero-info">
+                    <h2>{{ restaurant.name }}</h2>
+                    <p>
+                        {% if restaurant.city %}{{ restaurant.city }}{% endif %}
+                        {% if restaurant.address %}{{ restaurant.city ? ' • ' : '' }}{{ restaurant.address|slice(0, 44) }}{% endif %}
+                    </p>
+                    {% if socialLinks is not empty %}
+                        <div class="profile-social-links">
+                            {% for link in socialLinks|slice(0, 4) %}
+                                {% set platformValue = link.platform.value %}
+                                {% set platformLabel = socialPlatformLabels[platformValue] ?? platformValue|replace({'_': ' '})|title %}
+                                <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ platformLabel }}" title="{{ platformLabel }}">
+                                    {% if platformValue == 'instagram' %}
+                                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <rect x="3.5" y="3.5" width="17" height="17" rx="5" stroke="currentColor" stroke-width="2"></rect>
+                                            <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"></circle>
+                                            <circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"></circle>
+                                        </svg>
+                                    {% elseif platformValue == 'facebook' %}
+                                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <path d="M13.8 21V12.9H16.4L16.8 9.7H13.8V7.7C13.8 6.8 14.1 6.2 15.4 6.2H16.9V3.3C16.6 3.3 15.7 3.2 14.7 3.2C12.6 3.2 11.2 4.5 11.2 6.9V9.7H8.8V12.9H11.2V21H13.8Z" fill="currentColor"></path>
+                                        </svg>
+                                    {% elseif platformValue == 'twitter' %}
+                                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <path d="M5 5H8.9L12.1 9.5L15.9 5H19L13.6 11.2L19.3 19H15.4L11.9 14.1L7.7 19H4.6L10.4 12.3L5 5Z" fill="currentColor"></path>
+                                        </svg>
+                                    {% elseif platformValue == 'tiktok' %}
+                                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <path d="M14.6 4.2C15.1 6.1 16.2 7.2 18 7.5V10.1C16.7 10.1 15.7 9.8 14.7 9.2V14.4C14.7 17.2 12.6 19.2 9.9 19.2C7.2 19.2 5.1 17.2 5.1 14.5C5.1 11.8 7.2 9.8 9.9 9.8C10.2 9.8 10.6 9.8 10.9 9.9V12.5C10.6 12.4 10.2 12.3 9.9 12.3C8.6 12.3 7.6 13.2 7.6 14.5C7.6 15.8 8.6 16.8 9.9 16.8C11.2 16.8 12.2 15.8 12.2 14.5V4.2H14.6Z" fill="currentColor"></path>
+                                        </svg>
+                                    {% elseif platformValue == 'website' %}
+                                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"></circle>
+                                            <path d="M3.5 12H20.5M12 3.5C14.3 5.9 15.6 8.9 15.6 12C15.6 15.1 14.3 18.1 12 20.5C9.7 18.1 8.4 15.1 8.4 12C8.4 8.9 9.7 5.9 12 3.5Z" stroke="currentColor" stroke-width="1.5"></path>
+                                        </svg>
+                                    {% elseif platformValue == 'google_maps' %}
+                                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <path d="M12 21C15.9 16.7 18 13.7 18 10.8C18 7 15.3 4 12 4C8.7 4 6 7 6 10.8C6 13.7 8.1 16.7 12 21Z" stroke="currentColor" stroke-width="2"></path>
+                                            <circle cx="12" cy="10.5" r="2.3" fill="currentColor"></circle>
+                                        </svg>
+                                    {% else %}
+                                        <span class="social-fallback">{{ platformLabel|slice(0, 2) }}</span>
+                                    {% endif %}
+                                </a>
+                            {% endfor %}
                         </div>
-                    </article>
-                {% endfor %}
-            </div>
-        </section>
-    {% endfor %}
-</main>
+                    {% endif %}
+                </div>
+            </section>
+
+            <section class="screen-topbar">
+                <button type="button" class="icon-btn is-hidden" data-back-button aria-label="{{ ui.back_to_menu }}">
+                    <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                        <path d="M12.5 4.5L7 10L12.5 15.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg>
+                </button>
+                <div>
+                    <p class="screen-kicker" data-screen-kicker>{{ ui.menu }}</p>
+                    <h2 class="screen-title" data-screen-title>{{ ui.categories }}</h2>
+                </div>
+            </section>
+
+            <main class="menu-scroll">
+                <section class="screen is-active" data-screen="categories">
+                    {% if categories is empty %}
+                        <div class="empty-card">{{ ui.empty }}</div>
+                    {% else %}
+                        <div class="category-list">
+                            {% for category in categories %}
+                                {% set categoryName = localizedCategoryNames[category.id] ?? category.name %}
+                                {% set categoryDescription = localizedCategoryDescriptions[category.id] ?? category.description %}
+                                <button
+                                    type="button"
+                                    class="category-button"
+                                    data-category-trigger
+                                    data-category-id="{{ category.id }}"
+                                    data-category-name="{{ categoryName|e('html_attr') }}"
+                                    data-category-description="{{ categoryDescription|default('')|e('html_attr') }}"
+                                >
+                                    <div class="category-media">
+                                        {% if category.imageMedia %}
+                                            <img src="{{ media_thumb_url(category.imageMedia.storagePath) }}" alt="{{ categoryName }}">
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <h3 class="category-name">{{ categoryName }}</h3>
+                                        <div class="category-meta">
+                                            <span class="category-count">{{ category.products|length }} urun</span>
+                                            {% if categoryDescription %}
+                                                <span>{{ categoryDescription|slice(0, 46) }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <span class="category-chevron" aria-hidden="true">
+                                        <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                                            <path d="M8 5L13 10L8 15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+                                        </svg>
+                                    </span>
+                                </button>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    {% set hasContactInfo = restaurant.phone or restaurant.email or restaurant.city or restaurant.address %}
+                    {% if hasContactInfo or socialLinks is not empty %}
+                        <article class="info-card">
+                            <h3>{{ ui.contact }}</h3>
+                            {% if hasContactInfo %}
+                                <div class="contact-list">
+                                    {% if restaurant.phone %}
+                                        <div class="contact-item"><b>{{ ui.phone }}:</b><a href="tel:{{ restaurant.phone|replace({' ': ''}) }}">{{ restaurant.phone }}</a></div>
+                                    {% endif %}
+                                    {% if restaurant.email %}
+                                        <div class="contact-item"><b>{{ ui.email }}:</b><a href="mailto:{{ restaurant.email }}">{{ restaurant.email }}</a></div>
+                                    {% endif %}
+                                    {% if restaurant.city %}
+                                        <div class="contact-item"><b>{{ ui.city }}:</b>{{ restaurant.city }}</div>
+                                    {% endif %}
+                                    {% if restaurant.address %}
+                                        <div class="contact-item"><b>{{ ui.address }}:</b>{{ restaurant.address }}</div>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <div class="contact-item">{{ ui.no_contact }}</div>
+                            {% endif %}
+                        </article>
+                        {% if socialLinks is not empty %}
+                            <article class="info-card">
+                                <h3>{{ ui.social }}</h3>
+                                <div class="social-list">
+                                    {% for link in socialLinks %}
+                                        <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer">{{ socialPlatformLabels[link.platform.value] ?? link.platform.value|replace({'_': ' '})|title }}</a>
+                                    {% endfor %}
+                                </div>
+                            </article>
+                        {% endif %}
+                    {% endif %}
+                </section>
+
+                <section class="screen" data-screen="products">
+                    <div class="category-note is-hidden" data-category-note></div>
+                    {% for category in categories %}
+                        <div class="product-group" data-product-group="{{ category.id }}">
+                            {% for product in category.products %}
+                                {% set productName = localizedProductNames[product.id] ?? product.name %}
+                                {% set productDescription = localizedProductDescriptions[product.id] ?? product.description %}
+                                {% set productImage = product.images|length > 0 ? product.images|first : null %}
+                                {% set detailRouteParams = {slug: restaurant.slug, id: restaurant.id, productUuid: product.uuid, lang: currentLocale} %}
+                                {% if tableNumber %}
+                                    {% set detailRouteParams = detailRouteParams|merge({table: tableNumber}) %}
+                                {% endif %}
+                                <article class="product-item">
+                                    <div class="product-thumb">
+                                        {% if productImage and productImage.media %}
+                                            <img src="{{ media_thumb_url(productImage.media.storagePath) }}" alt="{{ productName }}">
+                                        {% endif %}
+                                    </div>
+                                    <div class="product-body">
+                                        <div class="product-top">
+                                            <h4 class="product-name">{{ productName }}</h4>
+                                            <div class="product-price">{{ currencySymbol }} {{ product.price|number_format(2, '.', ',') }}</div>
+                                        </div>
+                                        {% if productDescription %}
+                                            <p class="product-desc">{{ productDescription|slice(0, 85) }}</p>
+                                        {% endif %}
+                                        <div class="meta-row">
+                                            {% if product.isFeatured %}
+                                                <span class="meta-pill">{{ ui.featured }}</span>
+                                            {% endif %}
+                                            {% if product.calories %}
+                                                <span class="meta-pill">{{ product.calories }} kcal</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="product-actions">
+                                            <a class="btn btn-secondary" href="{{ path('site_menu_product_detail', detailRouteParams) }}">{{ ui.detail }}</a>
+                                        </div>
+                                    </div>
+                                </article>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </section>
+
+                <section class="screen" data-screen="language">
+                    <div class="language-list" aria-label="{{ ui.language }}">
+                        {% for localeCode, localeLabel in availableLocales %}
+                            {% set localeRouteParams = {slug: restaurant.slug, id: restaurant.id, lang: localeCode} %}
+                            {% if tableNumber %}
+                                {% set localeRouteParams = localeRouteParams|merge({table: tableNumber}) %}
+                            {% endif %}
+                            <a href="{{ path('site_menu_show', localeRouteParams) }}" class="locale-link {{ localeCode == currentLocale ? 'is-active' : '' }}">
+                                <span>{{ localeCode|upper }}</span>
+                                <small>{{ localeLabel }}</small>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </section>
+
+                <section class="screen" data-screen="cart">
+                    <div class="cart-list" data-cart-list></div>
+                    <div class="empty-card" data-cart-empty>{{ ui.empty_cart }}</div>
+                    <div class="cart-summary">
+                        <div class="cart-row">
+                            <span>{{ ui.cart }}</span>
+                            <strong data-cart-total>{{ currencySymbol }} 0.00</strong>
+                        </div>
+                        <div class="cart-actions">
+                            {% if isWhatsappOrderEnabled %}
+                                <a class="btn btn-primary cart-whatsapp is-disabled" href="#" target="_blank" rel="noopener noreferrer" data-cart-whatsapp>{{ ui.send_whatsapp }}</a>
+                            {% endif %}
+                            <button type="button" class="btn btn-secondary" data-cart-clear>{{ ui.clear_cart }}</button>
+                        </div>
+                        {% if isWhatsappSettingEnabled and not isWhatsappOrderEnabled %}
+                            <div class="cart-warning">{{ ui.whatsapp_unavailable }}</div>
+                        {% endif %}
+                    </div>
+                </section>
+            </main>
+        </div>
+
+        <nav class="bottom-nav" aria-label="{{ ui.menu }}">
+            <button type="button" class="nav-btn is-active" data-nav-target="categories">
+                <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <path d="M4 5.5H16M4 10H16M4 14.5H12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+                </svg>
+                <span>{{ ui.categories }}</span>
+            </button>
+            <button type="button" class="nav-btn" data-nav-target="language">
+                <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <path d="M10 3.5C6.41 3.5 3.5 6.41 3.5 10C3.5 13.59 6.41 16.5 10 16.5C13.59 16.5 16.5 13.59 16.5 10C16.5 6.41 13.59 3.5 10 3.5Z" stroke="currentColor" stroke-width="1.4"></path>
+                    <path d="M3.9 8H16.1M3.9 12H16.1M10 3.7C11.38 5.3 12.17 7.58 12.17 10C12.17 12.42 11.38 14.7 10 16.3M10 3.7C8.62 5.3 7.83 7.58 7.83 10C7.83 12.42 8.62 14.7 10 16.3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"></path>
+                </svg>
+                <span>{{ ui.language }}</span>
+            </button>
+            <button type="button" class="nav-btn" data-nav-target="cart">
+                <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <path d="M3.5 4.5H5.2L6.5 12.7C6.58 13.2 6.99 13.57 7.5 13.57H14.2C14.68 13.57 15.08 13.24 15.18 12.77L16.3 7.5H6.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
+                    <circle cx="8.1" cy="15.8" r="1" fill="currentColor"></circle>
+                    <circle cx="13.8" cy="15.8" r="1" fill="currentColor"></circle>
+                </svg>
+                <span>{{ ui.cart }}</span>
+                <span class="cart-count" data-cart-count>0</span>
+            </button>
+        </nav>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const app = document.querySelector('[data-menu-app]');
+    if (!app) {
+        return;
+    }
+
+    const screens = Array.from(app.querySelectorAll('[data-screen]'));
+    const navButtons = Array.from(app.querySelectorAll('[data-nav-target]'));
+    const backButton = app.querySelector('[data-back-button]');
+    const screenTitle = app.querySelector('[data-screen-title]');
+    const categoryTriggers = Array.from(app.querySelectorAll('[data-category-trigger]'));
+    const productGroups = Array.from(app.querySelectorAll('[data-product-group]'));
+    const categoryNote = app.querySelector('[data-category-note]');
+    const cartList = app.querySelector('[data-cart-list]');
+    const cartEmpty = app.querySelector('[data-cart-empty]');
+    const cartTotal = app.querySelector('[data-cart-total]');
+    const cartCount = app.querySelector('[data-cart-count]');
+    const clearCartButton = app.querySelector('[data-cart-clear]');
+    const whatsappButton = app.querySelector('[data-cart-whatsapp]');
+
+    const labels = {
+        categories: {{ ui.categories|json_encode|raw }},
+        language: {{ ui.language|json_encode|raw }},
+        cart: {{ ui.cart|json_encode|raw }},
+        emptyCart: {{ ui.empty_cart|json_encode|raw }},
+    };
+    const currencySymbol = {{ currencySymbol|json_encode|raw }};
+    const restaurantName = {{ restaurant.name|json_encode|raw }};
+    const tableNumber = {{ tableNumber is not null ? tableNumber : 'null' }};
+    const whatsappNumber = {{ whatsappNumber|default(null)|json_encode|raw }};
+    const storageKey = app.dataset.cartKey || 'qrmenu-cart';
+
+    let selectedCategory = null;
+    let cart = loadCart();
+
+    function loadCart() {
+        try {
+            const parsed = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (error) {
+            return [];
+        }
+    }
+
+    function saveCart() {
+        localStorage.setItem(storageKey, JSON.stringify(cart));
+    }
+
+    function formatPrice(value) {
+        return `${currencySymbol} ${Number(value).toFixed(2)}`;
+    }
+
+    function resolveItemId(item, index) {
+        if (item && typeof item.uuid === 'string' && item.uuid !== '') {
+            return item.uuid;
+        }
+        if (item && typeof item.id === 'string' && item.id !== '') {
+            return item.id;
+        }
+        if (item && typeof item.id === 'number') {
+            return String(item.id);
+        }
+
+        return `idx-${index}`;
+    }
+
+    function updateWhatsappLink(totalAmount) {
+        if (!whatsappButton || !whatsappNumber) {
+            return;
+        }
+
+        if (cart.length === 0) {
+            whatsappButton.classList.add('is-disabled');
+            whatsappButton.setAttribute('aria-disabled', 'true');
+            whatsappButton.href = '#';
+            return;
+        }
+
+        const lines = [];
+        lines.push('Restaurant: ' + restaurantName);
+        if (tableNumber !== null) {
+            lines.push('Table: ' + tableNumber);
+        }
+        lines.push('Items:');
+        cart.forEach((item) => {
+            lines.push('- ' + item.qty + 'x ' + item.name + ' (' + formatPrice(item.price * item.qty) + ')');
+        });
+        lines.push('Total: ' + formatPrice(totalAmount));
+
+        whatsappButton.href = 'https://wa.me/' + whatsappNumber + '?text=' + encodeURIComponent(lines.join('\n'));
+        whatsappButton.classList.remove('is-disabled');
+        whatsappButton.removeAttribute('aria-disabled');
+    }
+
+    function setScreen(screenName) {
+        screens.forEach((screen) => {
+            screen.classList.toggle('is-active', screen.dataset.screen === screenName);
+        });
+
+        navButtons.forEach((button) => {
+            button.classList.toggle('is-active', button.dataset.navTarget === screenName);
+        });
+
+        if (backButton) {
+            backButton.classList.toggle('is-hidden', screenName === 'categories');
+        }
+
+        if (screenTitle) {
+            if (screenName === 'products' && selectedCategory) {
+                screenTitle.textContent = selectedCategory.name;
+            } else if (screenName === 'language') {
+                screenTitle.textContent = labels.language;
+            } else if (screenName === 'cart') {
+                screenTitle.textContent = labels.cart;
+            } else {
+                screenTitle.textContent = labels.categories;
+            }
+        }
+    }
+
+    function openCategory(trigger) {
+        const categoryId = trigger.dataset.categoryId || '';
+        const categoryName = trigger.dataset.categoryName || labels.categories;
+        const categoryDescription = trigger.dataset.categoryDescription || '';
+
+        selectedCategory = {
+            id: categoryId,
+            name: categoryName,
+        };
+
+        productGroups.forEach((group) => {
+            group.classList.toggle('is-active', group.dataset.productGroup === categoryId);
+        });
+
+        if (categoryNote) {
+            if (categoryDescription.trim() !== '') {
+                categoryNote.textContent = categoryDescription;
+                categoryNote.classList.remove('is-hidden');
+            } else {
+                categoryNote.textContent = '';
+                categoryNote.classList.add('is-hidden');
+            }
+        }
+
+        setScreen('products');
+    }
+
+    function renderCart() {
+        if (!cartList || !cartTotal || !cartCount) {
+            return;
+        }
+
+        cartList.innerHTML = '';
+
+        if (cart.length === 0) {
+            if (cartEmpty) {
+                cartEmpty.textContent = labels.emptyCart;
+                cartEmpty.style.display = 'block';
+            }
+        } else if (cartEmpty) {
+            cartEmpty.style.display = 'none';
+        }
+
+        let totalAmount = 0;
+        let totalQuantity = 0;
+
+        cart.forEach((item, index) => {
+            const itemId = resolveItemId(item, index);
+            const row = document.createElement('article');
+            row.className = 'cart-item';
+
+            const left = document.createElement('div');
+            const name = document.createElement('p');
+            name.className = 'cart-name';
+            name.textContent = item.name;
+
+            const meta = document.createElement('p');
+            meta.className = 'cart-meta';
+            meta.textContent = `${item.qty} x ${formatPrice(item.price)}`;
+
+            left.appendChild(name);
+            left.appendChild(meta);
+
+            const removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.className = 'cart-remove';
+            removeButton.textContent = 'x';
+            removeButton.dataset.removeItem = itemId;
+
+            row.appendChild(left);
+            row.appendChild(removeButton);
+            cartList.appendChild(row);
+
+            totalQuantity += item.qty;
+            totalAmount += item.qty * item.price;
+        });
+
+        cartCount.textContent = String(totalQuantity);
+        cartTotal.textContent = formatPrice(totalAmount);
+        updateWhatsappLink(totalAmount);
+    }
+
+    categoryTriggers.forEach((trigger) => {
+        trigger.addEventListener('click', () => openCategory(trigger));
+    });
+
+    if (cartList) {
+        cartList.addEventListener('click', (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLElement)) {
+                return;
+            }
+
+            const removeId = target.dataset.removeItem;
+            if (!removeId) {
+                return;
+            }
+
+            cart = cart.filter((item, index) => resolveItemId(item, index) !== removeId);
+            saveCart();
+            renderCart();
+        });
+    }
+
+    if (clearCartButton) {
+        clearCartButton.addEventListener('click', () => {
+            cart = [];
+            saveCart();
+            renderCart();
+        });
+    }
+
+    navButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            const target = button.dataset.navTarget || 'categories';
+            setScreen(target);
+        });
+    });
+
+    if (backButton) {
+        backButton.addEventListener('click', () => {
+            setScreen('categories');
+        });
+    }
+
+    setScreen('categories');
+    renderCart();
+});
+</script>
 {% endblock %}

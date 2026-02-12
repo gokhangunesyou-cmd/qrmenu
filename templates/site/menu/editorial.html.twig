@@ -306,6 +306,28 @@ body {
     gap: 6px;
 }
 
+.product-actions {
+    margin-top: 10px;
+    display: flex;
+}
+
+.detail-link {
+    text-decoration: none;
+    border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
+    border-radius: 999px;
+    padding: 5px 11px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text);
+    transition: 180ms ease;
+}
+
+.detail-link:hover {
+    background: color-mix(in srgb, var(--primary) 90%, #fff);
+    color: #fff;
+    border-color: transparent;
+}
+
 .pill {
     border: 1px solid #dbeafe;
     background: #eff6ff;
@@ -465,6 +487,10 @@ body {
                         {% set productName = localizedProductNames[product.id] ?? product.name %}
                         {% set productDescription = localizedProductDescriptions[product.id] ?? product.description %}
                         {% set productImage = product.images|length > 0 ? product.images|first : null %}
+                        {% set detailRouteParams = {slug: restaurant.slug, id: restaurant.id, productUuid: product.uuid, lang: currentLocale} %}
+                        {% if tableNumber %}
+                            {% set detailRouteParams = detailRouteParams|merge({table: tableNumber}) %}
+                        {% endif %}
                         <article class="product">
                             <div class="product-main">
                                 <div class="product-media">
@@ -484,6 +510,9 @@ body {
                                         {% if product.calories %}
                                             <span class="pill">{{ product.calories }} kcal</span>
                                         {% endif %}
+                                    </div>
+                                    <div class="product-actions">
+                                        <a class="detail-link" href="{{ path('site_menu_product_detail', detailRouteParams) }}">{{ ui.detail }}</a>
                                     </div>
                                 </div>
                             </div>

@@ -32,7 +32,10 @@
         session: 'Oturum',
         active: 'Aktif',
         support_note: 'Destek için notlarınızı paylaşabilirsiniz.',
-        ok: 'OK'
+        ok: 'OK',
+        top_detail_products: 'Detay Sayfasına En Çok Gidilen Ürünler',
+        detail_views: 'detay girişi',
+        top_detail_products_empty: 'Henüz detay sayfası trafiği oluşmadı.'
     },
     en: {
         title: 'Dashboard',
@@ -63,7 +66,10 @@
         session: 'Session',
         active: 'Active',
         support_note: 'Share your notes for support.',
-        ok: 'OK'
+        ok: 'OK',
+        top_detail_products: 'Most Visited Product Detail Pages',
+        detail_views: 'detail views',
+        top_detail_products_empty: 'No product detail traffic yet.'
     },
     ar: {
         title: 'لوحة التحكم',
@@ -94,7 +100,10 @@
         session: 'الجلسة',
         active: 'نشط',
         support_note: 'يمكنك مشاركة ملاحظاتك للدعم.',
-        ok: 'OK'
+        ok: 'OK',
+        top_detail_products: 'المنتجات الأكثر زيارة في صفحة التفاصيل',
+        detail_views: 'مشاهدات التفاصيل',
+        top_detail_products_empty: 'لا توجد زيارات لصفحة التفاصيل بعد.'
     },
     ru: {
         title: 'Панель',
@@ -125,7 +134,10 @@
         session: 'Сессия',
         active: 'Активно',
         support_note: 'Вы можете оставить заметки для поддержки.',
-        ok: 'OK'
+        ok: 'OK',
+        top_detail_products: 'Самые посещаемые страницы товара',
+        detail_views: 'просмотров деталей',
+        top_detail_products_empty: 'Переходов на страницы деталей пока нет.'
     }
 }[currentLocale] ?? {
     title: 'Dashboard',
@@ -156,7 +168,10 @@
     session: 'Session',
     active: 'Active',
     support_note: 'Share your notes for support.',
-    ok: 'OK'
+    ok: 'OK',
+    top_detail_products: 'Most Visited Product Detail Pages',
+    detail_views: 'detail views',
+    top_detail_products_empty: 'No product detail traffic yet.'
 } %}
 
 {% block title %}{{ ui.title }}{% endblock %}
@@ -207,6 +222,23 @@
                     <div class="fw-semibold">{{ ui.quick_note }}</div>
                     <div class="text-muted small">{{ ui.quick_note_body }}</div>
                 </div>
+                {% if showTopDetailProducts %}
+                <div class="mt-4">
+                    <h5 class="mb-3">{{ ui.top_detail_products }}</h5>
+                    {% if topDetailProducts is empty %}
+                    <div class="small text-muted">{{ ui.top_detail_products_empty }}</div>
+                    {% else %}
+                    <div class="list-group">
+                        {% for product in topDetailProducts %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>{{ product.name }}</span>
+                            <span class="badge text-bg-primary">{{ product.detailViewCount }} {{ ui.detail_views }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>

@@ -55,6 +55,25 @@ final class RestaurantTest extends TestCase
         self::assertSame(['tr', 'ru'], $restaurant->getEnabledLocales());
     }
 
+    public function testInteractionSettingsDefaultToDisabled(): void
+    {
+        $restaurant = $this->createRestaurant();
+
+        self::assertFalse($restaurant->isCountProductDetailViews());
+        self::assertFalse($restaurant->isWhatsappOrderEnabled());
+    }
+
+    public function testInteractionSettingsCanBeUpdated(): void
+    {
+        $restaurant = $this->createRestaurant();
+
+        $restaurant->setCountProductDetailViews(true);
+        $restaurant->setWhatsappOrderEnabled(true);
+
+        self::assertTrue($restaurant->isCountProductDetailViews());
+        self::assertTrue($restaurant->isWhatsappOrderEnabled());
+    }
+
     private function createRestaurant(): Restaurant
     {
         $theme = new Theme('default', 'Default', []);

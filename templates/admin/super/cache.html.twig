@@ -1,0 +1,191 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Super Admin - Cache{% endblock %}
+
+{% block body %}
+{% set ui = currentLocale == 'tr' ? {
+    title: 'Cache Yonetimi',
+    subtitle: 'Cache keylerini goruntule, tek tek sil veya secili keyleri toplu temizle.',
+    pool: 'Havuz',
+    all_pools: 'Tum havuzlar',
+    search: 'Key ara',
+    filter: 'Filtrele',
+    clear_pool: 'Havuzu Temizle',
+    clear_all: 'Tum Havuzlari Temizle',
+    delete_selected: 'Secilen Keyleri Sil',
+    select_all: 'Tumunu sec',
+    selected: 'Sec',
+    cache_key: 'Cache Key',
+    raw_key: 'Raw Redis Key',
+    ttl: 'TTL',
+    actions: 'Islem',
+    delete: 'Sil',
+    empty: 'Filtreye uygun cache key bulunamadi.',
+    ttl_persistent: 'Kalici',
+    ttl_missing: 'Bulunamadi',
+    ttl_unknown: 'Bilinmiyor'
+} : {
+    title: 'Cache Management',
+    subtitle: 'View cache keys, delete one by one, or remove selected keys in bulk.',
+    pool: 'Pool',
+    all_pools: 'All pools',
+    search: 'Search key',
+    filter: 'Filter',
+    clear_pool: 'Clear Pool',
+    clear_all: 'Clear All Pools',
+    delete_selected: 'Delete Selected Keys',
+    select_all: 'Select all',
+    selected: 'Select',
+    cache_key: 'Cache Key',
+    raw_key: 'Raw Redis Key',
+    ttl: 'TTL',
+    actions: 'Action',
+    delete: 'Delete',
+    empty: 'No cache key matched the current filter.',
+    ttl_persistent: 'Persistent',
+    ttl_missing: 'Missing',
+    ttl_unknown: 'Unknown'
+} %}
+
+<div class="row g-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">{{ ui.title }}</h4>
+                <span class="badge text-bg-primary">Super Admin</span>
+            </div>
+            <div class="card-body">
+                <div class="text-muted mb-3">{{ ui.subtitle }}</div>
+
+                <form method="get" action="{{ path('admin_super_cache') }}" class="row g-2 align-items-end mb-2">
+                    <input type="hidden" name="lang" value="{{ currentLocale }}">
+                    <div class="col-12 col-md-4">
+                        <label class="form-label">{{ ui.pool }}</label>
+                        <select class="form-select" name="pool">
+                            <option value="">{{ ui.all_pools }}</option>
+                            {% for poolName, poolLabel in poolChoices %}
+                                <option value="{{ poolName }}" {{ selectedPool == poolName ? 'selected' : '' }}>{{ poolLabel }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-5">
+                        <label class="form-label">{{ ui.search }}</label>
+                        <input class="form-control" name="q" value="{{ query }}" placeholder="public_, home_, menu_">
+                    </div>
+                    <div class="col-12 col-md-3 d-grid">
+                        <button class="btn btn-primary">{{ ui.filter }}</button>
+                    </div>
+                </form>
+
+                <div class="d-flex flex-wrap gap-2">
+                    <form id="bulk-delete-form" method="post" action="{{ path('admin_super_cache_delete_selected') }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('super_cache_delete_selected') }}">
+                        <input type="hidden" name="lang" value="{{ currentLocale }}">
+                        <input type="hidden" name="pool" value="{{ selectedPool }}">
+                        <input type="hidden" name="q" value="{{ query }}">
+                        <button class="btn btn-outline-danger btn-sm" {{ keys is empty ? 'disabled' : '' }}>{{ ui.delete_selected }}</button>
+                    </form>
+
+                    <form method="post" action="{{ path('admin_super_cache_clear') }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('super_cache_clear') }}">
+                        <input type="hidden" name="lang" value="{{ currentLocale }}">
+                        <input type="hidden" name="pool" value="{{ selectedPool }}">
+                        <input type="hidden" name="q" value="{{ query }}">
+                        <button class="btn btn-outline-warning btn-sm">{{ selectedPool != '' ? ui.clear_pool : ui.clear_all }}</button>
+                    </form>
+
+                    {% if selectedPool != '' %}
+                        <form method="post" action="{{ path('admin_super_cache_clear') }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('super_cache_clear') }}">
+                            <input type="hidden" name="lang" value="{{ currentLocale }}">
+                            <input type="hidden" name="pool" value="">
+                            <button class="btn btn-outline-secondary btn-sm">{{ ui.clear_all }}</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                    <tr>
+                        <th style="width: 40px;">
+                            <input id="select_all_cache_keys" class="form-check-input" type="checkbox">
+                        </th>
+                        <th>{{ ui.cache_key }}</th>
+                        <th>{{ ui.raw_key }}</th>
+                        <th>{{ ui.pool }}</th>
+                        <th>{{ ui.ttl }}</th>
+                        <th class="text-end">{{ ui.actions }}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in keys %}
+                        <tr>
+                            <td>
+                                <input
+                                    class="form-check-input js-cache-key"
+                                    type="checkbox"
+                                    form="bulk-delete-form"
+                                    name="keys[]"
+                                    value="{{ row.rawKey }}"
+                                    aria-label="{{ ui.selected }}"
+                                >
+                            </td>
+                            <td><code>{{ row.displayKey }}</code></td>
+                            <td><span class="small text-muted font-monospace">{{ row.rawKey }}</span></td>
+                            <td><span class="badge text-bg-light">{{ row.poolLabel }}</span></td>
+                            <td>
+                                {% if row.ttl == -1 %}
+                                    <span class="badge text-bg-secondary">{{ ui.ttl_persistent }}</span>
+                                {% elseif row.ttl == -2 %}
+                                    <span class="badge text-bg-danger">{{ ui.ttl_missing }}</span>
+                                {% elseif row.ttl < 0 %}
+                                    <span class="badge text-bg-dark">{{ ui.ttl_unknown }}</span>
+                                {% else %}
+                                    <span class="badge text-bg-info">{{ row.ttl }}s</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <form method="post" action="{{ path('admin_super_cache_delete_single') }}" class="d-inline">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('super_cache_delete_single') }}">
+                                    <input type="hidden" name="lang" value="{{ currentLocale }}">
+                                    <input type="hidden" name="pool" value="{{ selectedPool }}">
+                                    <input type="hidden" name="q" value="{{ query }}">
+                                    <input type="hidden" name="key" value="{{ row.rawKey }}">
+                                    <button class="btn btn-sm btn-outline-danger">{{ ui.delete }}</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-muted">{{ ui.empty }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        const selectAll = document.getElementById('select_all_cache_keys');
+        const rowCheckboxes = Array.from(document.querySelectorAll('.js-cache-key'));
+
+        if (selectAll) {
+            selectAll.addEventListener('change', function () {
+                rowCheckboxes.forEach(function (checkbox) {
+                    checkbox.checked = selectAll.checked;
+                });
+            });
+        }
+    </script>
+{% endblock %}

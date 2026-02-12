@@ -1,6 +1,7 @@
 FROM php:8.3-fpm-alpine
 
 RUN apk add --no-cache \
+    $PHPIZE_DEPS \
     icu-dev \
     libpq-dev \
     libzip-dev \
@@ -16,6 +17,8 @@ RUN apk add --no-cache \
         zip \
         gd \
         opcache \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
     && rm -rf /var/cache/apk/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer

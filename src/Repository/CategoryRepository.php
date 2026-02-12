@@ -12,6 +12,8 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class CategoryRepository extends ServiceEntityRepository
 {
+    private const PUBLIC_CACHE_TTL = 3600;
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Category::class);
@@ -56,7 +58,8 @@ class CategoryRepository extends ServiceEntityRepository
      */
     public function findActiveWithProductsForMenu(Restaurant $restaurant): array
     {
-        return $this->createQueryBuilder('c')
+        $restaurantId = (int) $restaurant->getId();
+        $query = $this->createQueryBuilder('c')
             ->leftJoin('c.products', 'p', 'WITH', 'p.isActive = true AND p.deletedAt IS NULL')
             ->addSelect('p')
             ->leftJoin('p.images', 'pi')
@@ -70,8 +73,14 @@ class CategoryRepository extends ServiceEntityRepository
             ->setParameter('restaurant', $restaurant)
             ->orderBy('c.sortOrder', 'ASC')
             ->addOrderBy('p.sortOrder', 'ASC')
-            ->getQuery()
-            ->getResult();
+            ->getQuery();
+
+        $query->enableResultCache(
+            self::PUBLIC_CACHE_TTL,
+            sprintf('public_menu_categories_restaurant_%d', $restaurantId)
+        );
+
+        return $query->getResult();
     }
 
     /**

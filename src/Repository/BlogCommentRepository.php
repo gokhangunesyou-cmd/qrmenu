@@ -12,6 +12,8 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class BlogCommentRepository extends ServiceEntityRepository
 {
+    private const PUBLIC_CACHE_TTL = 3600;
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, BlogComment::class);
@@ -22,13 +24,20 @@ class BlogCommentRepository extends ServiceEntityRepository
      */
     public function findPublishedForPost(BlogPost $post): array
     {
-        return $this->createQueryBuilder('c')
+        $postId = (int) $post->getId();
+        $query = $this->createQueryBuilder('c')
             ->andWhere('c.post = :post')
             ->andWhere('c.isPublished = true')
             ->setParameter('post', $post)
             ->orderBy('c.createdAt', 'DESC')
-            ->getQuery()
-            ->getResult();
+            ->getQuery();
+
+        $query->enableResultCache(
+            self::PUBLIC_CACHE_TTL,
+            sprintf('public_blog_comments_post_%d', $postId)
+        );
+
+        return $query->getResult();
     }
 
     /**

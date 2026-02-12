@@ -11,6 +11,8 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class TranslationRepository extends ServiceEntityRepository
 {
+    private const PUBLIC_CACHE_TTL = 3600;
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Translation::class);
@@ -21,20 +23,37 @@ class TranslationRepository extends ServiceEntityRepository
      */
     public function findFieldMapByEntityIds(string $entityType, array $entityIds, string $locale): array
     {
-        if ($entityIds === []) {
+        $normalizedEntityIds = array_values(array_unique(array_filter(
+            array_map(static fn (mixed $value): int => (int) $value, $entityIds),
+            static fn (int $id): bool => $id > 0
+        )));
+        sort($normalizedEntityIds);
+
+        if ($normalizedEntityIds === []) {
             return [];
         }
 
-        $rows = $this->createQueryBuilder('t')
+        $query = $this->createQueryBuilder('t')
             ->select('t.entityId AS entityId, t.field AS field, t.value AS value')
             ->andWhere('t.entityType = :entityType')
             ->andWhere('t.locale = :locale')
             ->andWhere('t.entityId IN (:entityIds)')
             ->setParameter('entityType', $entityType)
             ->setParameter('locale', $locale)
-            ->setParameter('entityIds', $entityIds)
-            ->getQuery()
-            ->getArrayResult();
+            ->setParameter('entityIds', $normalizedEntityIds)
+            ->getQuery();
+
+        $query->enableResultCache(
+            self::PUBLIC_CACHE_TTL,
+            sprintf(
+                'public_translations_%s_%s_%s',
+                $entityType,
+                $locale,
+                md5(implode(',', $normalizedEntityIds))
+            )
+        );
+
+        $rows = $query->getArrayResult();
 
         $map = [];
         foreach ($rows as $row) {

@@ -21,6 +21,9 @@
         cover_alt: 'Mevcut Kapak',
         cover_max: 'Maks. 10MB (JPEG, PNG, WebP)',
         design: 'Menü Tasarımı',
+        analytics: 'Musteri Etkilesim Ayarlari',
+        analytics_hint: 'Bu ayar aciksa urun detay goruntulenmeleri sayilir ve panelde raporlanir.',
+        whatsapp_hint: 'Acik oldugunda urun detayinda sepet ve WhatsApp siparis baglantisi aktif olur.',
         template_hint: 'Son kullanıcı menüsü için iki premium şablondan birini seçin.',
         color_hint: 'Renkleri panelden seçerek menü görünümünü markanıza göre anında özelleştirin.',
         template_showcase: 'Showcase Spotlight',
@@ -46,6 +49,9 @@
         cover_alt: 'Current Cover',
         cover_max: 'Max 10MB (JPEG, PNG, WebP)',
         design: 'Menu Design',
+        analytics: 'Customer Interaction Settings',
+        analytics_hint: 'When enabled, product detail views are counted and shown in dashboard reports.',
+        whatsapp_hint: 'When enabled, product detail page will show cart and WhatsApp ordering link.',
         template_hint: 'Pick one of two premium templates for the guest-facing menu.',
         color_hint: 'Choose colors from the panel to instantly match your brand style.',
         template_showcase: 'Showcase Spotlight',
@@ -71,6 +77,9 @@
         cover_alt: 'الغلاف الحالي',
         cover_max: 'الحد الأقصى 10MB (JPEG, PNG, WebP)',
         design: 'تصميم القائمة',
+        analytics: 'اعدادات تفاعل العملاء',
+        analytics_hint: 'عند التفعيل سيتم عد مشاهدات تفاصيل المنتج وعرضها في لوحة التحكم.',
+        whatsapp_hint: 'عند التفعيل تظهر السلة ورابط طلب واتساب في صفحة تفاصيل المنتج.',
         template_hint: 'اختر أحد قالبين مميزين لقائمة العملاء.',
         color_hint: 'خصّص الألوان من لوحة التحكم لتطابق هوية علامتك.',
         template_showcase: 'Showcase Spotlight',
@@ -96,6 +105,9 @@
         cover_alt: 'Текущая обложка',
         cover_max: 'Макс 10MB (JPEG, PNG, WebP)',
         design: 'Дизайн меню',
+        analytics: 'Настройки взаимодействия',
+        analytics_hint: 'При включении считаются просмотры карточки товара и показываются в дашборде.',
+        whatsapp_hint: 'При включении на странице товара будут корзина и ссылка заказа в WhatsApp.',
         template_hint: 'Выберите один из двух премиальных шаблонов для гостевого меню.',
         color_hint: 'Настройте цвета из панели под фирменный стиль.',
         template_showcase: 'Showcase Spotlight',
@@ -121,6 +133,9 @@
     cover_alt: 'Current Cover',
     cover_max: 'Max 10MB (JPEG, PNG, WebP)',
     design: 'Menu Design',
+    analytics: 'Customer Interaction Settings',
+    analytics_hint: 'When enabled, product detail views are counted and shown in dashboard reports.',
+    whatsapp_hint: 'When enabled, product detail page will show cart and WhatsApp ordering link.',
     template_hint: 'Pick one of two premium templates for the guest-facing menu.',
     color_hint: 'Choose colors from the panel to instantly match your brand style.',
     template_showcase: 'Showcase Spotlight',
@@ -309,6 +324,21 @@
                         </div>
                     </div>
                     <small class="text-muted">{{ ui.color_hint }}</small>
+
+                    <hr>
+                    <h6 class="mb-2">{{ ui.analytics }}</h6>
+                    <small class="text-muted d-block mb-3">{{ ui.analytics_hint }}</small>
+                    <div class="form-check form-switch mb-2">
+                        {{ form_widget(form.countProductDetailViews, {'attr': {'class': 'form-check-input'}}) }}
+                        {{ form_label(form.countProductDetailViews, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                    </div>
+                    <div class="form-check form-switch mb-1">
+                        {{ form_widget(form.whatsappOrderEnabled, {'attr': {'class': 'form-check-input'}}) }}
+                        {{ form_label(form.whatsappOrderEnabled, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                    </div>
+                    {{ form_errors(form.countProductDetailViews) }}
+                    {{ form_errors(form.whatsappOrderEnabled) }}
+                    <small class="text-muted d-block">{{ ui.whatsapp_hint }}</small>
                 </div>
             </div>
         </div>

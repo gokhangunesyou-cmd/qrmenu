@@ -11,6 +11,8 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class RestaurantRepository extends ServiceEntityRepository
 {
+    private const PUBLIC_CACHE_TTL = 3600;
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Restaurant::class);
@@ -34,7 +36,7 @@ class RestaurantRepository extends ServiceEntityRepository
      */
     public function findActiveBySlugForMenu(string $slug): ?Restaurant
     {
-        return $this->createQueryBuilder('r')
+        $query = $this->createQueryBuilder('r')
             ->leftJoin('r.theme', 't')
             ->addSelect('t')
             ->leftJoin('r.logoMedia', 'lm')
@@ -45,8 +47,11 @@ class RestaurantRepository extends ServiceEntityRepository
             ->andWhere('r.isActive = true')
             ->andWhere('r.deletedAt IS NULL')
             ->setParameter('slug', $slug)
-            ->getQuery()
-            ->getOneOrNullResult();
+            ->getQuery();
+
+        $query->enableResultCache(self::PUBLIC_CACHE_TTL, sprintf('public_restaurant_menu_slug_%s', $slug));
+
+        return $query->getOneOrNullResult();
     }
 
     /**
@@ -54,7 +59,7 @@ class RestaurantRepository extends ServiceEntityRepository
      */
     public function findActiveByIdForMenu(int $id): ?Restaurant
     {
-        return $this->createQueryBuilder('r')
+        $query = $this->createQueryBuilder('r')
             ->leftJoin('r.theme', 't')
             ->addSelect('t')
             ->leftJoin('r.logoMedia', 'lm')
@@ -65,8 +70,11 @@ class RestaurantRepository extends ServiceEntityRepository
             ->andWhere('r.isActive = true')
             ->andWhere('r.deletedAt IS NULL')
             ->setParameter('id', $id)
-            ->getQuery()
-            ->getOneOrNullResult();
+            ->getQuery();
+
+        $query->enableResultCache(self::PUBLIC_CACHE_TTL, sprintf('public_restaurant_menu_id_%d', $id));
+
+        return $query->getOneOrNullResult();
     }
 
     /**
