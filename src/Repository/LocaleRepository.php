@@ -11,6 +11,8 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class LocaleRepository extends ServiceEntityRepository
 {
+    private const PUBLIC_CACHE_TTL = 3600;
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Locale::class);
@@ -23,11 +25,14 @@ class LocaleRepository extends ServiceEntityRepository
      */
     public function findAllActive(): array
     {
-        return $this->createQueryBuilder('l')
+        $query = $this->createQueryBuilder('l')
             ->where('l.isActive = :active')
             ->setParameter('active', true)
             ->orderBy('l.name', 'ASC')
-            ->getQuery()
-            ->getResult();
+            ->getQuery();
+
+        $query->enableResultCache(self::PUBLIC_CACHE_TTL, 'public_active_locales');
+
+        return $query->getResult();
     }
 }

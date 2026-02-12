@@ -11,6 +11,8 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class SiteSettingRepository extends ServiceEntityRepository
 {
+    private const PUBLIC_CACHE_TTL = 3600;
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, SiteSetting::class);
@@ -18,6 +20,14 @@ class SiteSettingRepository extends ServiceEntityRepository
 
     public function findOneByKey(string $keyName): ?SiteSetting
     {
-        return $this->findOneBy(['keyName' => $keyName]);
+        $query = $this->createQueryBuilder('s')
+            ->andWhere('s.keyName = :keyName')
+            ->setParameter('keyName', $keyName)
+            ->setMaxResults(1)
+            ->getQuery();
+
+        $query->enableResultCache(self::PUBLIC_CACHE_TTL, sprintf('public_site_setting_key_%s', $keyName));
+
+        return $query->getOneOrNullResult();
     }
 }

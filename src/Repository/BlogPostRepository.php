@@ -11,6 +11,8 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class BlogPostRepository extends ServiceEntityRepository
 {
+    private const PUBLIC_CACHE_TTL = 3600;
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, BlogPost::class);
@@ -21,12 +23,18 @@ class BlogPostRepository extends ServiceEntityRepository
      */
     public function findLatestPublished(int $limit = 6): array
     {
-        return $this->createQueryBuilder('b')
+        $query = $this->createQueryBuilder('b')
             ->where('b.isPublished = true')
             ->orderBy('b.publishedAt', 'DESC')
             ->setMaxResults($limit)
-            ->getQuery()
-            ->getResult();
+            ->getQuery();
+
+        $query->enableResultCache(
+            self::PUBLIC_CACHE_TTL,
+            sprintf('public_blog_latest_limit_%d', max(1, $limit))
+        );
+
+        return $query->getResult();
     }
 
     /**
@@ -39,15 +47,21 @@ class BlogPostRepository extends ServiceEntityRepository
             return $this->findLatestPublished($limit);
         }
 
-        return $this->createQueryBuilder('b')
+        $dbQuery = $this->createQueryBuilder('b')
             ->andWhere('b.isPublished = true')
             ->andWhere('LOWER(b.title) LIKE :query OR LOWER(b.body) LIKE :query OR LOWER(COALESCE(b.metaDescription, \'\')) LIKE :query')
             ->setParameter('query', '%' . mb_strtolower($trimmed) . '%')
             ->orderBy('b.publishedAt', 'DESC')
             ->addOrderBy('b.id', 'DESC')
             ->setMaxResults($limit)
-            ->getQuery()
-            ->getResult();
+            ->getQuery();
+
+        $dbQuery->enableResultCache(
+            self::PUBLIC_CACHE_TTL,
+            sprintf('public_blog_search_limit_%d_%s', max(1, $limit), md5(mb_strtolower($trimmed)))
+        );
+
+        return $dbQuery->getResult();
     }
 
     public function findPublishedBySlug(string $slug): ?BlogPost

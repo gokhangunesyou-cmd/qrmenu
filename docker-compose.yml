@@ -20,8 +20,11 @@ services:
     depends_on:
       database:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       DATABASE_URL: "postgresql://qrmenu:qrmenu_secret@database:5432/qrmenu?serverVersion=16&charset=utf8"
+      REDIS_URL: "redis://redis:6379"
     networks:
       - qrmenu
 
@@ -55,6 +58,18 @@ services:
       MINIO_ROOT_PASSWORD: minioadmin
     volumes:
       - minio_data:/data
+    networks:
+      - qrmenu
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
     networks:
       - qrmenu
 

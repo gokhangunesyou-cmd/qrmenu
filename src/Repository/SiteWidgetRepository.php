@@ -11,6 +11,8 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class SiteWidgetRepository extends ServiceEntityRepository
 {
+    private const PUBLIC_CACHE_TTL = 3600;
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, SiteWidget::class);
@@ -21,13 +23,16 @@ class SiteWidgetRepository extends ServiceEntityRepository
      */
     public function findActiveOrdered(): array
     {
-        return $this->createQueryBuilder('w')
+        $query = $this->createQueryBuilder('w')
             ->where('w.isActive = :active')
             ->setParameter('active', true)
             ->orderBy('w.sortOrder', 'ASC')
             ->addOrderBy('w.id', 'ASC')
-            ->getQuery()
-            ->getResult();
+            ->getQuery();
+
+        $query->enableResultCache(self::PUBLIC_CACHE_TTL, 'public_site_widgets_active');
+
+        return $query->getResult();
     }
 
     /**

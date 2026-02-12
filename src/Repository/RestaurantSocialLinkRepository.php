@@ -12,6 +12,8 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class RestaurantSocialLinkRepository extends ServiceEntityRepository
 {
+    private const PUBLIC_CACHE_TTL = 3600;
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, RestaurantSocialLink::class);
@@ -24,12 +26,19 @@ class RestaurantSocialLinkRepository extends ServiceEntityRepository
      */
     public function findByRestaurant(Restaurant $restaurant): array
     {
-        return $this->createQueryBuilder('rsl')
+        $restaurantId = (int) $restaurant->getId();
+        $query = $this->createQueryBuilder('rsl')
             ->where('rsl.restaurant = :restaurant')
             ->setParameter('restaurant', $restaurant)
             ->orderBy('rsl.sortOrder', 'ASC')
             ->addOrderBy('rsl.platform', 'ASC')
-            ->getQuery()
-            ->getResult();
+            ->getQuery();
+
+        $query->enableResultCache(
+            self::PUBLIC_CACHE_TTL,
+            sprintf('public_social_links_restaurant_%d', $restaurantId)
+        );
+
+        return $query->getResult();
     }
 }

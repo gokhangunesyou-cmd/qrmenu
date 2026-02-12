@@ -14,6 +14,8 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class ProductRepository extends ServiceEntityRepository
 {
+    private const PUBLIC_CACHE_TTL = 3600;
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Product::class);
@@ -178,7 +180,8 @@ class ProductRepository extends ServiceEntityRepository
      */
     public function findActiveByUuidForMenu(Restaurant $restaurant, string $uuid): ?Product
     {
-        return $this->createQueryBuilder('p')
+        $restaurantId = (int) $restaurant->getId();
+        $query = $this->createQueryBuilder('p')
             ->leftJoin('p.images', 'pi')
             ->addSelect('pi')
             ->leftJoin('pi.media', 'pm')
@@ -191,8 +194,14 @@ class ProductRepository extends ServiceEntityRepository
             ->andWhere('p.deletedAt IS NULL')
             ->setParameter('restaurant', $restaurant)
             ->setParameter('uuid', $uuid)
-            ->getQuery()
-            ->getOneOrNullResult();
+            ->getQuery();
+
+        $query->enableResultCache(
+            self::PUBLIC_CACHE_TTL,
+            sprintf('public_menu_product_restaurant_%d_uuid_%s', $restaurantId, $uuid)
+        );
+
+        return $query->getOneOrNullResult();
     }
 
     /**
