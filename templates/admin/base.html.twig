@@ -264,6 +264,7 @@
             blog: 'Blog',
             blog_comments: 'Blog Yorumları',
             subscriptions: 'Abonelikler',
+            cache: 'Cache',
             account: 'Hesap',
             active_session: 'Aktif oturum',
             logout: 'Çıkış',
@@ -290,6 +291,7 @@
             blog: 'Blog',
             blog_comments: 'Blog Comments',
             subscriptions: 'Subscriptions',
+            cache: 'Cache',
             account: 'Account',
             active_session: 'Active session',
             logout: 'Logout',
@@ -316,6 +318,7 @@
             blog: 'المدونة',
             blog_comments: 'تعليقات المدونة',
             subscriptions: 'الاشتراكات',
+            cache: 'الكاش',
             account: 'الحساب',
             active_session: 'جلسة نشطة',
             logout: 'تسجيل الخروج',
@@ -342,6 +345,7 @@
             blog: 'Блог',
             blog_comments: 'Комментарии блога',
             subscriptions: 'Подписки',
+            cache: 'Кэш',
             account: 'Аккаунт',
             active_session: 'Активная сессия',
             logout: 'Выйти',
@@ -368,6 +372,7 @@
         blog: 'Blog',
         blog_comments: 'Blog Comments',
         subscriptions: 'Subscriptions',
+        cache: 'Cache',
         account: 'Account',
         active_session: 'Active session',
         logout: 'Logout',
@@ -435,6 +440,9 @@
                 </a>
                 <a class="nav-link {{ currentRoute == 'admin_super_subscriptions' ? 'active' : '' }}" href="{{ path('admin_super_subscriptions', {lang: currentLocale}) }}">
                     <i class="bi bi-calendar2-check"></i> {{ uiAdmin.subscriptions }}
+                </a>
+                <a class="nav-link {{ currentRoute starts with 'admin_super_cache' ? 'active' : '' }}" href="{{ path('admin_super_cache', {lang: currentLocale}) }}">
+                    <i class="bi bi-database-gear"></i> {{ uiAdmin.cache }}
                 </a>
             {% endif %}
 

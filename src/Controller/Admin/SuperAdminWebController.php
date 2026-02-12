@@ -24,6 +24,7 @@ use App\Repository\SiteSettingRepository;
 use App\Repository\SiteWidgetRepository;
 use App\Repository\ThemeRepository;
 use App\Repository\UserRepository;
+use App\Service\CacheManagementService;
 use App\Service\LanguageContext;
 use App\Service\SiteThemeRegistry;
 use App\Service\SiteWidgetRegistry;
@@ -60,6 +61,7 @@ class SuperAdminWebController extends AbstractController
         private readonly LanguageContext $languageContext,
         private readonly SiteWidgetRegistry $siteWidgetRegistry,
         private readonly SiteThemeRegistry $siteThemeRegistry,
+        private readonly CacheManagementService $cacheManagementService,
     ) {
     }
 
@@ -391,6 +393,134 @@ class SuperAdminWebController extends AbstractController
             'comments' => $this->blogCommentRepository->findAllForModeration(),
             'currentLocale' => $locale,
         ]);
+    }
+
+    #[Route('/cache', name: 'admin_super_cache', methods: ['GET'])]
+    public function cache(Request $request): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
+        $locale = $this->languageContext->resolveAdminLocale($request, 'tr');
+
+        $selectedPool = trim($request->query->getString('pool'));
+        $query = trim($request->query->getString('q'));
+        $poolChoices = $this->cacheManagementService->getPoolChoices();
+
+        if ($selectedPool !== '' && !isset($poolChoices[$selectedPool])) {
+            $selectedPool = '';
+        }
+
+        try {
+            $keys = $this->cacheManagementService->listCacheKeys($selectedPool !== '' ? $selectedPool : null, $query);
+        } catch (\Throwable) {
+            $keys = [];
+            $this->addFlash('error', 'Cache anahtarlari su anda listelenemiyor.');
+        }
+
+        return $this->render('admin/super/cache.html.twig', [
+            'currentLocale' => $locale,
+            'keys' => $keys,
+            'poolChoices' => $poolChoices,
+            'selectedPool' => $selectedPool,
+            'query' => $query,
+        ]);
+    }
+
+    #[Route('/cache/delete-selected', name: 'admin_super_cache_delete_selected', methods: ['POST'])]
+    public function deleteSelectedCacheKeys(Request $request): RedirectResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
+        $this->validateCsrfOrFail($request, 'super_cache_delete_selected');
+        $locale = $this->languageContext->resolveAdminLocale($request, 'tr');
+
+        $submittedKeys = $request->request->all('keys');
+        $keys = [];
+
+        if (is_array($submittedKeys)) {
+            foreach ($submittedKeys as $submittedKey) {
+                if (!is_string($submittedKey)) {
+                    continue;
+                }
+
+                $key = trim($submittedKey);
+                if ($key !== '') {
+                    $keys[] = $key;
+                }
+            }
+        }
+
+        if ($keys === []) {
+            $this->addFlash('error', 'Silinecek en az bir cache key seciniz.');
+            return $this->redirectToRoute('admin_super_cache', $this->buildCacheRedirectParams($request, $locale));
+        }
+
+        try {
+            $deletedCount = $this->cacheManagementService->deleteRawKeys($keys);
+        } catch (\Throwable) {
+            $this->addFlash('error', 'Secili cache keyleri silinemedi.');
+            return $this->redirectToRoute('admin_super_cache', $this->buildCacheRedirectParams($request, $locale));
+        }
+
+        if ($deletedCount > 0) {
+            $this->addFlash('success', sprintf('%d cache key silindi.', $deletedCount));
+        } else {
+            $this->addFlash('error', 'Secili keyler silinemedi veya zaten silinmis.');
+        }
+
+        return $this->redirectToRoute('admin_super_cache', $this->buildCacheRedirectParams($request, $locale));
+    }
+
+    #[Route('/cache/delete-single', name: 'admin_super_cache_delete_single', methods: ['POST'])]
+    public function deleteSingleCacheKey(Request $request): RedirectResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
+        $this->validateCsrfOrFail($request, 'super_cache_delete_single');
+        $locale = $this->languageContext->resolveAdminLocale($request, 'tr');
+
+        $key = trim($request->request->getString('key'));
+        if ($key === '') {
+            $this->addFlash('error', 'Cache key bos olamaz.');
+            return $this->redirectToRoute('admin_super_cache', $this->buildCacheRedirectParams($request, $locale));
+        }
+
+        try {
+            $deletedCount = $this->cacheManagementService->deleteRawKeys([$key]);
+        } catch (\Throwable) {
+            $this->addFlash('error', 'Cache key silinemedi.');
+            return $this->redirectToRoute('admin_super_cache', $this->buildCacheRedirectParams($request, $locale));
+        }
+
+        if ($deletedCount > 0) {
+            $this->addFlash('success', 'Cache key silindi.');
+        } else {
+            $this->addFlash('error', 'Cache key bulunamadi veya silinemedi.');
+        }
+
+        return $this->redirectToRoute('admin_super_cache', $this->buildCacheRedirectParams($request, $locale));
+    }
+
+    #[Route('/cache/clear', name: 'admin_super_cache_clear', methods: ['POST'])]
+    public function clearCachePools(Request $request): RedirectResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
+        $this->validateCsrfOrFail($request, 'super_cache_clear');
+        $locale = $this->languageContext->resolveAdminLocale($request, 'tr');
+
+        $selectedPool = trim($request->request->getString('pool'));
+
+        try {
+            $clearedPools = $this->cacheManagementService->clearPools($selectedPool !== '' ? $selectedPool : null);
+        } catch (\Throwable) {
+            $this->addFlash('error', 'Cache temizleme islemi basarisiz oldu.');
+            return $this->redirectToRoute('admin_super_cache', $this->buildCacheRedirectParams($request, $locale));
+        }
+
+        if ($clearedPools > 0) {
+            $this->addFlash('success', sprintf('%d cache havuzu temizlendi.', $clearedPools));
+        } else {
+            $this->addFlash('error', 'Temizlenecek cache havuzu bulunamadi.');
+        }
+
+        return $this->redirectToRoute('admin_super_cache', $this->buildCacheRedirectParams($request, $locale));
     }
 
     #[Route('/subscriptions', name: 'admin_super_subscriptions', methods: ['GET'])]
@@ -1108,6 +1238,26 @@ class SuperAdminWebController extends AbstractController
         $allowed = ['admin_super_plans', 'admin_super_slider', 'admin_super_cms'];
 
         return in_array($route, $allowed, true) ? $route : 'admin_super_plans';
+    }
+
+    /**
+     * @return array{lang: string, pool?: string, q?: string}
+     */
+    private function buildCacheRedirectParams(Request $request, string $locale): array
+    {
+        $params = ['lang' => $locale];
+
+        $pool = trim($request->request->getString('pool', $request->query->getString('pool')));
+        if ($pool !== '') {
+            $params['pool'] = $pool;
+        }
+
+        $query = trim($request->request->getString('q', $request->query->getString('q')));
+        if ($query !== '') {
+            $params['q'] = $query;
+        }
+
+        return $params;
     }
 
     /**
