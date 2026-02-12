@@ -18,6 +18,9 @@
         location: 'Konum',
         social: 'Sosyal Medya / Harita',
         menu_template: 'Menü Şablonu',
+        settings: 'Musteri Etkilesim Ayarlari',
+        count_detail_views: 'Urun detay girislerini say',
+        whatsapp_order: 'WhatsApp ile siparis al',
         menu_link: 'Menü Linki',
         status: 'Durum',
         active: 'Aktif',
@@ -46,6 +49,9 @@
         location: 'Location',
         social: 'Social Media / Map',
         menu_template: 'Menu Template',
+        settings: 'Customer Interaction Settings',
+        count_detail_views: 'Count product detail views',
+        whatsapp_order: 'Take orders via WhatsApp',
         menu_link: 'Menu Link',
         status: 'Status',
         active: 'Active',
@@ -74,6 +80,9 @@
         location: 'الموقع',
         social: 'وسائل التواصل / الخريطة',
         menu_template: 'قالب القائمة',
+        settings: 'اعدادات التفاعل',
+        count_detail_views: 'حساب زيارات تفاصيل المنتج',
+        whatsapp_order: 'استقبال الطلبات عبر واتساب',
         menu_link: 'رابط القائمة',
         status: 'الحالة',
         active: 'نشط',
@@ -102,6 +111,9 @@
         location: 'Локация',
         social: 'Соцсети / Карта',
         menu_template: 'Шаблон меню',
+        settings: 'Настройки взаимодействия',
+        count_detail_views: 'Считать просмотры карточки товара',
+        whatsapp_order: 'Принимать заказы через WhatsApp',
         menu_link: 'Ссылка меню',
         status: 'Статус',
         active: 'Активно',
@@ -130,6 +142,9 @@
     location: 'Location',
     social: 'Social Media / Map',
     menu_template: 'Menu Template',
+    settings: 'Customer Interaction Settings',
+    count_detail_views: 'Count product detail views',
+    whatsapp_order: 'Take orders via WhatsApp',
     menu_link: 'Menu Link',
     status: 'Status',
     active: 'Active',
@@ -239,6 +254,15 @@
                         <tr>
                             <th>{{ ui.menu_template }}</th>
                             <td>{{ menuTemplateMap[restaurant.menuTemplate]|default(restaurant.menuTemplate) }}</td>
+                        </tr>
+                        <tr>
+                            <th>{{ ui.settings }}</th>
+                            <td>
+                                <div class="d-flex flex-column gap-1">
+                                    <div>{{ ui.count_detail_views }}: <strong>{{ restaurant.countProductDetailViews ? ui.active : ui.passive }}</strong></div>
+                                    <div>{{ ui.whatsapp_order }}: <strong>{{ restaurant.whatsappOrderEnabled ? ui.active : ui.passive }}</strong></div>
+                                </div>
+                            </td>
                         </tr>
                         <tr>
                             <th>{{ ui.menu_link }}</th>

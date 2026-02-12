@@ -95,6 +95,12 @@ class Restaurant
     #[ORM\Column]
     private bool $isActive = false;
 
+    #[ORM\Column(options: ['default' => false])]
+    private bool $countProductDetailViews = false;
+
+    #[ORM\Column(options: ['default' => false])]
+    private bool $whatsappOrderEnabled = false;
+
     #[ORM\Column(type: 'datetimetz_immutable')]
     private \DateTimeImmutable $createdAt;
 
@@ -404,6 +410,26 @@ class Restaurant
     public function setIsActive(bool $isActive): void
     {
         $this->isActive = $isActive;
+    }
+
+    public function isCountProductDetailViews(): bool
+    {
+        return $this->countProductDetailViews;
+    }
+
+    public function setCountProductDetailViews(bool $countProductDetailViews): void
+    {
+        $this->countProductDetailViews = $countProductDetailViews;
+    }
+
+    public function isWhatsappOrderEnabled(): bool
+    {
+        return $this->whatsappOrderEnabled;
+    }
+
+    public function setWhatsappOrderEnabled(bool $whatsappOrderEnabled): void
+    {
+        $this->whatsappOrderEnabled = $whatsappOrderEnabled;
     }
 
     public function getCreatedAt(): \DateTimeImmutable

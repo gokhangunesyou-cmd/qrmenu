@@ -1,0 +1,853 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ localizedProductName ~ ' | ' ~ restaurant.name }}{% endblock %}
+{% block meta_description %}{{ localizedProductDescription ?: (restaurant.metaDescription ?: restaurant.description ?: localizedProductName) }}{% endblock %}
+{% block og_title %}{{ block('title') }}{% endblock %}
+{% block og_description %}{{ block('meta_description') }}{% endblock %}
+
+{% block stylesheets %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: {{ theme.primary }};
+    --secondary: {{ theme.secondary }};
+    --background: {{ theme.background }};
+    --surface: {{ theme.surface }};
+    --text: {{ theme.text }};
+    --accent: {{ theme.accent }};
+    --muted: {{ theme.muted }};
+    --border: {{ theme.border }};
+    --phone-shadow: 0 34px 70px rgba(17, 24, 39, 0.22);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    line-height: 1.35;
+    background:
+        radial-gradient(circle at 6% -12%, color-mix(in srgb, var(--accent) 34%, transparent), transparent 36%),
+        radial-gradient(circle at 94% 6%, color-mix(in srgb, var(--secondary) 22%, transparent), transparent 38%),
+        linear-gradient(180deg, color-mix(in srgb, var(--background) 92%, #fff), var(--background));
+    color: var(--text);
+}
+
+.menu-app-shell {
+    min-height: 100vh;
+    padding: 16px 12px 24px;
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+}
+
+.menu-app {
+    width: min(100%, 460px);
+    height: calc(100vh - 32px);
+    border-radius: 34px;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--border) 80%, #fff);
+    background: var(--surface);
+    box-shadow: var(--phone-shadow);
+    display: flex;
+    flex-direction: column;
+}
+
+.app-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.topbar {
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    align-items: center;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 74%, #fff);
+    background: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 3;
+}
+
+.back-link {
+    text-decoration: none;
+    color: #fff;
+    background: color-mix(in srgb, var(--primary) 86%, #000);
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 6px 10px;
+    white-space: nowrap;
+}
+
+.lang-switch {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: flex-end;
+}
+
+.lang-switch a {
+    text-decoration: none;
+    color: color-mix(in srgb, var(--primary) 86%, #000);
+    border: 1px solid color-mix(in srgb, var(--primary) 24%, transparent);
+    background: #fff;
+    border-radius: 999px;
+    padding: 4px 8px;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.lang-switch a.active {
+    background: color-mix(in srgb, var(--primary) 86%, #000);
+    color: #fff;
+    border-color: transparent;
+}
+
+.hero {
+    min-height: 122px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    background:
+        linear-gradient(178deg, rgba(17, 24, 39, 0.06), rgba(17, 24, 39, 0.76)),
+        {% if restaurant.coverMedia %}url('{{ media_url(restaurant.coverMedia.storagePath) }}'){% else %}linear-gradient(130deg, var(--secondary), var(--primary)){% endif %};
+    background-size: cover;
+    background-position: center;
+}
+
+.hero h1 {
+    margin: 0;
+    color: #fff;
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: clamp(20px, 5.8vw, 28px);
+    line-height: 1.05;
+}
+
+.hero-meta {
+    margin-top: 6px;
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.restaurant-strip {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    padding: 8px 10px;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, #fff);
+    background: color-mix(in srgb, var(--surface) 70%, #fff);
+}
+
+.logo-wrap {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    border: 1px solid color-mix(in srgb, var(--border) 75%, #fff);
+    background: #fff;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.logo-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.restaurant-info {
+    width: 100%;
+    min-width: 0;
+}
+
+.restaurant-info h2 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.restaurant-info p {
+    margin: 2px 0 0;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.3;
+}
+
+.social-icon-links {
+    margin-top: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.social-icon-links a {
+    text-decoration: none;
+    border: 1px solid color-mix(in srgb, var(--primary) 28%, transparent);
+    background: #fff;
+    color: color-mix(in srgb, var(--primary) 84%, #000);
+    border-radius: 999px;
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.social-icon-links svg {
+    width: 13px;
+    height: 13px;
+}
+
+.social-icon-links .social-fallback {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.content {
+    padding: 10px;
+    display: grid;
+    gap: 10px;
+}
+
+.gallery {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.gallery img {
+    width: 100%;
+    height: 132px;
+    border-radius: 11px;
+    object-fit: cover;
+    border: 1px solid color-mix(in srgb, var(--border) 66%, #fff);
+    background: color-mix(in srgb, var(--secondary) 10%, #fff);
+}
+
+.empty-image {
+    min-height: 132px;
+    border-radius: 11px;
+    display: grid;
+    place-items: center;
+    border: 1px dashed color-mix(in srgb, var(--border) 74%, #fff);
+    background: #fff;
+    color: var(--muted);
+    text-align: center;
+    font-size: 12px;
+    padding: 12px;
+}
+
+.panel {
+    border: 1px solid color-mix(in srgb, var(--border) 78%, #fff);
+    border-radius: 14px;
+    padding: 10px;
+    background: #fff;
+    box-shadow: 0 7px 18px rgba(17, 24, 39, 0.05);
+}
+
+.panel h2 {
+    margin: 0 0 6px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.row-item {
+    margin-top: 8px;
+}
+
+.row-label {
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.row-value {
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.pill-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 6px;
+}
+
+.pill {
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    color: #334155;
+    border-radius: 999px;
+    padding: 2px 7px;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.price {
+    font-size: 22px;
+    font-weight: 800;
+    color: color-mix(in srgb, var(--primary) 88%, #000);
+}
+
+.order-panel {
+    margin: 0 10px 10px;
+    border: 1px dashed color-mix(in srgb, var(--accent) 60%, transparent);
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--accent) 7%, #fff);
+    padding: 10px;
+}
+
+.order-panel h3 {
+    margin: 0 0 8px;
+    font-size: 13px;
+}
+
+.order-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.btn {
+    text-decoration: none;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 6px 10px;
+    cursor: pointer;
+}
+
+.btn-primary {
+    border: 1px solid transparent;
+    background: color-mix(in srgb, var(--primary) 90%, #fff);
+    color: #fff;
+}
+
+.btn-outline {
+    background: #fff;
+    color: color-mix(in srgb, var(--primary) 84%, #000);
+    border: 1px solid color-mix(in srgb, var(--primary) 24%, transparent);
+}
+
+.qty-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    background: #fff;
+    border: 1px solid color-mix(in srgb, var(--border) 78%, #fff);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.cart-list {
+    display: grid;
+    gap: 7px;
+    margin-top: 6px;
+}
+
+.cart-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    background: #fff;
+    border: 1px solid color-mix(in srgb, var(--border) 78%, #fff);
+    border-radius: 12px;
+    padding: 8px 10px;
+}
+
+.cart-name {
+    font-weight: 700;
+    font-size: 12px;
+}
+
+.cart-meta {
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.cart-total {
+    margin-top: 8px;
+    font-weight: 800;
+    font-size: 12px;
+}
+
+.warning {
+    margin-top: 6px;
+    font-size: 12px;
+    color: #9f1239;
+}
+
+@media (min-width: 780px) {
+    .content {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (min-width: 980px) {
+    .menu-app-shell {
+        padding: 28px 20px;
+    }
+
+    .menu-app {
+        width: min(100%, 960px);
+        height: calc(100vh - 56px);
+        border-radius: 26px;
+    }
+
+    .hero {
+        min-height: 152px;
+        padding: 16px 18px;
+    }
+
+    .hero h1 {
+        font-size: clamp(24px, 2.8vw, 34px);
+    }
+
+    .hero-meta {
+        font-size: 12px;
+    }
+
+    .restaurant-strip {
+        padding: 12px 14px;
+    }
+
+    .content {
+        padding: 14px;
+        gap: 12px;
+    }
+
+    .gallery {
+        gap: 10px;
+    }
+
+    .gallery img,
+    .empty-image {
+        height: 172px;
+        min-height: 172px;
+    }
+
+    .panel {
+        padding: 12px;
+    }
+
+    .panel h2 {
+        font-size: 15px;
+    }
+
+    .row-label {
+        font-size: 11px;
+    }
+
+    .row-value {
+        font-size: 13px;
+    }
+
+    .price {
+        font-size: 24px;
+    }
+
+    .order-panel {
+        margin: 0 14px 14px;
+        padding: 12px;
+    }
+
+    .order-panel h3 {
+        font-size: 14px;
+    }
+
+    .btn {
+        font-size: 11px;
+        padding: 7px 11px;
+    }
+}
+
+@media (max-width: 900px) {
+    .menu-app-shell {
+        padding: 0;
+    }
+
+    .menu-app {
+        width: 100%;
+        height: 100vh;
+        border-radius: 0;
+        border: none;
+        box-shadow: none;
+    }
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="menu-app-shell">
+    <div class="menu-app">
+        <div class="app-scroll">
+            <div class="topbar">
+                <a class="back-link" href="{{ path('site_menu_show', menuRouteParams) }}">{{ ui.back_to_menu }}</a>
+                {% if availableLocales|length > 1 %}
+                    <div class="lang-switch" aria-label="{{ ui.language }}">
+                        {% for localeCode, localeLabel in availableLocales %}
+                            {% set detailLocaleRouteParams = {slug: restaurant.slug, id: restaurant.id, productUuid: product.uuid, lang: localeCode} %}
+                            {% if tableNumber %}
+                                {% set detailLocaleRouteParams = detailLocaleRouteParams|merge({table: tableNumber}) %}
+                            {% endif %}
+                            <a href="{{ path('site_menu_product_detail', detailLocaleRouteParams) }}" class="{{ localeCode == currentLocale ? 'active' : '' }}" title="{{ localeLabel }}">{{ localeCode|upper }}</a>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <header class="hero">
+                <h1>{{ localizedProductName }}</h1>
+                <div class="hero-meta">
+                    {{ localizedCategoryName }}
+                    {% if tableNumber %} • {{ ui.table }} {{ tableNumber }}{% endif %}
+                </div>
+            </header>
+
+            <section class="restaurant-strip">
+                <div class="logo-wrap">
+                    {% if restaurant.logoMedia %}
+                        <img src="{{ media_url(restaurant.logoMedia.storagePath) }}" alt="{{ restaurant.name }}">
+                    {% else %}
+                        <span>{{ restaurant.name|slice(0, 1)|upper }}</span>
+                    {% endif %}
+                </div>
+                <div class="restaurant-info">
+                    <h2>{{ restaurant.name }}</h2>
+                    <p>
+                        {% if restaurant.city %}{{ restaurant.city }}{% endif %}
+                        {% if restaurant.address %}{{ restaurant.city ? ' • ' : '' }}{{ restaurant.address|slice(0, 44) }}{% endif %}
+                    </p>
+                    {% if socialLinks is not empty %}
+                        <div class="social-icon-links">
+                            {% for link in socialLinks|slice(0, 4) %}
+                                {% set platformValue = link.platform.value %}
+                                {% set platformLabel = socialPlatformLabels[platformValue] ?? platformValue|replace({'_': ' '})|title %}
+                                <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ platformLabel }}" title="{{ platformLabel }}">
+                                    {% if platformValue == 'instagram' %}
+                                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <rect x="3.5" y="3.5" width="17" height="17" rx="5" stroke="currentColor" stroke-width="2"></rect>
+                                            <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"></circle>
+                                            <circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"></circle>
+                                        </svg>
+                                    {% elseif platformValue == 'facebook' %}
+                                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <path d="M13.8 21V12.9H16.4L16.8 9.7H13.8V7.7C13.8 6.8 14.1 6.2 15.4 6.2H16.9V3.3C16.6 3.3 15.7 3.2 14.7 3.2C12.6 3.2 11.2 4.5 11.2 6.9V9.7H8.8V12.9H11.2V21H13.8Z" fill="currentColor"></path>
+                                        </svg>
+                                    {% elseif platformValue == 'twitter' %}
+                                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <path d="M5 5H8.9L12.1 9.5L15.9 5H19L13.6 11.2L19.3 19H15.4L11.9 14.1L7.7 19H4.6L10.4 12.3L5 5Z" fill="currentColor"></path>
+                                        </svg>
+                                    {% elseif platformValue == 'tiktok' %}
+                                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <path d="M14.6 4.2C15.1 6.1 16.2 7.2 18 7.5V10.1C16.7 10.1 15.7 9.8 14.7 9.2V14.4C14.7 17.2 12.6 19.2 9.9 19.2C7.2 19.2 5.1 17.2 5.1 14.5C5.1 11.8 7.2 9.8 9.9 9.8C10.2 9.8 10.6 9.8 10.9 9.9V12.5C10.6 12.4 10.2 12.3 9.9 12.3C8.6 12.3 7.6 13.2 7.6 14.5C7.6 15.8 8.6 16.8 9.9 16.8C11.2 16.8 12.2 15.8 12.2 14.5V4.2H14.6Z" fill="currentColor"></path>
+                                        </svg>
+                                    {% elseif platformValue == 'website' %}
+                                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"></circle>
+                                            <path d="M3.5 12H20.5M12 3.5C14.3 5.9 15.6 8.9 15.6 12C15.6 15.1 14.3 18.1 12 20.5C9.7 18.1 8.4 15.1 8.4 12C8.4 8.9 9.7 5.9 12 3.5Z" stroke="currentColor" stroke-width="1.5"></path>
+                                        </svg>
+                                    {% elseif platformValue == 'google_maps' %}
+                                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <path d="M12 21C15.9 16.7 18 13.7 18 10.8C18 7 15.3 4 12 4C8.7 4 6 7 6 10.8C6 13.7 8.1 16.7 12 21Z" stroke="currentColor" stroke-width="2"></path>
+                                            <circle cx="12" cy="10.5" r="2.3" fill="currentColor"></circle>
+                                        </svg>
+                                    {% else %}
+                                        <span class="social-fallback">{{ platformLabel|slice(0, 2) }}</span>
+                                    {% endif %}
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <section class="content">
+                <div class="gallery">
+                    {% if product.images|length > 0 %}
+                        {% for productImage in product.images %}
+                            {% if productImage.media %}
+                                <img src="{{ media_url(productImage.media.storagePath) }}" alt="{{ localizedProductName }}">
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        {% if restaurant.coverMedia %}
+                            <img src="{{ media_url(restaurant.coverMedia.storagePath) }}" alt="{{ localizedProductName }}">
+                        {% else %}
+                            <div class="empty-image">{{ localizedProductName }}</div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                <article class="panel">
+                    <h2>{{ ui.product_details }}</h2>
+                    <div class="row-item">
+                        <div class="row-label">{{ ui.category_label }}</div>
+                        <div class="row-value">{{ localizedCategoryName }}</div>
+                    </div>
+                    <div class="row-item">
+                        <div class="row-label">{{ ui.price_label }}</div>
+                        <div class="row-value price">{{ currencySymbol }} {{ product.price|number_format(2, '.', ',') }}</div>
+                    </div>
+                    {% if localizedProductDescription %}
+                        <div class="row-item">
+                            <div class="row-label">{{ ui.description_label }}</div>
+                            <div class="row-value">{{ localizedProductDescription }}</div>
+                        </div>
+                    {% endif %}
+                    {% if product.calories %}
+                        <div class="row-item">
+                            <div class="row-label">{{ ui.calories_label }}</div>
+                            <div class="row-value">{{ product.calories }} kcal</div>
+                        </div>
+                    {% endif %}
+                    {% if localizedAllergens is not empty %}
+                        <div class="row-item">
+                            <div class="row-label">{{ ui.allergens_label }}</div>
+                            <div class="pill-list">
+                                {% for allergen in localizedAllergens %}
+                                    <span class="pill">{{ allergen }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if product.isFeatured %}
+                        <div class="row-item">
+                            <span class="pill">{{ ui.featured }}</span>
+                        </div>
+                    {% endif %}
+                </article>
+            </section>
+
+            {% if isWhatsappSettingEnabled %}
+                <section class="order-panel">
+                    <h3>{{ ui.cart }}</h3>
+                    {% if isWhatsappOrderEnabled %}
+                        <div class="order-actions">
+                            <button type="button" class="btn btn-primary" id="addToCartBtn">{{ ui.add_to_cart }}</button>
+                            <span class="qty-badge" id="currentQtyBadge">0</span>
+                            <button type="button" class="btn btn-outline" id="clearCartBtn">{{ ui.clear_cart }}</button>
+                        </div>
+                        <div id="cartList" class="cart-list"></div>
+                        <div class="cart-total" id="cartTotal"></div>
+                        <a id="sendWhatsappBtn" class="btn btn-primary" href="#" target="_blank" rel="noopener noreferrer">{{ ui.send_whatsapp }}</a>
+                    {% else %}
+                        <div class="warning">{{ ui.whatsapp_unavailable }}</div>
+                    {% endif %}
+                </section>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{% if isWhatsappOrderEnabled %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const storageKey = 'qrmenu_cart_{{ restaurant.id }}';
+    const currencySymbol = '{{ currencySymbol|e('js') }}';
+    const restaurantName = '{{ restaurant.name|e('js') }}';
+    const tableNumber = {{ tableNumber is not null ? tableNumber : 'null' }};
+    const whatsappNumber = '{{ whatsappNumber|e('js') }}';
+    const emptyCartText = '{{ ui.empty_cart|e('js') }}';
+
+    const currentProduct = {
+        uuid: '{{ product.uuid|e('js') }}',
+        name: '{{ localizedProductName|e('js') }}',
+        price: Number('{{ product.price|number_format(2, '.', '') }}')
+    };
+
+    const addToCartBtn = document.getElementById('addToCartBtn');
+    const clearCartBtn = document.getElementById('clearCartBtn');
+    const currentQtyBadge = document.getElementById('currentQtyBadge');
+    const cartList = document.getElementById('cartList');
+    const cartTotal = document.getElementById('cartTotal');
+    const sendWhatsappBtn = document.getElementById('sendWhatsappBtn');
+    if (!addToCartBtn || !clearCartBtn || !currentQtyBadge || !cartList || !cartTotal || !sendWhatsappBtn) {
+        return;
+    }
+
+    const readCart = () => {
+        try {
+            const raw = localStorage.getItem(storageKey);
+            if (!raw) {
+                return [];
+            }
+
+            const parsed = JSON.parse(raw);
+            if (!Array.isArray(parsed)) {
+                return [];
+            }
+
+            return parsed.filter((item) =>
+                item && typeof item.uuid === 'string' && typeof item.name === 'string' && Number(item.price) > 0 && Number(item.qty) > 0
+            );
+        } catch (error) {
+            return [];
+        }
+    };
+
+    const writeCart = (cart) => {
+        localStorage.setItem(storageKey, JSON.stringify(cart));
+    };
+
+    const formatPrice = (value) => Number(value).toFixed(2);
+
+    const createQtyButton = (label, onClick) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'btn btn-outline';
+        button.style.padding = '2px 8px';
+        button.style.fontSize = '12px';
+        button.textContent = label;
+        button.addEventListener('click', onClick);
+
+        return button;
+    };
+
+    const updateWhatsappLink = (cart, total) => {
+        if (cart.length === 0) {
+            sendWhatsappBtn.setAttribute('aria-disabled', 'true');
+            sendWhatsappBtn.style.pointerEvents = 'none';
+            sendWhatsappBtn.style.opacity = '0.6';
+            sendWhatsappBtn.href = '#';
+            return;
+        }
+
+        const lines = [];
+        lines.push('Restaurant: ' + restaurantName);
+        if (tableNumber !== null) {
+            lines.push('Table: ' + tableNumber);
+        }
+        lines.push('Items:');
+        cart.forEach((item) => {
+            lines.push('- ' + item.qty + 'x ' + item.name + ' (' + currencySymbol + ' ' + formatPrice(item.price * item.qty) + ')');
+        });
+        lines.push('Total: ' + currencySymbol + ' ' + formatPrice(total));
+
+        sendWhatsappBtn.href = 'https://wa.me/' + whatsappNumber + '?text=' + encodeURIComponent(lines.join('\n'));
+        sendWhatsappBtn.removeAttribute('aria-disabled');
+        sendWhatsappBtn.style.pointerEvents = '';
+        sendWhatsappBtn.style.opacity = '';
+    };
+
+    const renderCart = () => {
+        const cart = readCart();
+        const current = cart.find((item) => item.uuid === currentProduct.uuid);
+        currentQtyBadge.textContent = current ? String(current.qty) : '0';
+
+        cartList.innerHTML = '';
+        if (cart.length === 0) {
+            const emptyNode = document.createElement('div');
+            emptyNode.className = 'cart-meta';
+            emptyNode.textContent = emptyCartText;
+            cartList.appendChild(emptyNode);
+            cartTotal.textContent = '';
+            updateWhatsappLink([], 0);
+            return;
+        }
+
+        let total = 0;
+        cart.forEach((item) => {
+            total += Number(item.price) * Number(item.qty);
+
+            const row = document.createElement('div');
+            row.className = 'cart-item';
+
+            const left = document.createElement('div');
+            const name = document.createElement('div');
+            name.className = 'cart-name';
+            name.textContent = item.name;
+            const meta = document.createElement('div');
+            meta.className = 'cart-meta';
+            meta.textContent = '{{ ui.quantity|e('js') }}: ' + item.qty + ' | ' + currencySymbol + ' ' + formatPrice(item.price * item.qty);
+            left.appendChild(name);
+            left.appendChild(meta);
+
+            const controls = document.createElement('div');
+            controls.style.display = 'flex';
+            controls.style.gap = '4px';
+            controls.appendChild(createQtyButton('-', () => changeQty(item.uuid, -1)));
+            controls.appendChild(createQtyButton('+', () => changeQty(item.uuid, 1)));
+            controls.appendChild(createQtyButton('x', () => removeItem(item.uuid)));
+
+            row.appendChild(left);
+            row.appendChild(controls);
+            cartList.appendChild(row);
+        });
+
+        cartTotal.textContent = 'Total: ' + currencySymbol + ' ' + formatPrice(total);
+        updateWhatsappLink(cart, total);
+    };
+
+    const changeQty = (uuid, delta) => {
+        const cart = readCart();
+        const index = cart.findIndex((item) => item.uuid === uuid);
+        if (index === -1) {
+            return;
+        }
+
+        cart[index].qty = Number(cart[index].qty) + delta;
+        if (cart[index].qty <= 0) {
+            cart.splice(index, 1);
+        }
+
+        writeCart(cart);
+        renderCart();
+    };
+
+    const removeItem = (uuid) => {
+        const cart = readCart().filter((item) => item.uuid !== uuid);
+        writeCart(cart);
+        renderCart();
+    };
+
+    addToCartBtn.addEventListener('click', () => {
+        const cart = readCart();
+        const existing = cart.find((item) => item.uuid === currentProduct.uuid);
+        if (existing) {
+            existing.qty = Number(existing.qty) + 1;
+        } else {
+            cart.push({
+                uuid: currentProduct.uuid,
+                name: currentProduct.name,
+                price: currentProduct.price,
+                qty: 1
+            });
+        }
+
+        writeCart(cart);
+        renderCart();
+    });
+
+    clearCartBtn.addEventListener('click', () => {
+        localStorage.removeItem(storageKey);
+        renderCart();
+    });
+
+    renderCart();
+});
+</script>
+{% endif %}
+{% endblock %}

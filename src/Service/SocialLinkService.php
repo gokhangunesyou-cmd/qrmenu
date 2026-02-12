@@ -37,6 +37,8 @@ class SocialLinkService
      */
     public function replaceAll(array $links, Restaurant $restaurant): array
     {
+        $seenPlatforms = [];
+
         // Validate platforms upfront
         foreach ($links as $i => $linkData) {
             if (!isset($linkData['platform'], $linkData['url'])) {
@@ -51,25 +53,36 @@ class SocialLinkService
                     ['field' => sprintf('links[%d].platform', $i), 'message' => sprintf('Invalid platform "%s".', $linkData['platform'])],
                 ]);
             }
+
+            if (isset($seenPlatforms[$platform->value])) {
+                throw new ValidationException([
+                    ['field' => sprintf('links[%d].platform', $i), 'message' => sprintf('Duplicate platform "%s" is not allowed.', $platform->value)],
+                ]);
+            }
+
+            $seenPlatforms[$platform->value] = true;
         }
 
-        // Remove all existing links
-        $existing = $this->restaurantSocialLinkRepository->findByRestaurant($restaurant);
-        foreach ($existing as $link) {
-            $this->entityManager->remove($link);
-        }
-
-        // Create new links
         $result = [];
-        foreach ($links as $i => $linkData) {
-            $platform = SocialPlatform::from($linkData['platform']);
-            $link = new RestaurantSocialLink($restaurant, $platform, $linkData['url']);
-            $link->setSortOrder($linkData['sortOrder'] ?? $i);
-            $this->entityManager->persist($link);
-            $result[] = $link;
-        }
+        $this->entityManager->wrapInTransaction(function () use ($restaurant, $links, &$result): void {
+            // Remove all existing links first and flush deletions before inserts.
+            $existing = $this->restaurantSocialLinkRepository->findByRestaurant($restaurant);
+            foreach ($existing as $link) {
+                $this->entityManager->remove($link);
+            }
+            $this->entityManager->flush();
 
-        $this->entityManager->flush();
+            // Recreate links in the requested order.
+            foreach ($links as $i => $linkData) {
+                $platform = SocialPlatform::from($linkData['platform']);
+                $link = new RestaurantSocialLink($restaurant, $platform, $linkData['url']);
+                $link->setSortOrder($linkData['sortOrder'] ?? $i);
+                $this->entityManager->persist($link);
+                $result[] = $link;
+            }
+
+            $this->entityManager->flush();
+        });
 
         return $result;
     }

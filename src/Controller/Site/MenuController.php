@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Controller\Site;
 
 use App\Entity\Category;
+use App\Entity\Product;
 use App\Entity\Restaurant;
 use App\Repository\CategoryRepository;
+use App\Repository\ProductRepository;
 use App\Repository\RestaurantRepository;
 use App\Repository\RestaurantSocialLinkRepository;
 use App\Service\LanguageContext;
@@ -108,6 +110,9 @@ class MenuController extends AbstractController
             'editorial' => 'site/menu/editorial.html.twig',
             default => 'site/menu/showcase.html.twig',
         };
+        $whatsappNumber = $restaurant->isWhatsappOrderEnabled()
+            ? $this->normalizeWhatsappNumber($restaurant->getPhone())
+            : null;
 
         return $this->render($templatePath, [
             'restaurant' => $restaurant,
@@ -125,6 +130,124 @@ class MenuController extends AbstractController
             'localizedCategoryDescriptions' => $localizedCategoryDescriptions,
             'localizedProductNames' => $localizedProductNames,
             'localizedProductDescriptions' => $localizedProductDescriptions,
+            'whatsappNumber' => $whatsappNumber,
+            'isWhatsappSettingEnabled' => $restaurant->isWhatsappOrderEnabled(),
+            'isWhatsappOrderEnabled' => $whatsappNumber !== null,
+        ]);
+    }
+
+    #[Route('/menu/{slug<[^/]+>}-r-{id<\d+>}/product/{productUuid}', name: 'site_menu_product_detail', methods: ['GET'])]
+    public function detail(
+        string $slug,
+        int $id,
+        string $productUuid,
+        Request $request,
+        RestaurantRepository $restaurantRepository,
+        ProductRepository $productRepository,
+        RestaurantSocialLinkRepository $socialLinkRepository,
+        TranslationService $translationService,
+        LanguageContext $languageContext,
+    ): Response {
+        $restaurant = $restaurantRepository->findActiveByIdForMenu($id);
+        if ($restaurant === null) {
+            throw $this->createNotFoundException('Restaurant not found');
+        }
+
+        $restaurantLocales = $restaurant->getEnabledLocales();
+        $locale = $languageContext->resolveSiteLocale($request, $restaurant->getDefaultLocale(), $restaurantLocales);
+        $availableLocales = $languageContext->getLocaleLabelMap($restaurantLocales);
+        $canonicalSlug = $restaurant->getSlug();
+        $tableNumber = max(0, $request->query->getInt('table', 0));
+        if ($slug !== $canonicalSlug) {
+            $routeParams = [
+                'slug' => $canonicalSlug,
+                'id' => $id,
+                'productUuid' => $productUuid,
+            ];
+            if (trim($request->query->getString('lang')) !== '') {
+                $routeParams['lang'] = $locale;
+            }
+            if ($tableNumber > 0) {
+                $routeParams['table'] = $tableNumber;
+            }
+
+            return $this->redirectToRoute('site_menu_product_detail', $routeParams, Response::HTTP_MOVED_PERMANENTLY);
+        }
+
+        $product = $productRepository->findActiveByUuidForMenu($restaurant, $productUuid);
+        if (!$product instanceof Product) {
+            throw $this->createNotFoundException('Product not found');
+        }
+
+        if ($restaurant->isCountProductDetailViews()) {
+            $productRepository->incrementDetailViewCount($product);
+        }
+
+        $category = $product->getCategory();
+        $categoryId = (int) $category->getId();
+        $productId = (int) $product->getId();
+
+        $categoryTranslations = $translationService->getFieldMapWithFallback(
+            'category',
+            $categoryId > 0 ? [$categoryId] : [],
+            $locale,
+            $restaurant->getDefaultLocale()
+        );
+        $productTranslations = $translationService->getFieldMapWithFallback(
+            'product',
+            $productId > 0 ? [$productId] : [],
+            $locale,
+            $restaurant->getDefaultLocale()
+        );
+
+        $localizedCategoryName = $translationService->resolve($categoryTranslations, $categoryId, 'name', $category->getName()) ?? $category->getName();
+        $localizedProductName = $translationService->resolve($productTranslations, $productId, 'name', $product->getName()) ?? $product->getName();
+        $localizedProductDescription = $translationService->resolve($productTranslations, $productId, 'description', $product->getDescription());
+        $allergenLabels = $this->buildAllergenLabels($locale);
+        $localizedAllergens = [];
+        foreach ($product->getAllergens() ?? [] as $allergen) {
+            if (!is_string($allergen) || trim($allergen) === '') {
+                continue;
+            }
+
+            $key = trim($allergen);
+            $localizedAllergens[] = $allergenLabels[$key] ?? $key;
+        }
+
+        $menuRouteParams = [
+            'slug' => $restaurant->getSlug(),
+            'id' => (int) $restaurant->getId(),
+            'lang' => $locale,
+        ];
+        if ($tableNumber > 0) {
+            $menuRouteParams['table'] = $tableNumber;
+        }
+
+        $whatsappNumber = $restaurant->isWhatsappOrderEnabled()
+            ? $this->normalizeWhatsappNumber($restaurant->getPhone())
+            : null;
+
+        return $this->render('site/menu/detail.html.twig', [
+            'restaurant' => $restaurant,
+            'product' => $product,
+            'socialLinks' => $socialLinkRepository->findByRestaurant($restaurant),
+            'theme' => $this->resolveTheme($restaurant),
+            'menuTemplate' => $restaurant->getMenuTemplate(),
+            'currencySymbol' => $this->resolveCurrencySymbol($restaurant->getCurrencyCode()),
+            'tableNumber' => $tableNumber > 0 ? $tableNumber : null,
+            'currentLocale' => $locale,
+            'availableLocales' => $availableLocales,
+            'ui' => $this->buildMenuUi($locale),
+            'socialPlatformLabels' => $this->buildSocialPlatformLabels($locale),
+            'allergenLabels' => $allergenLabels,
+            'localizedCategoryName' => $localizedCategoryName,
+            'localizedProductName' => $localizedProductName,
+            'localizedProductDescription' => $localizedProductDescription,
+            'localizedAllergens' => $localizedAllergens,
+            'menuRouteParams' => $menuRouteParams,
+            'whatsappNumber' => $whatsappNumber,
+            'isWhatsappSettingEnabled' => $restaurant->isWhatsappOrderEnabled(),
+            'isWhatsappOrderEnabled' => $whatsappNumber !== null,
         ]);
     }
 
@@ -201,7 +324,22 @@ class MenuController extends AbstractController
      *     table:string,
      *     featured:string,
      *     empty:string,
-     *     no_contact:string
+     *     no_contact:string,
+     *     detail:string,
+     *     back_to_menu:string,
+     *     product_details:string,
+     *     category_label:string,
+     *     price_label:string,
+     *     description_label:string,
+     *     calories_label:string,
+     *     allergens_label:string,
+     *     add_to_cart:string,
+     *     cart:string,
+     *     quantity:string,
+     *     empty_cart:string,
+     *     clear_cart:string,
+     *     send_whatsapp:string,
+     *     whatsapp_unavailable:string
      * }
      */
     private function buildMenuUi(string $locale): array
@@ -223,6 +361,21 @@ class MenuController extends AbstractController
                 'featured' => 'One Cikan',
                 'empty' => 'Bu restoran icin henuz yayinlanmis menu urunu yok.',
                 'no_contact' => 'Iletisim bilgisi eklenmemis.',
+                'detail' => 'Detay',
+                'back_to_menu' => 'Menuye Don',
+                'product_details' => 'Urun Detaylari',
+                'category_label' => 'Kategori',
+                'price_label' => 'Fiyat',
+                'description_label' => 'Aciklama',
+                'calories_label' => 'Kalori',
+                'allergens_label' => 'Alerjenler',
+                'add_to_cart' => 'Sepete Ekle',
+                'cart' => 'Sepet',
+                'quantity' => 'Adet',
+                'empty_cart' => 'Sepetiniz bos.',
+                'clear_cart' => 'Sepeti Temizle',
+                'send_whatsapp' => 'WhatsApp ile Siparis Gonder',
+                'whatsapp_unavailable' => 'WhatsApp siparisi icin restoran telefonu tanimli olmali.',
             ],
             'en' => [
                 'menu' => 'Menu',
@@ -240,6 +393,21 @@ class MenuController extends AbstractController
                 'featured' => 'Chef Pick',
                 'empty' => 'No published menu items are available for this restaurant yet.',
                 'no_contact' => 'No contact details have been added yet.',
+                'detail' => 'Details',
+                'back_to_menu' => 'Back to Menu',
+                'product_details' => 'Product Details',
+                'category_label' => 'Category',
+                'price_label' => 'Price',
+                'description_label' => 'Description',
+                'calories_label' => 'Calories',
+                'allergens_label' => 'Allergens',
+                'add_to_cart' => 'Add to Cart',
+                'cart' => 'Cart',
+                'quantity' => 'Qty',
+                'empty_cart' => 'Your cart is empty.',
+                'clear_cart' => 'Clear Cart',
+                'send_whatsapp' => 'Send Order via WhatsApp',
+                'whatsapp_unavailable' => 'Restaurant phone is required for WhatsApp ordering.',
             ],
             'ar' => [
                 'menu' => 'Menu',
@@ -257,6 +425,21 @@ class MenuController extends AbstractController
                 'featured' => 'Chef Pick',
                 'empty' => 'No published menu items are available for this restaurant yet.',
                 'no_contact' => 'No contact details have been added yet.',
+                'detail' => 'Details',
+                'back_to_menu' => 'Back to Menu',
+                'product_details' => 'Product Details',
+                'category_label' => 'Category',
+                'price_label' => 'Price',
+                'description_label' => 'Description',
+                'calories_label' => 'Calories',
+                'allergens_label' => 'Allergens',
+                'add_to_cart' => 'Add to Cart',
+                'cart' => 'Cart',
+                'quantity' => 'Qty',
+                'empty_cart' => 'Your cart is empty.',
+                'clear_cart' => 'Clear Cart',
+                'send_whatsapp' => 'Send Order via WhatsApp',
+                'whatsapp_unavailable' => 'Restaurant phone is required for WhatsApp ordering.',
             ],
             'ru' => [
                 'menu' => 'Menu',
@@ -274,6 +457,21 @@ class MenuController extends AbstractController
                 'featured' => 'Chef Pick',
                 'empty' => 'No published menu items are available for this restaurant yet.',
                 'no_contact' => 'No contact details have been added yet.',
+                'detail' => 'Details',
+                'back_to_menu' => 'Back to Menu',
+                'product_details' => 'Product Details',
+                'category_label' => 'Category',
+                'price_label' => 'Price',
+                'description_label' => 'Description',
+                'calories_label' => 'Calories',
+                'allergens_label' => 'Allergens',
+                'add_to_cart' => 'Add to Cart',
+                'cart' => 'Cart',
+                'quantity' => 'Qty',
+                'empty_cart' => 'Your cart is empty.',
+                'clear_cart' => 'Clear Cart',
+                'send_whatsapp' => 'Send Order via WhatsApp',
+                'whatsapp_unavailable' => 'Restaurant phone is required for WhatsApp ordering.',
             ],
         ];
 
@@ -295,5 +493,54 @@ class MenuController extends AbstractController
             'website' => $ui['website'],
             'google_maps' => $ui['maps'],
         ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function buildAllergenLabels(string $locale): array
+    {
+        $labels = [
+            'tr' => [
+                'gluten' => 'Gluten',
+                'sut' => 'Sut',
+                'yumurta' => 'Yumurta',
+                'fistik' => 'Fistik',
+                'soya' => 'Soya',
+                'balik' => 'Balik',
+                'kabuklu_deniz_urunleri' => 'Kabuklu Deniz Urunleri',
+                'kereviz' => 'Kereviz',
+            ],
+            'en' => [
+                'gluten' => 'Gluten',
+                'sut' => 'Milk',
+                'yumurta' => 'Egg',
+                'fistik' => 'Peanut',
+                'soya' => 'Soy',
+                'balik' => 'Fish',
+                'kabuklu_deniz_urunleri' => 'Shellfish',
+                'kereviz' => 'Celery',
+            ],
+        ];
+
+        return $labels[$locale] ?? $labels['en'];
+    }
+
+    private function normalizeWhatsappNumber(?string $phone): ?string
+    {
+        if (!is_string($phone) || trim($phone) === '') {
+            return null;
+        }
+
+        $normalized = preg_replace('/\D+/', '', $phone);
+        if (!is_string($normalized) || $normalized === '') {
+            return null;
+        }
+
+        if (str_starts_with($normalized, '00')) {
+            $normalized = substr($normalized, 2);
+        }
+
+        return $normalized !== '' ? $normalized : null;
     }
 }

@@ -6,6 +6,7 @@ namespace App\Form;
 
 use App\Entity\Restaurant;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\ColorType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
@@ -89,7 +90,7 @@ class RestaurantProfileType extends AbstractType
                 'required' => false,
                 'data' => (string) ($options['social_links']['instagram'] ?? ''),
                 'attr' => ['class' => 'form-control', 'placeholder' => 'https://instagram.com/...'],
-                'constraints' => [new Url(message: 'Geçerli bir URL giriniz.')],
+                'constraints' => [new Url(requireTld: false, message: 'Geçerli bir URL giriniz.')],
             ])
             ->add('facebookUrl', TextType::class, [
                 'label' => 'Facebook URL',
@@ -97,7 +98,7 @@ class RestaurantProfileType extends AbstractType
                 'required' => false,
                 'data' => (string) ($options['social_links']['facebook'] ?? ''),
                 'attr' => ['class' => 'form-control', 'placeholder' => 'https://facebook.com/...'],
-                'constraints' => [new Url(message: 'Geçerli bir URL giriniz.')],
+                'constraints' => [new Url(requireTld: false, message: 'Geçerli bir URL giriniz.')],
             ])
             ->add('twitterUrl', TextType::class, [
                 'label' => 'Twitter/X URL',
@@ -105,7 +106,7 @@ class RestaurantProfileType extends AbstractType
                 'required' => false,
                 'data' => (string) ($options['social_links']['twitter'] ?? ''),
                 'attr' => ['class' => 'form-control', 'placeholder' => 'https://x.com/...'],
-                'constraints' => [new Url(message: 'Geçerli bir URL giriniz.')],
+                'constraints' => [new Url(requireTld: false, message: 'Geçerli bir URL giriniz.')],
             ])
             ->add('tiktokUrl', TextType::class, [
                 'label' => 'TikTok URL',
@@ -113,7 +114,7 @@ class RestaurantProfileType extends AbstractType
                 'required' => false,
                 'data' => (string) ($options['social_links']['tiktok'] ?? ''),
                 'attr' => ['class' => 'form-control', 'placeholder' => 'https://tiktok.com/@...'],
-                'constraints' => [new Url(message: 'Geçerli bir URL giriniz.')],
+                'constraints' => [new Url(requireTld: false, message: 'Geçerli bir URL giriniz.')],
             ])
             ->add('websiteUrl', TextType::class, [
                 'label' => 'Website URL',
@@ -121,7 +122,7 @@ class RestaurantProfileType extends AbstractType
                 'required' => false,
                 'data' => (string) ($options['social_links']['website'] ?? ''),
                 'attr' => ['class' => 'form-control', 'placeholder' => 'https://...'],
-                'constraints' => [new Url(message: 'Geçerli bir URL giriniz.')],
+                'constraints' => [new Url(requireTld: false, message: 'Geçerli bir URL giriniz.')],
             ])
             ->add('googleMapsUrl', TextType::class, [
                 'label' => 'Google Harita URL',
@@ -129,7 +130,7 @@ class RestaurantProfileType extends AbstractType
                 'required' => false,
                 'data' => (string) ($options['social_links']['google_maps'] ?? ''),
                 'attr' => ['class' => 'form-control', 'placeholder' => 'https://maps.google.com/...'],
-                'constraints' => [new Url(message: 'Geçerli bir URL giriniz.')],
+                'constraints' => [new Url(requireTld: false, message: 'Geçerli bir URL giriniz.')],
             ])
             ->add('menuTemplate', ChoiceType::class, [
                 'label' => 'Menü Şablonu',
@@ -138,6 +139,16 @@ class RestaurantProfileType extends AbstractType
                     'Editorial Slate' => 'editorial',
                 ],
                 'attr' => ['class' => 'form-select'],
+            ])
+            ->add('countProductDetailViews', CheckboxType::class, [
+                'label' => 'Urun Detay Girislerini Say',
+                'required' => false,
+                'attr' => ['class' => 'form-check-input'],
+            ])
+            ->add('whatsappOrderEnabled', CheckboxType::class, [
+                'label' => 'WhatsApp ile Siparis Al',
+                'required' => false,
+                'attr' => ['class' => 'form-check-input'],
             ])
             ->add('enabledLocales', ChoiceType::class, [
                 'label' => 'Yayın Dilleri',
@@ -190,9 +201,7 @@ class RestaurantProfileType extends AbstractType
                 'required' => false,
                 'attr' => ['class' => 'form-control'],
                 'constraints' => [
-                    new File([
-                        'maxSize' => '10M',
-                    ]),
+                    new File(maxSize: '10M'),
                 ],
             ])
             ->add('coverFile', FileType::class, [
@@ -201,9 +210,7 @@ class RestaurantProfileType extends AbstractType
                 'required' => false,
                 'attr' => ['class' => 'form-control'],
                 'constraints' => [
-                    new File([
-                        'maxSize' => '10M',
-                    ]),
+                    new File(maxSize: '10M'),
                 ],
             ]);
     }

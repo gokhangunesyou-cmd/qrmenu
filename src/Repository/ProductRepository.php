@@ -172,4 +172,99 @@ class ProductRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    /**
+     * Find one active product for public menu detail by UUID and restaurant.
+     */
+    public function findActiveByUuidForMenu(Restaurant $restaurant, string $uuid): ?Product
+    {
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.images', 'pi')
+            ->addSelect('pi')
+            ->leftJoin('pi.media', 'pm')
+            ->addSelect('pm')
+            ->leftJoin('p.category', 'c')
+            ->addSelect('c')
+            ->where('p.restaurant = :restaurant')
+            ->andWhere('p.uuid = :uuid')
+            ->andWhere('p.isActive = true')
+            ->andWhere('p.deletedAt IS NULL')
+            ->setParameter('restaurant', $restaurant)
+            ->setParameter('uuid', $uuid)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
+     * @param int[] $productIds
+     */
+    public function incrementMenuViewCountsByIds(array $productIds): void
+    {
+        $ids = array_values(array_unique(array_filter(
+            array_map(static fn (mixed $value): int => (int) $value, $productIds),
+            static fn (int $id): bool => $id > 0
+        )));
+
+        if ($ids === []) {
+            return;
+        }
+
+        $this->createQueryBuilder('p')
+            ->update()
+            ->set('p.menuViewCount', 'p.menuViewCount + 1')
+            ->where('p.id IN (:ids)')
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->execute();
+    }
+
+    public function incrementDetailViewCount(Product $product): void
+    {
+        if ($product->getId() === null) {
+            return;
+        }
+
+        $this->createQueryBuilder('p')
+            ->update()
+            ->set('p.detailViewCount', 'p.detailViewCount + 1')
+            ->where('p.id = :id')
+            ->setParameter('id', $product->getId())
+            ->getQuery()
+            ->execute();
+    }
+
+    /**
+     * @return Product[]
+     */
+    public function findMostViewedByRestaurant(Restaurant $restaurant, int $limit = 5): array
+    {
+        return $this->createQueryBuilder('p')
+            ->where('p.restaurant = :restaurant')
+            ->andWhere('p.deletedAt IS NULL')
+            ->andWhere('p.menuViewCount > 0 OR p.detailViewCount > 0')
+            ->setParameter('restaurant', $restaurant)
+            ->orderBy('p.menuViewCount', 'DESC')
+            ->addOrderBy('p.detailViewCount', 'DESC')
+            ->addOrderBy('p.name', 'ASC')
+            ->setMaxResults(max(1, $limit))
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return Product[]
+     */
+    public function findMostDetailViewedByRestaurant(Restaurant $restaurant, int $limit = 5): array
+    {
+        return $this->createQueryBuilder('p')
+            ->where('p.restaurant = :restaurant')
+            ->andWhere('p.deletedAt IS NULL')
+            ->andWhere('p.detailViewCount > 0')
+            ->setParameter('restaurant', $restaurant)
+            ->orderBy('p.detailViewCount', 'DESC')
+            ->addOrderBy('p.name', 'ASC')
+            ->setMaxResults(max(1, $limit))
+            ->getQuery()
+            ->getResult();
+    }
 }

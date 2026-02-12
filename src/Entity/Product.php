@@ -15,6 +15,7 @@ use Ramsey\Uuid\UuidInterface;
 #[ORM\Index(columns: ['restaurant_id'], name: 'idx_products_restaurant')]
 #[ORM\Index(columns: ['restaurant_id', 'category_id', 'sort_order'], name: 'idx_products_category_sorted')]
 #[ORM\Index(columns: ['status', 'submitted_at'], name: 'idx_products_pending')]
+#[ORM\Index(columns: ['restaurant_id', 'menu_view_count'], name: 'idx_products_restaurant_views')]
 class Product
 {
     #[ORM\Id]
@@ -66,6 +67,12 @@ class Product
 
     #[ORM\Column]
     private bool $isActive = true;
+
+    #[ORM\Column(type: 'integer', options: ['default' => 0])]
+    private int $menuViewCount = 0;
+
+    #[ORM\Column(type: 'integer', options: ['default' => 0])]
+    private int $detailViewCount = 0;
 
     #[ORM\Column(type: 'datetimetz_immutable')]
     private \DateTimeImmutable $createdAt;
@@ -226,6 +233,40 @@ class Product
     public function setIsActive(bool $isActive): void
     {
         $this->isActive = $isActive;
+    }
+
+    public function getMenuViewCount(): int
+    {
+        return $this->menuViewCount;
+    }
+
+    public function setMenuViewCount(int $menuViewCount): void
+    {
+        $this->menuViewCount = max(0, $menuViewCount);
+    }
+
+    public function incrementMenuViewCount(int $by = 1): void
+    {
+        if ($by > 0) {
+            $this->menuViewCount += $by;
+        }
+    }
+
+    public function getDetailViewCount(): int
+    {
+        return $this->detailViewCount;
+    }
+
+    public function setDetailViewCount(int $detailViewCount): void
+    {
+        $this->detailViewCount = max(0, $detailViewCount);
+    }
+
+    public function incrementDetailViewCount(int $by = 1): void
+    {
+        if ($by > 0) {
+            $this->detailViewCount += $by;
+        }
     }
 
     public function getCreatedAt(): \DateTimeImmutable
