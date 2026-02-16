@@ -137,6 +137,7 @@ class RestaurantProfileType extends AbstractType
                 'choices' => [
                     'Showcase Spotlight' => 'showcase',
                     'Editorial Slate' => 'editorial',
+                    'Boutique Bazaar' => 'boutique',
                 ],
                 'attr' => ['class' => 'form-select'],
             ])

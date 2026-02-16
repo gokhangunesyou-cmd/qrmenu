@@ -24,10 +24,11 @@
         analytics: 'Musteri Etkilesim Ayarlari',
         analytics_hint: 'Bu ayar aciksa urun detay goruntulenmeleri sayilir ve panelde raporlanir.',
         whatsapp_hint: 'Acik oldugunda urun detayinda sepet ve WhatsApp siparis baglantisi aktif olur.',
-        template_hint: 'Son kullanıcı menüsü için iki premium şablondan birini seçin.',
+        template_hint: 'Son kullanıcı menüsü için premium şablonlardan birini seçin.',
         color_hint: 'Renkleri panelden seçerek menü görünümünü markanıza göre anında özelleştirin.',
         template_showcase: 'Showcase Spotlight',
         template_editorial: 'Editorial Slate',
+        template_boutique: 'Boutique Bazaar',
         save: 'Kaydet'
     },
     en: {
@@ -52,10 +53,11 @@
         analytics: 'Customer Interaction Settings',
         analytics_hint: 'When enabled, product detail views are counted and shown in dashboard reports.',
         whatsapp_hint: 'When enabled, product detail page will show cart and WhatsApp ordering link.',
-        template_hint: 'Pick one of two premium templates for the guest-facing menu.',
+        template_hint: 'Pick one of the premium templates for the guest-facing menu.',
         color_hint: 'Choose colors from the panel to instantly match your brand style.',
         template_showcase: 'Showcase Spotlight',
         template_editorial: 'Editorial Slate',
+        template_boutique: 'Boutique Bazaar',
         save: 'Save'
     },
     ar: {
@@ -80,10 +82,11 @@
         analytics: 'اعدادات تفاعل العملاء',
         analytics_hint: 'عند التفعيل سيتم عد مشاهدات تفاصيل المنتج وعرضها في لوحة التحكم.',
         whatsapp_hint: 'عند التفعيل تظهر السلة ورابط طلب واتساب في صفحة تفاصيل المنتج.',
-        template_hint: 'اختر أحد قالبين مميزين لقائمة العملاء.',
+        template_hint: 'اختر أحد القوالب المميزة لقائمة العملاء.',
         color_hint: 'خصّص الألوان من لوحة التحكم لتطابق هوية علامتك.',
         template_showcase: 'Showcase Spotlight',
         template_editorial: 'Editorial Slate',
+        template_boutique: 'Boutique Bazaar',
         save: 'حفظ'
     },
     ru: {
@@ -108,10 +111,11 @@
         analytics: 'Настройки взаимодействия',
         analytics_hint: 'При включении считаются просмотры карточки товара и показываются в дашборде.',
         whatsapp_hint: 'При включении на странице товара будут корзина и ссылка заказа в WhatsApp.',
-        template_hint: 'Выберите один из двух премиальных шаблонов для гостевого меню.',
+        template_hint: 'Выберите один из премиальных шаблонов для гостевого меню.',
         color_hint: 'Настройте цвета из панели под фирменный стиль.',
         template_showcase: 'Showcase Spotlight',
         template_editorial: 'Editorial Slate',
+        template_boutique: 'Boutique Bazaar',
         save: 'Сохранить'
     }
 }[currentLocale] ?? {
@@ -136,10 +140,11 @@
     analytics: 'Customer Interaction Settings',
     analytics_hint: 'When enabled, product detail views are counted and shown in dashboard reports.',
     whatsapp_hint: 'When enabled, product detail page will show cart and WhatsApp ordering link.',
-    template_hint: 'Pick one of two premium templates for the guest-facing menu.',
+    template_hint: 'Pick one of the premium templates for the guest-facing menu.',
     color_hint: 'Choose colors from the panel to instantly match your brand style.',
     template_showcase: 'Showcase Spotlight',
     template_editorial: 'Editorial Slate',
+    template_boutique: 'Boutique Bazaar',
     save: 'Save'
 } %}
 
@@ -293,6 +298,10 @@
                         <div class="template-choice" data-template="editorial">
                             <div class="template-chip">{{ ui.template_editorial }}</div>
                             <div class="template-preview editorial-preview"></div>
+                        </div>
+                        <div class="template-choice" data-template="boutique">
+                            <div class="template-chip">{{ ui.template_boutique }}</div>
+                            <div class="template-preview boutique-preview"></div>
                         </div>
                     </div>
                     <div class="row">
@@ -453,6 +462,22 @@
     inset: 14px;
     border-radius: 7px;
     border: 1px solid rgba(148, 163, 184, 0.45);
+}
+
+.boutique-preview {
+    background:
+        radial-gradient(circle at 18% 20%, rgba(245, 158, 11, 0.28) 0, transparent 42%),
+        linear-gradient(135deg, #fdf6ec 0%, #fef3c7 45%, #ecfccb 100%);
+    position: relative;
+}
+
+.boutique-preview::after {
+    content: '';
+    position: absolute;
+    inset: 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(146, 64, 14, 0.24);
+    background: linear-gradient(130deg, rgba(255, 255, 255, 0.94), rgba(255, 250, 240, 0.72));
 }
 </style>
 {% endblock %}

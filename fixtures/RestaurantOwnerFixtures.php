@@ -39,10 +39,16 @@ class RestaurantOwnerFixtures extends Fixture implements DependentFixtureInterfa
 
         $freeAccount = $this->getOrCreateAccount($manager, 'Free Musteri', 'free@qrmenu.local');
         $premiumAccount = $this->getOrCreateAccount($manager, 'Premium Musteri', 'premium@qrmenu.local');
+        $gunesliAccount = $this->getOrCreateAccount($manager, 'Güneşli Bahçe Yöresel Lezzetleri', 'guneslibahce@qrmenu.local');
 
         $freeRestaurant = $this->getOrCreateRestaurant($manager, $theme, $freeAccount, 'Free Demo Restoran', 'free-demo-restoran', 'free@qrmenu.local');
         $premiumRestaurantOne = $this->getOrCreateRestaurant($manager, $theme, $premiumAccount, 'Premium Demo Restoran 1', 'premium-demo-restoran-1', 'premium@qrmenu.local');
         $premiumRestaurantTwo = $this->getOrCreateRestaurant($manager, $theme, $premiumAccount, 'Premium Demo Restoran 2', 'premium-demo-restoran-2', 'premium2@qrmenu.local');
+        $gunesliRestaurant = $this->getOrCreateRestaurant($manager, $theme, $gunesliAccount, 'Güneşli Bahçe Yöresel Lezzetleri', 'gunesli-bahce-yoresel-lezzetleri', 'guneslibahce@qrmenu.local');
+        $gunesliRestaurant->setDescription('Instagram odakli butik satis yapan yoresel lezzet magazasi.');
+        $gunesliRestaurant->setMenuTemplate('boutique');
+        $gunesliRestaurant->setCurrencyCode('TRY');
+        $gunesliRestaurant->setEnabledLocales(['tr']);
 
         $freeUser = $this->getOrCreateUser($manager, 'free@qrmenu.local', 'Free', 'Owner', $ownerRole);
         $freeUser->setCustomerAccount($freeAccount);
@@ -55,15 +61,30 @@ class RestaurantOwnerFixtures extends Fixture implements DependentFixtureInterfa
         $premiumUser->addRestaurant($premiumRestaurantOne);
         $premiumUser->addRestaurant($premiumRestaurantTwo);
 
+        $gunesliUser = $this->getOrCreateUser(
+            $manager,
+            'guneslibahce@qrmenu.local',
+            'Ali',
+            'Gunesbahce',
+            $ownerRole,
+            'aligunesbahce'
+        );
+        $gunesliUser->setCustomerAccount($gunesliAccount);
+        $gunesliUser->setRestaurant($gunesliRestaurant);
+        $gunesliUser->addRestaurant($gunesliRestaurant);
+
         $this->ensureSubscription($manager, $freeAccount, $freePlan);
         $this->ensureSubscription($manager, $premiumAccount, $premiumPlan);
+        $this->ensureSubscription($manager, $gunesliAccount, $premiumPlan);
 
         $this->seedDemoMenu($manager, $freeRestaurant);
         $this->seedDemoMenu($manager, $premiumRestaurantOne);
         $this->seedDemoMenu($manager, $premiumRestaurantTwo);
+        $this->seedGunesliBahceMenu($manager, $gunesliRestaurant);
 
         $manager->persist($freeUser);
         $manager->persist($premiumUser);
+        $manager->persist($gunesliUser);
         $manager->flush();
     }
 
@@ -120,13 +141,14 @@ class RestaurantOwnerFixtures extends Fixture implements DependentFixtureInterfa
         string $firstName,
         string $lastName,
         Role $ownerRole,
+        string $password = 'ChangeMe123!',
     ): User {
         $user = $manager->getRepository(User::class)->findOneBy(['email' => $email]);
         if (!$user instanceof User) {
             $user = new User($email, '', $firstName, $lastName);
         }
 
-        $user->setPasswordHash($this->hasher->hashPassword($user, 'ChangeMe123!'));
+        $user->setPasswordHash($this->hasher->hashPassword($user, $password));
         $user->addRole($ownerRole);
 
         return $user;
@@ -245,6 +267,155 @@ class RestaurantOwnerFixtures extends Fixture implements DependentFixtureInterfa
 
             $manager->persist(new Translation($entityType, $entityId, $locale, 'name', $translated));
         }
+    }
+
+    private function seedGunesliBahceMenu(ObjectManager $manager, Restaurant $restaurant): void
+    {
+        $menu = $this->buildGunesliBahceMenu();
+
+        $categorySort = 1;
+        foreach ($menu as $categoryName => $products) {
+            $category = $manager->getRepository(Category::class)->findOneBy([
+                'restaurant' => $restaurant,
+                'name' => $categoryName,
+            ]);
+
+            if (!$category instanceof Category) {
+                $category = new Category($categoryName, $restaurant);
+                $manager->persist($category);
+            }
+
+            $category->setSortOrder($categorySort);
+            $category->setIsActive(true);
+
+            $productSort = 1;
+            foreach ($products as $productData) {
+                $product = $manager->getRepository(Product::class)->findOneBy([
+                    'restaurant' => $restaurant,
+                    'category' => $category,
+                    'name' => $productData['name'],
+                ]);
+
+                if (!$product instanceof Product) {
+                    $product = new Product($productData['name'], $productData['price'], $category, $restaurant);
+                    $manager->persist($product);
+                }
+
+                $product->setPrice($productData['price']);
+                $product->setDescription($productData['description']);
+                $product->setSortOrder($productSort);
+                $product->setIsActive(true);
+                $product->setStatus(ProductStatus::APPROVED);
+                $product->setSubmittedAt(new \DateTimeImmutable());
+
+                ++$productSort;
+            }
+
+            ++$categorySort;
+        }
+
+        $manager->flush();
+    }
+
+    /**
+     * @return array<string, array<int, array{name: string, price: string, description: string}>>
+     */
+    private function buildGunesliBahceMenu(): array
+    {
+        return [
+            'Ceviz' => [
+                [
+                    'name' => 'Çanakkale Ceviz',
+                    'price' => '320.00',
+                    'description' => "Çanakkale'nin bereketli topraklarından, ince kabuklu ve yüksek yağ oranlı taze ceviz. Omega-3 deposu, her tanesi dolu dolu ve doğal.",
+                ],
+            ],
+            'Erbaa Yaprak' => [
+                [
+                    'name' => 'Erbaa Sarım Vakumlu Yaprak',
+                    'price' => '250.00',
+                    'description' => "Tokat Erbaa'nın meşhur incecik, damarsız asma yaprağı. 400 gramlık vakumlu paketlerde, tazeliğini koruyan ve kolay sarılan yöresel lezzet.",
+                ],
+                [
+                    'name' => 'Erbaa Kuru Basım Köy Usulü Yaprak',
+                    'price' => '1500.00',
+                    'description' => "Geleneksel yöntemlerle susuz basılan, rayihasını kaybetmeyen Erbaa yaprağı. Uzun ömürlü ve katkısız, tam bir kışlık hazırlık klasiği.",
+                ],
+                [
+                    'name' => 'Erbaa Sarım Yaprak',
+                    'price' => '1200.00',
+                    'description' => "İnce dokusu ve kendine has ekşiliği ile bilinen orijinal Erbaa asma yaprağı. Zeytinyağlı sarmaların en kaliteli ana malzemesi.",
+                ],
+            ],
+            'Biber Turşuları' => [
+                [
+                    'name' => 'Yağlı Biber Turşusu',
+                    'price' => '450.00',
+                    'description' => 'Özel yağlı sosuyla hazırlanan, el emeği çıtır biber turşusu. Sofraların iştah açan, sarımsaklı ve dengeli asiditeye sahip doğal eşlikçisi.',
+                ],
+                [
+                    'name' => 'Yağlı Tatlı Biber Turşusu',
+                    'price' => '400.00',
+                    'description' => 'Acı sevmeyenler için özel olarak el yapımı hazırlanan tatlı biber turşusu. Yağlı sosuyla yumuşak içimli ve son derece lezzetli.',
+                ],
+                [
+                    'name' => 'Yağlı Acı Biber Turşusu',
+                    'price' => '450.00',
+                    'description' => 'Acıdan vazgeçemeyenler için özel tarifli yağlı turşu. Doğal yöntemlerle fermente edilmiş, köz tadında bir acılık sunan butik ürün.',
+                ],
+            ],
+            'Bakliyatlar' => [
+                [
+                    'name' => 'Buğday Yarması (Keşkeklik)',
+                    'price' => '60.00',
+                    'description' => "Tokat Erbaa yöresinin keşkeklik buğday yarması. Dövülerek hazırlanan, tam kıvamında ve besleyici yöresel bakliyat.",
+                ],
+                [
+                    'name' => 'Barbunya',
+                    'price' => '150.00',
+                    'description' => 'İri taneli, çabuk pişen ve lokum gibi kıvam alan doğal barbunya. Toprağın tazeliğini mutfağınıza taşıyan protein deposu.',
+                ],
+                [
+                    'name' => 'Kırmızı Mercimek',
+                    'price' => '80.00',
+                    'description' => 'Kıvamlı çorbaların sırrı, birinci sınıf yerli kırmızı mercimek. Katkısız ve doğal tarım ürünü, sofraların vazgeçilmez temel gıdası.',
+                ],
+            ],
+            'Salçalar' => [
+                [
+                    'name' => 'Tatlı Biber Salçası',
+                    'price' => '250.00',
+                    'description' => 'Güneş altında ağır ağır kurutulan, Antep usulü koyu kıvamlı tatlı biber salçası. Yemeklerinize eşsiz bir renk ve koku verir.',
+                ],
+                [
+                    'name' => 'Acı Biber Salçası',
+                    'price' => '250.00',
+                    'description' => "Antep'in meşhur acı biberlerinden elde edilen, yoğun aromalı acı salça. Hiçbir koruyucu içermeyen, tamamen doğal ev tipi üretim.",
+                ],
+                [
+                    'name' => 'Domates Salçası',
+                    'price' => '200.00',
+                    'description' => "Tarladan sofraya, bol domatesli ve geleneksel yöntemlerle kaynatılmış domates salçası. Yemeklerinizde yaz domatesinin tadını hissettirir.",
+                ],
+            ],
+            'Pekmezler' => [
+                [
+                    'name' => 'Kuşburnu Marmelatı',
+                    'price' => '400.00',
+                    'description' => 'Doğal kuşburnu meyvelerinden süzülerek hazırlanan, C vitamini zengini marmelat. Şeker ilavesiz, bağışıklık dostu bir kahvaltılık.',
+                ],
+                [
+                    'name' => 'Keçiboynuzu Pekmezi',
+                    'price' => '300.00',
+                    'description' => 'Harnup meyvesinin tüm şifasını barındıran, kan yapıcı ve enerji verici keçiboynuzu pekmezi. %100 saf ve geleneksel üretim.',
+                ],
+                [
+                    'name' => 'Dut Pekmezi',
+                    'price' => '250.00',
+                    'description' => 'Doğal beyaz ve kara dutların özünden hazırlanan, boğazı yumuşatan şifalı dut pekmezi. Hiçbir katkı maddesi içermeyen doğal enerji kaynağı.',
+                ],
+            ],
+        ];
     }
 
     /**

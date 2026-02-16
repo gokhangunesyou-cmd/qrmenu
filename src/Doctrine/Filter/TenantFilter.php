@@ -12,6 +12,7 @@ class TenantFilter extends SQLFilter
         'App\Entity\Product',
         'App\Entity\Media',
         'App\Entity\QrCode',
+        'App\Entity\RestaurantPopup',
         'App\Entity\RestaurantPage',
         'App\Entity\RestaurantSocialLink',
     ];

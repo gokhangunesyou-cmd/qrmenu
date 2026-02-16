@@ -22,8 +22,10 @@ final class RestaurantTest extends TestCase
         $restaurant = $this->createRestaurant();
 
         $restaurant->setMenuTemplate('editorial');
-
         self::assertSame('editorial', $restaurant->getMenuTemplate());
+
+        $restaurant->setMenuTemplate('boutique');
+        self::assertSame('boutique', $restaurant->getMenuTemplate());
     }
 
     public function testEnabledLocalesDefaultToTr(): void
