@@ -398,6 +398,25 @@ body {
     color: #9f1239;
 }
 
+.theme-footer {
+    border-top: 1px solid color-mix(in srgb, var(--border) 76%, #fff);
+    background: #fff;
+    padding: 8px 12px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.theme-footer-link {
+    color: inherit;
+    text-decoration: none;
+}
+
+.theme-footer-link:hover {
+    text-decoration: underline;
+}
+
 @media (min-width: 780px) {
     .content {
         grid-template-columns: 1fr 1fr;
@@ -642,34 +661,38 @@ body {
             {% if isWhatsappSettingEnabled %}
                 <section class="order-panel">
                     <h3>{{ ui.cart }}</h3>
-                    {% if isWhatsappOrderEnabled %}
-                        <div class="order-actions">
-                            <button type="button" class="btn btn-primary" id="addToCartBtn">{{ ui.add_to_cart }}</button>
-                            <span class="qty-badge" id="currentQtyBadge">0</span>
-                            <button type="button" class="btn btn-outline" id="clearCartBtn">{{ ui.clear_cart }}</button>
-                        </div>
-                        <div id="cartList" class="cart-list"></div>
-                        <div class="cart-total" id="cartTotal"></div>
-                        <a id="sendWhatsappBtn" class="btn btn-primary" href="#" target="_blank" rel="noopener noreferrer">{{ ui.send_whatsapp }}</a>
-                    {% else %}
+                    <div class="order-actions">
+                        <button type="button" class="btn btn-primary" id="addToCartBtn">{{ ui.add_to_cart }}</button>
+                        <span class="qty-badge" id="currentQtyBadge">0</span>
+                        <button type="button" class="btn btn-outline" id="clearCartBtn">{{ ui.clear_cart }}</button>
+                    </div>
+                    <div id="cartList" class="cart-list"></div>
+                    <div class="cart-total" id="cartTotal"></div>
+                    <a id="sendWhatsappBtn" class="btn btn-primary" href="#" target="_blank" rel="noopener noreferrer">{{ ui.send_whatsapp }}</a>
+                    {% if not isWhatsappOrderEnabled %}
                         <div class="warning">{{ ui.whatsapp_unavailable }}</div>
                     {% endif %}
                 </section>
             {% endif %}
         </div>
+        <footer class="theme-footer">
+            <a class="theme-footer-link" href="{{ brandSignatureUrl }}" target="_blank" rel="noopener noreferrer">
+                {{ ui.brand_signature }} • {{ brandSignatureHost }}
+            </a>
+        </footer>
     </div>
 </div>
 {% endblock %}
 
 {% block javascripts %}
-{% if isWhatsappOrderEnabled %}
+{% if isWhatsappSettingEnabled %}
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const storageKey = 'qrmenu_cart_{{ restaurant.id }}';
     const currencySymbol = '{{ currencySymbol|e('js') }}';
     const restaurantName = '{{ restaurant.name|e('js') }}';
     const tableNumber = {{ tableNumber is not null ? tableNumber : 'null' }};
-    const whatsappNumber = '{{ whatsappNumber|e('js') }}';
+    const whatsappNumber = {{ whatsappNumber|default(null)|json_encode|raw }};
     const emptyCartText = '{{ ui.empty_cart|e('js') }}';
 
     const currentProduct = {
@@ -727,7 +750,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const updateWhatsappLink = (cart, total) => {
-        if (cart.length === 0) {
+        if (!whatsappNumber || cart.length === 0) {
             sendWhatsappBtn.setAttribute('aria-disabled', 'true');
             sendWhatsappBtn.style.pointerEvents = 'none';
             sendWhatsappBtn.style.opacity = '0.6';

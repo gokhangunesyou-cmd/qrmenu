@@ -10,6 +10,7 @@ use App\Entity\Restaurant;
 use App\Repository\CategoryRepository;
 use App\Repository\ProductRepository;
 use App\Repository\RestaurantRepository;
+use App\Repository\RestaurantPopupRepository;
 use App\Repository\RestaurantSocialLinkRepository;
 use App\Service\LanguageContext;
 use App\Service\TranslationService;
@@ -26,6 +27,7 @@ class MenuController extends AbstractController
         int $id,
         Request $request,
         RestaurantRepository $restaurantRepository,
+        RestaurantPopupRepository $popupRepository,
         CategoryRepository $categoryRepository,
         RestaurantSocialLinkRepository $socialLinkRepository,
         TranslationService $translationService,
@@ -108,11 +110,15 @@ class MenuController extends AbstractController
         $menuTemplate = $restaurant->getMenuTemplate();
         $templatePath = match ($menuTemplate) {
             'editorial' => 'site/menu/editorial.html.twig',
+            'boutique' => 'site/menu/boutique.html.twig',
             default => 'site/menu/showcase.html.twig',
         };
         $whatsappNumber = $restaurant->isWhatsappOrderEnabled()
             ? $this->normalizeWhatsappNumber($restaurant->getPhone())
             : null;
+        $brandSignatureUrl = $request->getSchemeAndHttpHost();
+        $brandSignatureHost = $request->getHost();
+        $activePopup = $popupRepository->findActiveForRestaurantAt($restaurant, new \DateTimeImmutable());
 
         return $this->render($templatePath, [
             'restaurant' => $restaurant,
@@ -130,9 +136,13 @@ class MenuController extends AbstractController
             'localizedCategoryDescriptions' => $localizedCategoryDescriptions,
             'localizedProductNames' => $localizedProductNames,
             'localizedProductDescriptions' => $localizedProductDescriptions,
+            'isProductDetailEnabled' => $restaurant->isCountProductDetailViews(),
             'whatsappNumber' => $whatsappNumber,
             'isWhatsappSettingEnabled' => $restaurant->isWhatsappOrderEnabled(),
             'isWhatsappOrderEnabled' => $whatsappNumber !== null,
+            'brandSignatureUrl' => $brandSignatureUrl,
+            'brandSignatureHost' => $brandSignatureHost,
+            'activePopup' => $activePopup,
         ]);
     }
 
@@ -176,7 +186,16 @@ class MenuController extends AbstractController
 
         $product = $productRepository->findActiveByUuidForMenu($restaurant, $productUuid);
         if (!$product instanceof Product) {
-            throw $this->createNotFoundException('Product not found');
+            $menuRouteParams = [
+                'slug' => $canonicalSlug,
+                'id' => $id,
+                'lang' => $locale,
+            ];
+            if ($tableNumber > 0) {
+                $menuRouteParams['table'] = $tableNumber;
+            }
+
+            return $this->redirectToRoute('site_menu_show', $menuRouteParams, Response::HTTP_FOUND);
         }
 
         if ($restaurant->isCountProductDetailViews()) {
@@ -226,6 +245,8 @@ class MenuController extends AbstractController
         $whatsappNumber = $restaurant->isWhatsappOrderEnabled()
             ? $this->normalizeWhatsappNumber($restaurant->getPhone())
             : null;
+        $brandSignatureUrl = $request->getSchemeAndHttpHost();
+        $brandSignatureHost = $request->getHost();
 
         return $this->render('site/menu/detail.html.twig', [
             'restaurant' => $restaurant,
@@ -248,6 +269,8 @@ class MenuController extends AbstractController
             'whatsappNumber' => $whatsappNumber,
             'isWhatsappSettingEnabled' => $restaurant->isWhatsappOrderEnabled(),
             'isWhatsappOrderEnabled' => $whatsappNumber !== null,
+            'brandSignatureUrl' => $brandSignatureUrl,
+            'brandSignatureHost' => $brandSignatureHost,
         ]);
     }
 
@@ -256,8 +279,8 @@ class MenuController extends AbstractController
      */
     private function resolveTheme(Restaurant $restaurant): array
     {
-        $defaults = $restaurant->getMenuTemplate() === 'editorial'
-            ? [
+        $defaults = match ($restaurant->getMenuTemplate()) {
+            'editorial' => [
                 'primary' => '#0F172A',
                 'secondary' => '#475569',
                 'background' => '#E2E8F0',
@@ -266,8 +289,18 @@ class MenuController extends AbstractController
                 'accent' => '#F97316',
                 'muted' => '#475569',
                 'border' => '#CBD5E1',
-            ]
-            : [
+            ],
+            'boutique' => [
+                'primary' => '#7C3F00',
+                'secondary' => '#3F6212',
+                'background' => '#FAF4E8',
+                'surface' => '#FFFDF8',
+                'text' => '#2A211A',
+                'accent' => '#D97706',
+                'muted' => '#7C6F64',
+                'border' => '#E8D5BF',
+            ],
+            default => [
                 'primary' => '#9A3412',
                 'secondary' => '#0F766E',
                 'background' => '#FFF8F1',
@@ -276,7 +309,8 @@ class MenuController extends AbstractController
                 'accent' => '#F59E0B',
                 'muted' => '#6B7280',
                 'border' => '#FCD9BD',
-            ];
+            ],
+        };
 
         $overrides = $restaurant->getColorOverrides();
         if (!is_array($overrides)) {
@@ -339,7 +373,8 @@ class MenuController extends AbstractController
      *     empty_cart:string,
      *     clear_cart:string,
      *     send_whatsapp:string,
-     *     whatsapp_unavailable:string
+     *     whatsapp_unavailable:string,
+     *     brand_signature:string
      * }
      */
     private function buildMenuUi(string $locale): array
@@ -376,6 +411,7 @@ class MenuController extends AbstractController
                 'clear_cart' => 'Sepeti Temizle',
                 'send_whatsapp' => 'WhatsApp ile Siparis Gonder',
                 'whatsapp_unavailable' => 'WhatsApp siparisi icin restoran telefonu tanimli olmali.',
+                'brand_signature' => 'Powered by Altay QR Menu',
             ],
             'en' => [
                 'menu' => 'Menu',
@@ -408,6 +444,7 @@ class MenuController extends AbstractController
                 'clear_cart' => 'Clear Cart',
                 'send_whatsapp' => 'Send Order via WhatsApp',
                 'whatsapp_unavailable' => 'Restaurant phone is required for WhatsApp ordering.',
+                'brand_signature' => 'Powered by Altay QR Menu',
             ],
             'ar' => [
                 'menu' => 'Menu',
@@ -440,6 +477,7 @@ class MenuController extends AbstractController
                 'clear_cart' => 'Clear Cart',
                 'send_whatsapp' => 'Send Order via WhatsApp',
                 'whatsapp_unavailable' => 'Restaurant phone is required for WhatsApp ordering.',
+                'brand_signature' => 'Powered by Altay QR Menu',
             ],
             'ru' => [
                 'menu' => 'Menu',
@@ -472,6 +510,7 @@ class MenuController extends AbstractController
                 'clear_cart' => 'Clear Cart',
                 'send_whatsapp' => 'Send Order via WhatsApp',
                 'whatsapp_unavailable' => 'Restaurant phone is required for WhatsApp ordering.',
+                'brand_signature' => 'Powered by Altay QR Menu',
             ],
         ];
 

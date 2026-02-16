@@ -253,6 +253,7 @@
             categories: 'Kategoriler',
             products: 'Ürünler',
             qrcodes: 'QR Kodları',
+            popups: 'Popuplar',
             media: 'Medya',
             membership: 'Üyelik ve Ekip',
             super_admin: 'Süper Admin',
@@ -280,6 +281,7 @@
             categories: 'Categories',
             products: 'Products',
             qrcodes: 'QR Codes',
+            popups: 'Popups',
             media: 'Media',
             membership: 'Membership & Team',
             super_admin: 'Super Admin',
@@ -307,6 +309,7 @@
             categories: 'الفئات',
             products: 'المنتجات',
             qrcodes: 'رموز QR',
+            popups: 'النوافذ',
             media: 'الوسائط',
             membership: 'الاشتراك والفريق',
             super_admin: 'المسؤول الفائق',
@@ -334,6 +337,7 @@
             categories: 'Категории',
             products: 'Товары',
             qrcodes: 'QR-коды',
+            popups: 'Popup',
             media: 'Медиа',
             membership: 'Подписка и команда',
             super_admin: 'Супер админ',
@@ -361,6 +365,7 @@
         categories: 'Categories',
         products: 'Products',
         qrcodes: 'QR Codes',
+        popups: 'Popups',
         media: 'Media',
         membership: 'Membership & Team',
         super_admin: 'Super Admin',
@@ -405,6 +410,9 @@
             </a>
             <a class="nav-link {{ currentRoute starts with 'admin_qrcode' ? 'active' : '' }}" href="{{ path('admin_qrcode_index', {lang: currentLocale}) }}">
                 <i class="bi bi-qr-code"></i> {{ uiAdmin.qrcodes }}
+            </a>
+            <a class="nav-link {{ currentRoute starts with 'admin_popup' ? 'active' : '' }}" href="{{ path('admin_popup_index', {lang: currentLocale}) }}">
+                <i class="bi bi-megaphone"></i> {{ uiAdmin.popups }}
             </a>
             <a class="nav-link {{ currentRoute starts with 'admin_media' ? 'active' : '' }}" href="{{ path('admin_media_index', {lang: currentLocale}) }}">
                 <i class="bi bi-image"></i> {{ uiAdmin.media }}

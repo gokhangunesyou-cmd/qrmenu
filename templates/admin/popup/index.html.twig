@@ -1,0 +1,288 @@
+{% extends 'admin/base.html.twig' %}
+
+{% set currentLocale = currentLocale|default(admin_current_locale()) %}
+{% set ui = {
+    tr: {
+        title: 'Popup Yonetimi',
+        subtitle: 'Musteriye menunun ilk acilisinda gosterilecek popup kampanyalari.',
+        create: 'Yeni Popup Olustur',
+        save: 'Kaydet',
+        update: 'Guncelle',
+        delete: 'Sil',
+        no_items: 'Henuz popup olusturulmamis.',
+        title_label: 'Popup Basligi',
+        start_label: 'Baslangic Tarihi',
+        end_label: 'Bitis Tarihi',
+        image_label: 'Gorsel Yukle',
+        html_label: 'HTML Icerik',
+        button_label: 'Buton Metni',
+        button_url: 'Buton Linki',
+        button_hint: 'Ornek: Urune Git / Kampanyayi Gor. Buton metni girildiyse link zorunludur.',
+        html_hint: 'Gorsel yukleyebilir veya HTML editor alanina icerik girebilirsiniz.',
+        active: 'Aktif',
+        showing: 'Su an yayinda',
+        inactive: 'Pasif',
+        remove_image: 'Mevcut gorseli kaldir',
+        current_image: 'Mevcut gorsel',
+        delete_confirm: 'Bu popup silinsin mi?',
+        list_title: 'Kayitli Popuplar'
+    },
+    en: {
+        title: 'Popup Management',
+        subtitle: 'Campaign popups shown to guests on first menu open.',
+        create: 'Create Popup',
+        save: 'Save',
+        update: 'Update',
+        delete: 'Delete',
+        no_items: 'No popup has been created yet.',
+        title_label: 'Popup Title',
+        start_label: 'Start Date',
+        end_label: 'End Date',
+        image_label: 'Upload Image',
+        html_label: 'HTML Content',
+        button_label: 'Button Label',
+        button_url: 'Button Link',
+        button_hint: 'Example: Go to Product / View Campaign. If label is set, link is required.',
+        html_hint: 'You can upload an image or write content in the HTML editor area.',
+        active: 'Active',
+        showing: 'Live now',
+        inactive: 'Inactive',
+        remove_image: 'Remove current image',
+        current_image: 'Current image',
+        delete_confirm: 'Delete this popup?',
+        list_title: 'Saved Popups'
+    },
+    ar: {
+        title: 'ادارة النوافذ المنبثقة',
+        subtitle: 'العروض التي تظهر للعميل عند فتح القائمة لاول مرة.',
+        create: 'انشاء نافذة',
+        save: 'حفظ',
+        update: 'تحديث',
+        delete: 'حذف',
+        no_items: 'لا توجد نوافذ منبثقة بعد.',
+        title_label: 'عنوان النافذة',
+        start_label: 'تاريخ البدء',
+        end_label: 'تاريخ الانتهاء',
+        image_label: 'رفع صورة',
+        html_label: 'محتوى HTML',
+        button_label: 'نص الزر',
+        button_url: 'رابط الزر',
+        button_hint: 'مثال: اذهب للمنتج. عند ادخال نص الزر يجب ادخال الرابط.',
+        html_hint: 'يمكنك رفع صورة او كتابة محتوى HTML.',
+        active: 'نشط',
+        showing: 'معروض حاليا',
+        inactive: 'غير نشط',
+        remove_image: 'ازالة الصورة الحالية',
+        current_image: 'الصورة الحالية',
+        delete_confirm: 'حذف هذه النافذة؟',
+        list_title: 'النوافذ المحفوظة'
+    },
+    ru: {
+        title: 'Upravlenie popup',
+        subtitle: 'Popup kampanii, kotorye pokazyvayutsya gostyu pri pervom otkrytii menyu.',
+        create: 'Sozdat popup',
+        save: 'Sohranit',
+        update: 'Obnovit',
+        delete: 'Udalit',
+        no_items: 'Popup eshche ne sozdan.',
+        title_label: 'Zagolovok popup',
+        start_label: 'Data starta',
+        end_label: 'Data okonchaniya',
+        image_label: 'Zagruzit izobrazhenie',
+        html_label: 'HTML kontent',
+        button_label: 'Tekst knopki',
+        button_url: 'Ssylka knopki',
+        button_hint: 'Primer: Pereyti k tovaru. Esli ukazan tekst knopki, ssylka obyazatelna.',
+        html_hint: 'Mozhno zagruzit izobrazhenie ili vvesti HTML kontent.',
+        active: 'Aktiven',
+        showing: 'Pokazyvaetsya seichas',
+        inactive: 'Neaktiven',
+        remove_image: 'Ubrat tekushee izobrazhenie',
+        current_image: 'Tekushee izobrazhenie',
+        delete_confirm: 'Udalit etot popup?',
+        list_title: 'Sohranennye popup'
+    }
+}[currentLocale] ?? {
+    title: 'Popup Management',
+    subtitle: 'Campaign popups shown to guests on first menu open.',
+    create: 'Create Popup',
+    save: 'Save',
+    update: 'Update',
+    delete: 'Delete',
+    no_items: 'No popup has been created yet.',
+    title_label: 'Popup Title',
+    start_label: 'Start Date',
+    end_label: 'End Date',
+    image_label: 'Upload Image',
+    html_label: 'HTML Content',
+    button_label: 'Button Label',
+    button_url: 'Button Link',
+    button_hint: 'Example: Go to Product / View Campaign. If label is set, link is required.',
+    html_hint: 'You can upload an image or write content in the HTML editor area.',
+    active: 'Active',
+    showing: 'Live now',
+    inactive: 'Inactive',
+    remove_image: 'Remove current image',
+    current_image: 'Current image',
+    delete_confirm: 'Delete this popup?',
+    list_title: 'Saved Popups'
+} %}
+
+{% block title %}{{ ui.title }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">{{ ui.title }}</h2>
+            <div class="text-muted">{{ ui.subtitle }}</div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">{{ ui.create }}</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" action="{{ path('admin_popup_create', {lang: currentLocale}) }}" enctype="multipart/form-data" class="row g-3">
+                <input type="hidden" name="_token" value="{{ csrf_token('popup_create') }}">
+                <div class="col-md-6">
+                    <label class="form-label">{{ ui.title_label }}</label>
+                    <input type="text" name="title" class="form-control" maxlength="160" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">{{ ui.start_label }}</label>
+                    <input type="datetime-local" name="starts_at" class="form-control" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">{{ ui.end_label }}</label>
+                    <input type="datetime-local" name="ends_at" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">{{ ui.image_label }}</label>
+                    <input type="file" name="image_file" class="form-control" accept="image/jpeg,image/png,image/webp">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">{{ ui.button_label }}</label>
+                    <input type="text" name="button_label" class="form-control" maxlength="80" placeholder="Urune Git">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">{{ ui.button_url }}</label>
+                    <input type="text" name="button_url" class="form-control" maxlength="500" placeholder="https://... veya /menu/...">
+                </div>
+                <div class="col-md-6 d-flex align-items-end">
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" id="create_is_active" name="is_active" checked>
+                        <label class="form-check-label" for="create_is_active">{{ ui.active }}</label>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <small class="text-muted">{{ ui.button_hint }}</small>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">{{ ui.html_label }}</label>
+                    <textarea name="content_html" class="form-control font-monospace" rows="7" placeholder="<p>Kampanya icerigi...</p>"></textarea>
+                    <small class="text-muted d-block mt-2">{{ ui.html_hint }}</small>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> {{ ui.save }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">{{ ui.list_title }}</h5>
+        </div>
+        <div class="card-body">
+            {% if popups is empty %}
+                <div class="text-muted">{{ ui.no_items }}</div>
+            {% endif %}
+
+            {% for popup in popups %}
+                {% set isShowing = popup.isVisibleAt(nowAt) %}
+                <div class="border rounded-3 p-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+                        <div>
+                            <h6 class="mb-1">{{ popup.title }}</h6>
+                            <small class="text-muted">{{ popup.startsAt|date('d.m.Y H:i') }} - {{ popup.endsAt|date('d.m.Y H:i') }}</small>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <span class="badge {{ popup.isActive ? 'bg-success' : 'bg-secondary' }}">{{ popup.isActive ? ui.active : ui.inactive }}</span>
+                            {% if isShowing %}
+                                <span class="badge bg-warning text-dark">{{ ui.showing }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <form method="post" action="{{ path('admin_popup_update', {uuid: popup.uuid, lang: currentLocale}) }}" enctype="multipart/form-data" class="row g-3">
+                        <input type="hidden" name="_token" value="{{ csrf_token('popup_update_' ~ popup.uuid) }}">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ ui.title_label }}</label>
+                            <input type="text" name="title" class="form-control" maxlength="160" value="{{ popup.title }}" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">{{ ui.start_label }}</label>
+                            <input type="datetime-local" name="starts_at" class="form-control" value="{{ popup.startsAt|date('Y-m-d\\TH:i') }}" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">{{ ui.end_label }}</label>
+                            <input type="datetime-local" name="ends_at" class="form-control" value="{{ popup.endsAt|date('Y-m-d\\TH:i') }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ ui.image_label }}</label>
+                            <input type="file" name="image_file" class="form-control" accept="image/jpeg,image/png,image/webp">
+                            {% if popup.imageMedia %}
+                                <div class="mt-2">
+                                    <div class="small text-muted mb-1">{{ ui.current_image }}</div>
+                                    <img src="{{ media_url(popup.imageMedia.storagePath) }}" alt="{{ popup.title }}" class="img-fluid rounded" style="max-height: 140px;">
+                                </div>
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="checkbox" id="remove_image_{{ popup.uuid }}" name="remove_image" value="1">
+                                    <label class="form-check-label" for="remove_image_{{ popup.uuid }}">{{ ui.remove_image }}</label>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">{{ ui.button_label }}</label>
+                            <input type="text" name="button_label" class="form-control" maxlength="80" value="{{ popup.buttonLabel }}" placeholder="Urune Git">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">{{ ui.button_url }}</label>
+                            <input type="text" name="button_url" class="form-control" maxlength="500" value="{{ popup.buttonUrl }}" placeholder="https://... veya /menu/...">
+                        </div>
+                        <div class="col-12">
+                            <small class="text-muted">{{ ui.button_hint }}</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ ui.html_label }}</label>
+                            <textarea name="content_html" class="form-control font-monospace" rows="7">{{ popup.contentHtml }}</textarea>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="is_active_{{ popup.uuid }}" name="is_active" {{ popup.isActive ? 'checked' : '' }}>
+                                <label class="form-check-label" for="is_active_{{ popup.uuid }}">{{ ui.active }}</label>
+                            </div>
+                        </div>
+                        <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check2-circle"></i> {{ ui.update }}
+                            </button>
+                        </div>
+                    </form>
+
+                    <form method="post" action="{{ path('admin_popup_delete', {uuid: popup.uuid, lang: currentLocale}) }}" class="mt-2" onsubmit="return confirm('{{ ui.delete_confirm }}')">
+                        <input type="hidden" name="_token" value="{{ csrf_token('popup_delete_' ~ popup.uuid) }}">
+                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-trash"></i> {{ ui.delete }}
+                        </button>
+                    </form>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

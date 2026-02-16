@@ -34,6 +34,10 @@ admin_qrcode_web:
     resource: ../src/Controller/Admin/QrCodeWebController.php
     type: attribute
 
+admin_popup_web:
+    resource: ../src/Controller/Admin/RestaurantPopupWebController.php
+    type: attribute
+
 admin_account_web:
     resource: ../src/Controller/Admin/AccountWebController.php
     type: attribute
